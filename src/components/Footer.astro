@@ -1,0 +1,61 @@
+---
+import { type Locale, t } from '../i18n/translations';
+
+interface Props { locale: Locale; }
+const { locale } = Astro.props;
+const i = t(locale);
+---
+<footer class="footer">
+  <div class="container footer-inner">
+    <div class="footer-brand">
+      <span class="logo">🧌 Mostro.community</span>
+      <p>{i.footer.desc}</p>
+    </div>
+    <div class="footer-links">
+      <div class="footer-col">
+        <h4>{i.footer.protocol}</h4>
+        <a href="https://mostro.network" target="_blank">Mostro Network</a>
+        <a href="https://github.com/MostroP2P/mostro" target="_blank">{i.footer.daemon}</a>
+        <a href="https://github.com/MostroP2P/mobile" target="_blank">{i.footer.mobileApp}</a>
+      </div>
+      <div class="footer-col">
+        <h4>{i.footer.community}</h4>
+        <a href="https://t.me/MostroP2P" target="_blank">Telegram</a>
+        <a href="https://github.com/MostroP2P" target="_blank">GitHub</a>
+        <a href="https://primal.net/p/npub1m0str0d7z2ww8rdh20t2n9lx520xjwhaq24p68umqp06wwrwtsnqen40un" target="_blank">Nostr</a>
+        <a href="https://twitter.com/MostroP2P" target="_blank">Twitter/X</a>
+      </div>
+      <div class="footer-col">
+        <h4>{i.footer.supportedBy}</h4>
+        <a href="https://hrf.org" target="_blank" class="sponsor-logo">
+          <img src="/images/hrf-logo.png" alt="Human Rights Foundation" height="36" />
+        </a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>{i.footer.bottom}</p>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .footer { border-top: 1px solid var(--border); padding: 60px 0 24px; margin-top: 40px; }
+  .footer-inner { display: flex; flex-wrap: wrap; gap: 48px; }
+  .footer-brand { flex: 1; min-width: 250px; }
+  .footer-brand .logo { font-size: 1.2rem; font-weight: 700; color: var(--text-primary); }
+  .footer-brand p { color: var(--text-muted); font-size: 0.9rem; margin-top: 8px; max-width: 300px; }
+  .footer-links { display: flex; gap: 48px; }
+  .footer-col { display: flex; flex-direction: column; gap: 8px; }
+  .footer-col h4 { color: var(--text-primary); font-size: 0.9rem; font-weight: 600; margin-bottom: 4px; }
+  .footer-col a { color: var(--text-secondary); font-size: 0.85rem; }
+  .footer-col a:hover { color: var(--accent); }
+  .sponsor-logo img {
+    opacity: 0.85;
+    transition: opacity 0.2s;
+  }
+
+  .sponsor-logo:hover img { opacity: 1; }
+
+  .footer-bottom { width: 100%; text-align: center; padding-top: 32px; border-top: 1px solid var(--border); margin-top: 16px; }
+  .footer-bottom p { color: var(--text-muted); font-size: 0.8rem; }
+</style>

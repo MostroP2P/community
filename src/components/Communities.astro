@@ -1,0 +1,96 @@
+---
+import { type Locale, t } from '../i18n/translations';
+
+interface Props { locale: Locale; }
+const { locale } = Astro.props;
+const i = t(locale);
+
+const communities = [
+  { key: 'argentina' as const, region: "🇦🇷 Argentina", currencies: ["ARS"], telegram: "https://t.me/MostroP2P_ar" },
+  { key: 'venezuela' as const, region: "🇻🇪 Venezuela", currencies: ["VES", "USD"], telegram: "https://t.me/MostroP2P_ve" },
+  { key: 'brasil' as const, region: "🇧🇷 Brasil", currencies: ["BRL"], telegram: "https://t.me/MostroP2P_br" },
+  { key: 'cuba' as const, region: "🇨🇺 Cuba", currencies: ["CUP", "USD"], telegram: "https://t.me/MostroP2P_cu" },
+  { key: 'global' as const, region: "🌎 Global", currencies: ["Any"], telegram: "https://t.me/MostroP2P" },
+];
+---
+
+<section class="section" id="communities">
+  <div class="container">
+    <h2 class="section-title">{i.communities.title}</h2>
+    <p class="section-subtitle">{i.communities.subtitle}</p>
+
+    <div class="communities-grid">
+      {communities.map((c) => (
+        <div class="community-card glass">
+          <div class="card-header">
+            <span class="card-region">{c.region}</span>
+            <span class="card-members">{i.communities.growing}</span>
+          </div>
+          <h3 class="card-name">{i.communityList[c.key].name}</h3>
+          <p class="card-desc">{i.communityList[c.key].desc}</p>
+          <div class="card-currencies">
+            {c.currencies.map((cur) => (
+              <span class="currency-tag">{cur}</span>
+            ))}
+          </div>
+          <div class="card-actions">
+            <a href={c.telegram} target="_blank" class="btn btn-primary btn-sm">{i.communities.join}</a>
+          </div>
+        </div>
+      ))}
+    </div>
+
+    <div class="add-community">
+      <p>{i.communities.startTitle}</p>
+      <a href={locale === 'en' ? '/call-for-action' : '/es/call-for-action'} class="btn btn-outline">{i.communities.startCta}</a>
+    </div>
+  </div>
+</section>
+
+<style>
+  .communities-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 24px;
+    margin-top: 48px;
+  }
+
+  .community-card { padding: 28px; display: flex; flex-direction: column; gap: 12px; }
+  .card-header { display: flex; justify-content: space-between; align-items: center; }
+  .card-region { font-size: 0.9rem; color: var(--text-muted); }
+
+  .card-members {
+    font-size: 0.8rem;
+    color: var(--accent);
+    background: rgba(140, 198, 63, 0.1);
+    padding: 4px 10px;
+    border-radius: 99px;
+  }
+
+  .card-name { font-size: 1.3rem; font-weight: 700; }
+  .card-desc { color: var(--text-secondary); font-size: 0.95rem; flex: 1; }
+
+  .card-currencies { display: flex; gap: 8px; flex-wrap: wrap; }
+
+  .currency-tag {
+    background: rgba(140, 198, 63, 0.08);
+    border: 1px solid var(--border);
+    padding: 4px 12px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    color: var(--accent);
+    font-weight: 500;
+  }
+
+  .card-actions { margin-top: 8px; }
+  .btn-sm { padding: 8px 18px; font-size: 0.85rem; }
+
+  .add-community {
+    text-align: center;
+    margin-top: 48px;
+    padding: 32px;
+    border-top: 1px solid var(--border);
+  }
+
+  .add-community p { color: var(--text-secondary); margin-bottom: 16px; font-size: 1.1rem; }
+</style>

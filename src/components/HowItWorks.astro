@@ -1,0 +1,95 @@
+---
+import { type Locale, t } from '../i18n/translations';
+
+interface Props { locale: Locale; }
+const { locale } = Astro.props;
+const i = t(locale);
+
+const steps = [
+  { icon: "📱", title: i.howItWorks.step1, desc: i.howItWorks.step1Desc },
+  { icon: "🧌", title: i.howItWorks.step2, desc: i.howItWorks.step2Desc },
+  { icon: "📋", title: i.howItWorks.step3, desc: i.howItWorks.step3Desc },
+  { icon: "⚡", title: i.howItWorks.step4, desc: i.howItWorks.step4Desc },
+];
+
+const features = [
+  { icon: "🔒", title: i.howItWorks.feature1, desc: i.howItWorks.feature1Desc },
+  { icon: "🕵️", title: i.howItWorks.feature2, desc: i.howItWorks.feature2Desc },
+  { icon: "⚖️", title: i.howItWorks.feature3, desc: i.howItWorks.feature3Desc },
+];
+---
+
+<section class="section how-section" id="how-it-works">
+  <div class="container">
+    <h2 class="section-title">{i.howItWorks.title}</h2>
+    <p class="section-subtitle">{i.howItWorks.subtitle}</p>
+
+    <div class="steps">
+      {steps.map((step, idx) => (
+        <div class="step glass">
+          <div class="step-number">{idx + 1}</div>
+          <div class="step-icon">{step.icon}</div>
+          <h3 class="step-title">{step.title}</h3>
+          <p class="step-desc">{step.desc}</p>
+        </div>
+      ))}
+    </div>
+
+    <div class="features-row">
+      {features.map((f) => (
+        <div class="feature">
+          <span class="feature-icon">{f.icon}</span>
+          <div>
+            <strong>{f.title}</strong>
+            <p>{f.desc}</p>
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  .how-section { background: rgba(37, 42, 56, 0.3); }
+
+  .steps {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 24px;
+    margin: 48px 0;
+  }
+
+  .step { padding: 28px; text-align: center; position: relative; }
+
+  .step-number {
+    position: absolute;
+    top: 12px;
+    left: 16px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--accent);
+    background: rgba(140, 198, 63, 0.1);
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .step-icon { font-size: 2.5rem; margin-bottom: 12px; }
+  .step-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 8px; }
+  .step-desc { color: var(--text-secondary); font-size: 0.9rem; }
+
+  .features-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 32px;
+    margin-top: 48px;
+  }
+
+  .feature { display: flex; gap: 16px; align-items: flex-start; }
+  .feature-icon { font-size: 1.8rem; flex-shrink: 0; }
+  .feature strong { display: block; margin-bottom: 4px; color: var(--text-primary); }
+  .feature p { color: var(--text-secondary); font-size: 0.9rem; margin: 0; }
+</style>

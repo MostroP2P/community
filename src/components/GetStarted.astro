@@ -1,0 +1,58 @@
+---
+import { type Locale, t } from '../i18n/translations';
+
+interface Props { locale: Locale; }
+const { locale } = Astro.props;
+const i = t(locale);
+---
+<section class="section" id="start">
+  <div class="container start-content">
+    <h2 class="section-title">{i.getStarted.title}</h2>
+    <p class="section-subtitle">{i.getStarted.subtitle}</p>
+
+    <div class="start-grid">
+      <a href="https://github.com/MostroP2P/mobile/releases" target="_blank" class="start-card glass">
+        <span class="start-icon">📱</span>
+        <h3>{i.getStarted.mobile}</h3>
+        <p>{i.getStarted.mobileDesc}</p>
+      </a>
+      <a href={locale === 'en' ? 'https://mostro.network/docs-english/' : 'https://mostro.network/docs-spanish/'} target="_blank" class="start-card glass">
+        <span class="start-icon">📖</span>
+        <h3>{i.getStarted.docs}</h3>
+        <p>{i.getStarted.docsDesc}</p>
+      </a>
+      <a href="https://github.com/MostroP2P" target="_blank" class="start-card glass">
+        <span class="start-icon">💻</span>
+        <h3>{i.getStarted.openSource}</h3>
+        <p>{i.getStarted.openSourceDesc}</p>
+      </a>
+    </div>
+  </div>
+</section>
+
+<style>
+  .start-content { text-align: center; }
+
+  .start-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 24px;
+    margin-top: 48px;
+  }
+
+  .start-card {
+    padding: 32px;
+    text-align: center;
+    color: var(--text-primary);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    transition: transform 0.3s;
+  }
+
+  .start-card:hover { color: var(--text-primary); transform: translateY(-4px); }
+  .start-icon { font-size: 2.5rem; }
+  .start-card h3 { font-size: 1.2rem; font-weight: 700; }
+  .start-card p { color: var(--text-secondary); font-size: 0.9rem; }
+</style>

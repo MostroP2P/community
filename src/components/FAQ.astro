@@ -1,0 +1,92 @@
+---
+import { type Locale, t } from '../i18n/translations';
+
+interface Props { locale: Locale; }
+const { locale } = Astro.props;
+const i = t(locale);
+---
+
+<section class="section faq-section" id="faq">
+  <div class="container">
+    <h2 class="section-title">{i.faq.title}</h2>
+    <p class="section-subtitle">{i.faq.subtitle}</p>
+
+    <div class="faq-list">
+      {i.faq.items.map((item, idx) => (
+        <details class="faq-item glass">
+          <summary class="faq-question">
+            <span>{item.q}</span>
+            <span class="faq-icon">+</span>
+          </summary>
+          <div class="faq-answer">
+            <p>{item.a}</p>
+          </div>
+        </details>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  .faq-section {
+    background: rgba(37, 42, 56, 0.2);
+  }
+
+  .faq-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 48px;
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .faq-item {
+    padding: 0;
+    overflow: hidden;
+    cursor: pointer;
+  }
+
+  .faq-question {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px;
+    font-weight: 600;
+    font-size: 1.05rem;
+    color: var(--text-primary);
+    list-style: none;
+    cursor: pointer;
+    transition: color 0.2s;
+    gap: 16px;
+  }
+
+  .faq-question::-webkit-details-marker { display: none; }
+
+  .faq-question:hover { color: var(--accent); }
+
+  .faq-icon {
+    font-size: 1.4rem;
+    color: var(--accent);
+    flex-shrink: 0;
+    transition: transform 0.3s;
+    font-weight: 300;
+  }
+
+  details[open] .faq-icon {
+    transform: rotate(45deg);
+  }
+
+  .faq-answer {
+    padding: 0 24px 20px;
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    line-height: 1.7;
+  }
+
+  details[open] .faq-question {
+    color: var(--accent);
+    border-bottom: 1px solid var(--border);
+  }
+</style>

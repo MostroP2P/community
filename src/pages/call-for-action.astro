@@ -1,0 +1,303 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import '../styles/guide.css';
+
+const locale = 'en' as const;
+---
+
+<Layout title="Trusted Nodes Program — Mostro Community" description="Run your community's own Bitcoin exchange. Join the Mostro Trusted Nodes Program." locale={locale}>
+  <Header locale={locale} />
+
+  <div class="container guide-layout">
+    <nav class="toc">
+      <div class="toc-title">On this page</div>
+      <ul class="toc-list">
+        <li><a href="#your-exchange">1. Your Community, Your Exchange</a></li>
+        <li><a href="#what-is-node">2. What is a Mostro Node?</a></li>
+        <li><a href="#benefits">3. Benefits</a></li>
+        <li><a href="#who-should-apply">4. Who Should Apply?</a></li>
+        <li><a href="#what-you-need">5. What You Need</a></li>
+        <li><a href="#trusted-program">6. Trusted Nodes Program</a></li>
+        <li><a href="#success-stories">7. What Success Looks Like</a></li>
+        <li><a href="#how-to-apply">8. How to Apply</a></li>
+        <li><a href="#cta-faq">9. FAQ</a></li>
+      </ul>
+    </nav>
+
+    <div class="toc-mobile">
+      <button class="toc-toggle" id="toc-toggle">📑 Table of Contents</button>
+      <div class="toc-mobile-list" id="toc-mobile-list">
+        <ul class="toc-list">
+          <li><a href="#your-exchange">1. Your Exchange</a></li>
+          <li><a href="#benefits">3. Benefits</a></li>
+          <li><a href="#trusted-program">6. The Program</a></li>
+          <li><a href="#how-to-apply">8. How to Apply</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <article class="guide-content">
+      <h1>Run Your Community's Own Bitcoin Exchange</h1>
+      <p class="guide-version">The Mostro Trusted Nodes Program · February 2026</p>
+
+      <div class="callout tip">
+        <div class="callout-title">⚡ TL;DR</div>
+        <p>Mostro lets Bitcoin communities run their own P2P exchange — no KYC, no middlemen, no single point of failure. You earn fees on every trade, resolve disputes in your language, and give your community real financial sovereignty. Infrastructure costs start at ~$20/month. We're looking for established Bitcoin communities to join the first wave of trusted nodes. Applications open now.</p>
+      </div>
+
+      <h2 id="your-exchange">1. Your Community, Your Exchange</h2>
+
+      <p>Let's talk about a problem every Bitcoiner knows.</p>
+
+      <p>Centralized exchanges ask for your ID. They freeze accounts. They report to governments. They get hacked, go bankrupt, or simply decide they don't want to serve your country anymore. Remember when exchanges pulled out of entire regions overnight? When they froze withdrawals during bank runs? When users in Venezuela, Nigeria, and dozens of other countries found themselves locked out of the very tools that were supposed to give them financial freedom?</p>
+
+      <p>The promise of Bitcoin was sovereignty. Centralized exchanges broke that promise.</p>
+
+      <p>Peer-to-peer trading fixes this — but until now, running a P2P exchange meant relying on platforms like Telegram or centralized websites. Better, sure. But still a single point of failure. Still someone else's platform. Still someone else's rules.</p>
+
+      <p><strong>Mostro changes everything.</strong></p>
+
+      <p>Mostro is a peer-to-peer Bitcoin exchange built on two technologies that can't be shut down:</p>
+      <ul>
+        <li><strong>Lightning Network</strong> — fast, cheap Bitcoin payments</li>
+        <li><strong>Nostr</strong> — a communication protocol with no central server, no company, no kill switch</li>
+      </ul>
+
+      <p>Together, they create something that's never existed before: a P2P exchange that no government, no company, and no individual can take offline. Instead of one big exchange controlled by one team, Mostro is a <strong>network of independent community-operated nodes</strong>. Each community runs its own exchange, sets its own rules, supports its own currencies, and resolves its own disputes.</p>
+
+      <p><strong>Your community. Your exchange. Your rules.</strong></p>
+
+      <p>And the timing couldn't be better. Mostro isn't a whitepaper or a concept. It's working software. There's a mobile app. The protocol has been battle-tested through its predecessor <a href="https://lnp2pbot.com" target="_blank">@lnp2pBot</a>, which has processed thousands of real trades since 2021 — especially in Latin America, Cuba, and Venezuela, where people use it daily to escape broken financial systems.</p>
+
+      <h2 id="what-is-node">2. What is a Mostro Node?</h2>
+
+      <p>Think of a Mostro node as your community's own Bitcoin marketplace — like a local exchange, but one that runs on the internet, operates 24/7, and can't be censored or shut down.</p>
+
+      <p>Here's how a trade works, in 30 seconds:</p>
+      <ol>
+        <li><strong>Alice wants to sell</strong> Bitcoin → She posts an offer: "Selling 100,000 sats for $50 via bank transfer"</li>
+        <li><strong>Bob wants to buy</strong> → He sees Alice's offer and takes it</li>
+        <li><strong>Mostro creates a temporary "lock box"</strong> → Alice deposits her Bitcoin there</li>
+        <li><strong>Bob sends $50</strong> to Alice via bank transfer → (Zelle, cash, mobile money — whatever your community uses)</li>
+        <li><strong>Alice confirms</strong> she got the money → Mostro releases the Bitcoin to Bob</li>
+      </ol>
+
+      <p>✔ Done. No KYC. No middleman. No centralized exchange.</p>
+
+      <p>If something goes wrong, either party can open a dispute. And here's what makes Mostro special: <strong>your community resolves it</strong>. Not some support team in another country who doesn't speak your language. Your people. Your judgment. Your language.</p>
+
+      <div class="callout security">
+        <div class="callout-title">🔒 Battle-Tested Since 2021</div>
+        <p>The escrow mechanism at the heart of Mostro — using Lightning hold invoices — has been running in production since 2021 through @lnp2pBot on Telegram. Thousands of trades. Real money. Real people relying on it every day.</p>
+      </div>
+
+      <h2 id="benefits">3. Benefits for Your Community</h2>
+
+      <h3>💰 Revenue</h3>
+      <p>Your node earns a fee on every trade. The default is 0.6% (split between buyer and seller).</p>
+
+      <table class="guide-table">
+        <thead><tr><th>Monthly Volume</th><th>Fee Revenue</th><th>Dev Contribution (30%)</th><th>Your Net Revenue</th></tr></thead>
+        <tbody>
+          <tr><td>$1,000</td><td>$6</td><td>$1.80</td><td>$4.20</td></tr>
+          <tr><td>$5,000</td><td>$30</td><td>$9</td><td>$21</td></tr>
+          <tr><td>$10,000</td><td>$60</td><td>$18</td><td>$42</td></tr>
+          <tr><td>$50,000</td><td>$300</td><td>$90</td><td>$210</td></tr>
+          <tr><td>$100,000</td><td>$600</td><td>$180</td><td>$420</td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout warning">
+        <div class="callout-title">⚠️ A Reality Check</div>
+        <p>Most new nodes take time to build volume. Don't expect to get rich on day one. The real value is the service you provide to your community — the revenue is a bonus that grows with adoption.</p>
+      </div>
+
+      <h3>🔐 Financial Sovereignty</h3>
+      <p>No KYC. No identity verification. No personal data collected. Your community members can buy and sell Bitcoin the way it was meant to be — privately and freely. This isn't a feature. It's the whole point.</p>
+
+      <h3>🌍 Local Control</h3>
+      <p>When a dispute happens, your community handles it. People who understand your language, your culture, your local payment methods.</p>
+
+      <h3>🏗️ Independence</h3>
+      <p>There's no company behind Mostro that can be pressured, shut down, or acquired. Your node is yours. Even if every other Mostro node goes offline, yours keeps running.</p>
+
+      <h3>⚙️ Customization</h3>
+      <ul>
+        <li><strong>Your currencies:</strong> USD, EUR, ARS, Naira, Bolívares — whatever your community uses</li>
+        <li><strong>Your payment methods:</strong> bank transfers, mobile money, cash, Zelle, Mercado Pago</li>
+        <li><strong>Your fees:</strong> 0.6%, 1%, or even 0% while growing</li>
+        <li><strong>Your limits:</strong> set trade sizes based on your liquidity</li>
+        <li><strong>Your rules:</strong> you're the operator, you make the calls</li>
+      </ul>
+
+      <h3>🚀 Early Mover Advantage</h3>
+      <p>Communities that join now will be listed as <strong>trusted nodes in the mobile app</strong> — the default nodes that new users see first. As the network grows, early operators will have established reputations and loyal user bases. This is the ground floor.</p>
+
+      <h2 id="who-should-apply">4. Who Should Apply?</h2>
+
+      <p>We're looking for established communities with real people who care about Bitcoin and financial freedom:</p>
+      <ul>
+        <li><strong>An established community</strong> — You don't need thousands of members. A community of 50 engaged members is worth more than 5,000 passive followers.</li>
+        <li><strong>Responsible operators</strong> — Someone willing to maintain the node and handle disputes fairly.</li>
+        <li><strong>Commitment to dispute resolution</strong> — The most important operational responsibility.</li>
+        <li><strong>Long-term thinking</strong> — This isn't a get-rich-quick scheme. It's infrastructure.</li>
+      </ul>
+
+      <h2 id="what-you-need">5. What You Need</h2>
+
+      <h3>👥 People</h3>
+      <ul>
+        <li>A community with active members interested in P2P Bitcoin trading</li>
+        <li>An operator — someone comfortable following technical instructions</li>
+        <li>2-3 arbiters — trusted community members who can resolve disputes fairly</li>
+      </ul>
+
+      <h3>💵 Money</h3>
+      <ul>
+        <li><strong>Infrastructure:</strong> ~$20-30/month for a VPS. Some providers accept Bitcoin.</li>
+        <li><strong>Lightning liquidity:</strong> Start with 0.01-0.05 BTC. This isn't a cost — it's capital that remains yours.</li>
+        <li><strong>Time:</strong> 4-8 hours initial setup. 1-3 hours/week ongoing.</li>
+      </ul>
+
+      <table class="guide-table">
+        <thead><tr><th>What</th><th>Why</th><th>Difficulty</th></tr></thead>
+        <tbody>
+          <tr><td>A VPS</td><td>Runs your node 24/7</td><td>Easy · ~$20/month</td></tr>
+          <tr><td>An LND Lightning node</td><td>Handles Bitcoin payments</td><td>Hard but we help</td></tr>
+          <tr><td>Lightning liquidity</td><td>Working capital for trades</td><td>Medium · start small</td></tr>
+          <tr><td>A Nostr key pair</td><td>Your node's identity</td><td>Easy · 30 seconds</td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout tip">
+        <div class="callout-title">💡 The Honest Truth</div>
+        <p>Setting up the Lightning node is the most complex part. If your community has someone technical, they can handle it. If not, we'll help you through it. Check out our <a href="/guide">step-by-step Node Setup Guide</a>.</p>
+      </div>
+
+      <h2 id="trusted-program">6. The Trusted Nodes Program</h2>
+
+      <p>Trusted nodes are vetted by the Mostro team and listed by default in the Mostro mobile app. When a new user opens the app, they see the trusted nodes first. This is a significant advantage.</p>
+
+      <h3>The Application Process</h3>
+      <ol>
+        <li><strong>📋 Fill Out the Application</strong> — Tell us about your community, your team, and your goals.</li>
+        <li><strong>📞 Introductory Call</strong> — A 30-minute video call with the Mostro team. No pressure, just a conversation.</li>
+        <li><strong>✅ Approval</strong> — We review your application and decide together if the fit is right.</li>
+        <li><strong>🛠️ Assisted Setup</strong> — We help you get your node running. Not "here's the docs, good luck." We'll be on a call with you.</li>
+        <li><strong>🧪 Testing Period (2-4 weeks)</strong> — Your node runs with real trades. We verify uptime, dispute handling, and reliability.</li>
+        <li><strong>🚀 Listed as Trusted Node</strong> — You're live in the mobile app. Trades start flowing.</li>
+      </ol>
+
+      <h3>What we provide</h3>
+      <ul>
+        <li>Technical support during setup — real people helping you</li>
+        <li>Comprehensive documentation — step-by-step guides</li>
+        <li>A community of operators — connect with other node operators</li>
+        <li>Ongoing support — we don't disappear after setup</li>
+      </ul>
+
+      <h3>What we expect</h3>
+      <ul>
+        <li><strong>Uptime commitment</strong> — Your node should run 24/7</li>
+        <li><strong>Responsive dispute resolution</strong> — Within 24 hours</li>
+        <li><strong>Community engagement</strong> — Actively promote your node</li>
+        <li><strong>Fair play</strong> — Resolve disputes impartially</li>
+      </ul>
+
+      <h2 id="success-stories">7. What Success Looks Like</h2>
+
+      <p><em>These are hypothetical scenarios based on real patterns from @lnp2pBot.</em></p>
+
+      <h3>🇻🇪 "Bolívar Libre" — Caracas, Venezuela</h3>
+      <p>María runs a Bitcoin community of 200 members. When the government tightened capital controls, her community had no way to convert bolívares to Bitcoin. She set up a Mostro node supporting VES and USD. Within three months: $15,000/month in trades, ~$63/month net revenue. Her arbiters handle disputes in Spanish, understanding that bank transfers in Venezuela can take 24 hours — that's not a scam, it's how the system works.</p>
+
+      <h3>🇪🇺 "Bitcoin Munich" — Munich, Germany</h3>
+      <p>Thomas runs a monthly meetup with 80 attendees. Volume is modest — $5,000/month — but the meetup grew 40% in six months because new members join specifically for KYC-free trading. Three disputes in four months. SEPA transfers are fast and reliable.</p>
+
+      <h3>🇳🇬 "Satoshi Lagos" — Lagos, Nigeria</h3>
+      <p>After the CBN restricted bank transfers to crypto exchanges, Adebayo's 150 traders needed an alternative. Started at $2,000/month, grew to $30,000/month by month four. His arbiters understand the nuances of mobile money — transfers can appear "pending" for hours.</p>
+
+      <h3>🌱 "Bitcoin Beach 2.0" — Costa Rica</h3>
+      <p>A circular economy initiative where local businesses accept Bitcoin. The Mostro node provides the on-ramp: community members buy Bitcoin with colones. $3,000/month — small, but it's the glue that holds the circular economy together.</p>
+
+      <h2 id="how-to-apply">8. How to Apply</h2>
+
+      <p>Send us an application including:</p>
+      <ul>
+        <li><strong>Community name</strong> and a brief description</li>
+        <li><strong>Community size</strong> — how many active members?</li>
+        <li><strong>Location</strong> — where are your members based?</li>
+        <li><strong>Currencies</strong> — which fiat currencies do you want to support?</li>
+        <li><strong>Payment methods</strong> — bank transfers, mobile money, cash, etc.</li>
+        <li><strong>Your team</strong> — who will operate the node and handle disputes?</li>
+        <li><strong>Your "why"</strong> — why do you want to run a Mostro node?</li>
+      </ul>
+
+      <div class="apply-box glass" style="text-align:center; padding:40px; margin:32px 0;">
+        <h3 style="margin-top:0;">Ready to get started?</h3>
+        <p style="color:var(--text-secondary);">Join our Telegram group and tell us about your community.</p>
+        <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap; margin-top:20px;">
+          <a href="https://t.me/MostroP2P" target="_blank" class="btn btn-primary">Apply on Telegram →</a>
+          <a href="/guide" class="btn btn-outline">Read the Setup Guide</a>
+        </div>
+      </div>
+
+      <table class="guide-table">
+        <thead><tr><th>Timeline</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td>Applications</td><td><strong style="color:var(--accent);">Open Now</strong></td></tr>
+          <tr><td>First Wave</td><td>Q2 2026</td></tr>
+          <tr><td>Ongoing</td><td>Rolling Basis</td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout tip">
+        <div class="callout-title">💚 Don't Wait</div>
+        <p>You don't need to have everything figured out. If you're interested but unsure about the technical side, reach out anyway. We'd rather help you get started than have you not apply because you thought you weren't ready.</p>
+      </div>
+
+      <h2 id="cta-faq">9. Frequently Asked Questions</h2>
+
+      <h3>Is this legal?</h3>
+      <p>Mostro is open-source software. The legality depends on your jurisdiction. In most countries, person-to-person Bitcoin trading is legal, but some jurisdictions may require licenses. We strongly recommend consulting local regulations. The Mostro project does not provide legal advice.</p>
+
+      <h3>How much does it cost to run?</h3>
+      <p>$20-30/month for a VPS. Lightning liquidity of 0.01-0.05 BTC (working capital that stays yours). 1-3 hours/week of your time.</p>
+
+      <h3>Do I need to be technical?</h3>
+      <p>Someone on your team needs to follow technical instructions — comfortable working in a terminal. We have step-by-step guides and provide hands-on help. Think IKEA furniture, not carpentry.</p>
+
+      <h3>How much can I earn?</h3>
+      <p>$10,000/month in trades ≈ $42/month net. $50,000/month ≈ $210. Don't start primarily for the money — start because your community needs it. The revenue follows adoption.</p>
+
+      <h3>What about the risks?</h3>
+      <p>Let's be honest:</p>
+      <ul>
+        <li>Mostro is early-stage software. While the core escrow is battle-tested since 2021, bugs are possible.</li>
+        <li>Lightning Network risks exist — force-closing channels during high fees can be expensive.</li>
+        <li>Capital is locked in channels while deployed.</li>
+        <li>Volume takes time — most nodes take months to build meaningful trades.</li>
+      </ul>
+      <p>We believe in being transparent. This is real infrastructure, not a passive income scheme.</p>
+
+      <h3>Can my node be shut down?</h3>
+      <p>Your node runs on a server you control, over Nostr (no central server). To shut it down, someone would need to target your specific server. You can mitigate this with Tor or a VPN. Even if your node goes down, the rest of the network keeps running.</p>
+
+      <div style="text-align:center; margin-top:56px; padding:32px; border-top:1px solid var(--border);">
+        <h3 style="font-size:1.5rem;">The Bigger Picture</h3>
+        <p style="color:var(--text-secondary); max-width:600px; margin:16px auto;">Every Mostro node that goes live makes the network stronger. Every community that runs its own exchange is one less community dependent on centralized platforms. This isn't just about trading Bitcoin. It's about building infrastructure for financial freedom.</p>
+        <p style="font-size:1.1rem; color:var(--accent); font-weight:600; margin-top:24px;">Your community deserves its own exchange. We'll help you build it.</p>
+      </div>
+    </article>
+  </div>
+
+  <Footer locale={locale} />
+</Layout>
+
+<script>
+  document.getElementById('toc-toggle')?.addEventListener('click', () => {
+    document.getElementById('toc-mobile-list')?.classList.toggle('open');
+  });
+</script>

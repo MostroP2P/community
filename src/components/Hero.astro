@@ -1,0 +1,125 @@
+---
+import HeroAnimation from './HeroAnimation.astro';
+import { type Locale, t } from '../i18n/translations';
+
+interface Props { locale: Locale; }
+const { locale } = Astro.props;
+const i = t(locale);
+---
+<section class="hero">
+  <div class="container hero-content">
+    <HeroAnimation />
+    <div class="hero-badge">{i.hero.badge}</div>
+    <h1 class="hero-title">
+      {i.hero.title} <span class="highlight">{i.hero.titleHighlight}</span> {i.hero.titleEnd}
+    </h1>
+    <p class="hero-desc">{i.hero.desc}</p>
+    <div class="hero-actions">
+      <a href={locale === 'en' ? '/call-for-action' : '/es/call-for-action'} class="btn btn-primary">{i.hero.cta}</a>
+      <a href="#how-it-works" class="btn btn-outline">{i.hero.ctaSecondary}</a>
+    </div>
+    <div class="hero-stats">
+      <div class="stat">
+        <span class="stat-value">{i.hero.stat1}</span>
+        <span class="stat-label">{i.hero.stat1Label}</span>
+      </div>
+      <div class="stat">
+        <span class="stat-value">{i.hero.stat2}</span>
+        <span class="stat-label">{i.hero.stat2Label}</span>
+      </div>
+      <div class="stat">
+        <span class="stat-value">{i.hero.stat3}</span>
+        <span class="stat-label">{i.hero.stat3Label}</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .hero {
+    padding: 140px 0 80px;
+    text-align: center;
+    position: relative;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+    opacity: 0.15;
+    pointer-events: none;
+  }
+
+  .hero-badge {
+    display: inline-block;
+    padding: 6px 16px;
+    border-radius: 99px;
+    background: rgba(140, 198, 63, 0.1);
+    border: 1px solid var(--border);
+    color: var(--accent);
+    font-size: 0.9rem;
+    font-weight: 500;
+    margin-bottom: 24px;
+  }
+
+  .hero-title {
+    font-size: 3.5rem;
+    font-weight: 800;
+    line-height: 1.1;
+    margin-bottom: 20px;
+    color: var(--text-primary);
+  }
+
+  .highlight {
+    background: linear-gradient(90deg, #8CC63F, #b8e86c, #5fa82a, #d4f59a, #739C3D, #8CC63F);
+    background-size: 300% 100%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: gradient-shift 6s ease-in-out infinite;
+  }
+
+  @keyframes gradient-shift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+
+  .hero-desc {
+    font-size: 1.2rem;
+    color: var(--text-secondary);
+    max-width: 620px;
+    margin: 0 auto 36px;
+    line-height: 1.7;
+  }
+
+  .hero-actions {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 60px;
+  }
+
+  .hero-stats {
+    display: flex;
+    justify-content: center;
+    gap: 48px;
+    flex-wrap: wrap;
+  }
+
+  .stat { display: flex; flex-direction: column; gap: 4px; }
+  .stat-value { font-size: 1.1rem; font-weight: 700; color: var(--accent); }
+  .stat-label { font-size: 0.85rem; color: var(--text-muted); }
+
+  @media (max-width: 768px) {
+    .hero { padding: 120px 0 48px; }
+    .hero-title { font-size: 2.2rem; }
+    .hero-stats { gap: 24px; }
+  }
+</style>

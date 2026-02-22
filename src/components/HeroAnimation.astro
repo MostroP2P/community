@@ -1,0 +1,213 @@
+---
+---
+<div class="hero-animation">
+  <canvas id="starfield-canvas"></canvas>
+  <div class="logo-container">
+    <div class="logo-glow"></div>
+    <div class="logo-ring"></div>
+    <div class="logo-ring ring-2"></div>
+    <img src="/images/mostro-logo.png" alt="Mostro" class="hero-logo" />
+    <div class="lightning lightning-left">⚡</div>
+    <div class="lightning lightning-right">⚡</div>
+  </div>
+</div>
+
+<style>
+  .hero-animation {
+    position: relative;
+    width: 100%;
+    height: 400px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 40px;
+  }
+
+  #starfield-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+  }
+
+  .logo-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+  }
+
+  .hero-logo {
+    width: 180px;
+    height: auto;
+    position: relative;
+    z-index: 3;
+    animation: float 4s ease-in-out infinite;
+    filter: drop-shadow(0 0 30px rgba(140, 198, 63, 0.5));
+    cursor: pointer;
+    transition: filter 0.3s, transform 0.2s;
+  }
+
+  .hero-logo:hover {
+    filter: drop-shadow(0 0 50px rgba(140, 198, 63, 0.8)) brightness(1.15);
+    animation: float 4s ease-in-out infinite, wink 0.4s ease-in-out;
+  }
+
+  @keyframes wink {
+    0% { transform: scaleY(1); }
+    30% { transform: scaleY(0.85) scaleX(1.05); }
+    50% { transform: scaleY(0.7) scaleX(1.08); }
+    70% { transform: scaleY(0.85) scaleX(1.05); }
+    100% { transform: scaleY(1); }
+  }
+
+  .logo-glow {
+    position: absolute;
+    width: 220px;
+    height: 220px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(140, 198, 63, 0.25) 0%, transparent 70%);
+    animation: pulse-glow 3s ease-in-out infinite;
+    z-index: 1;
+  }
+
+  .logo-ring {
+    position: absolute;
+    width: 240px;
+    height: 240px;
+    border-radius: 50%;
+    border: 1px solid rgba(140, 198, 63, 0.2);
+    animation: ring-expand 4s ease-out infinite;
+    z-index: 1;
+  }
+
+  .ring-2 {
+    animation-delay: 2s;
+  }
+
+  .lightning {
+    position: absolute;
+    font-size: 2rem;
+    z-index: 4;
+    animation: lightning-flash 3s ease-in-out infinite;
+    filter: drop-shadow(0 0 8px rgba(140, 198, 63, 0.6));
+  }
+
+  .lightning-left {
+    left: -60px;
+    top: 20%;
+    animation-delay: 0.5s;
+  }
+
+  .lightning-right {
+    right: -60px;
+    bottom: 20%;
+    animation-delay: 1.5s;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-12px); }
+  }
+
+  @keyframes pulse-glow {
+    0%, 100% { transform: scale(1); opacity: 0.6; }
+    50% { transform: scale(1.15); opacity: 1; }
+  }
+
+  @keyframes ring-expand {
+    0% { transform: scale(0.8); opacity: 0.6; }
+    100% { transform: scale(1.8); opacity: 0; }
+  }
+
+  @keyframes lightning-flash {
+    0%, 100% { opacity: 0.2; transform: scale(0.9); }
+    50% { opacity: 1; transform: scale(1.1); }
+  }
+
+  @media (max-width: 768px) {
+    .hero-animation { height: 280px; }
+    .hero-logo { width: 120px; height: 120px; }
+    .logo-glow { width: 170px; height: 170px; }
+    .logo-ring { width: 190px; height: 190px; }
+    .lightning { font-size: 1.5rem; }
+    .lightning-left { left: -40px; }
+    .lightning-right { right: -40px; }
+  }
+</style>
+
+<script>
+  const canvas = document.getElementById('starfield-canvas') as HTMLCanvasElement;
+  const ctx = canvas.getContext('2d')!;
+
+  function resize() {
+    canvas.width = canvas.offsetWidth * window.devicePixelRatio;
+    canvas.height = canvas.offsetHeight * window.devicePixelRatio;
+    ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+  }
+
+  resize();
+  window.addEventListener('resize', resize);
+
+  interface Star {
+    x: number;
+    y: number;
+    size: number;
+    speed: number;
+    opacity: number;
+    flicker: number;
+    isGreen: boolean;
+  }
+
+  const stars: Star[] = [];
+  const STAR_COUNT = 120;
+
+  for (let i = 0; i < STAR_COUNT; i++) {
+    stars.push({
+      x: Math.random() * canvas.offsetWidth,
+      y: Math.random() * canvas.offsetHeight,
+      size: Math.random() * 2 + 0.5,
+      speed: Math.random() * 0.3 + 0.05,
+      opacity: Math.random() * 0.7 + 0.3,
+      flicker: Math.random() * Math.PI * 2,
+      isGreen: Math.random() < 0.15,
+    });
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight);
+
+    const w = canvas.offsetWidth;
+    const h = canvas.offsetHeight;
+
+    for (const star of stars) {
+      star.flicker += 0.02;
+      star.y -= star.speed;
+
+      if (star.y < -5) {
+        star.y = h + 5;
+        star.x = Math.random() * w;
+      }
+
+      const flick = Math.sin(star.flicker) * 0.3 + 0.7;
+      const alpha = star.opacity * flick;
+
+      if (star.isGreen) {
+        ctx.fillStyle = `rgba(140, 198, 63, ${alpha})`;
+      } else {
+        ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
+      }
+
+      ctx.beginPath();
+      ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    requestAnimationFrame(draw);
+  }
+
+  draw();
+</script>
