@@ -6,11 +6,7 @@ const { locale } = Astro.props;
 const i = t(locale);
 
 const communities = [
-  { key: 'argentina' as const, region: "🇦🇷 Argentina", currencies: ["ARS"], telegram: "https://t.me/MostroP2P_ar" },
-  { key: 'venezuela' as const, region: "🇻🇪 Venezuela", currencies: ["VES", "USD"], telegram: "https://t.me/MostroP2P_ve" },
-  { key: 'brasil' as const, region: "🇧🇷 Brasil", currencies: ["BRL"], telegram: "https://t.me/MostroP2P_br" },
-  { key: 'cuba' as const, region: "🇨🇺 Cuba", currencies: ["CUP", "USD"], telegram: "https://t.me/MostroP2P_cu" },
-  { key: 'global' as const, region: "🌎 Global", currencies: ["Any"], telegram: "https://t.me/MostroP2P" },
+  { key: 'cuba' as const, region: "🇨🇺 Cuba", currencies: ["CUP", "MLC", "Any currency"], telegram: "https://t.me/Cuba_Bitcoin/72997", website: "https://cubabitcoin.org/kmbalache/" },
 ];
 ---
 
@@ -35,6 +31,7 @@ const communities = [
           </div>
           <div class="card-actions">
             <a href={c.telegram} target="_blank" class="btn btn-primary btn-sm">{i.communities.join}</a>
+            <a href={c.website} target="_blank" class="btn btn-primary btn-sm">Web Site</a>
           </div>
         </div>
       ))}
@@ -82,7 +79,7 @@ const communities = [
     font-weight: 500;
   }
 
-  .card-actions { margin-top: 8px; }
+  .card-actions { margin-top: 8px; display: flex; gap: 10px; flex-wrap: wrap; }
   .btn-sm { padding: 8px 18px; font-size: 0.85rem; }
 
   .add-community {
