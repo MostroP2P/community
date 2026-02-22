@@ -747,13 +747,13 @@ cp /opt/mostro/mostro.db /root/mostro-backups/mostro.db.$(date +%Y%m%d)</code></
 sqlite3 /ruta/a/mostro.db "SELECT COUNT(*) FROM orders;"
 
 # Operaciones exitosas recientes
-sqlite3 /ruta/a/mostro.db "SELECT id, fiat_amount, fiat_code, amount, status, created_at FROM orders WHERE status = 'success' ORDER BY created_at DESC LIMIT 10;"
+sqlite3 /ruta/a/mostro.db "SELECT id, fiat_code, fiat_amount, amount, fee, status, created_at FROM orders WHERE status = 'success' ORDER BY created_at DESC LIMIT 10;"
 
 # Órdenes pendientes
-sqlite3 /ruta/a/mostro.db "SELECT id, fiat_amount, fiat_code, status FROM orders WHERE status = 'pending';"
+sqlite3 /ruta/a/mostro.db "SELECT id, fiat_code, fiat_amount, status, created_at FROM orders WHERE status = 'pending';"
 
-# Ingresos totales por comisiones
-sqlite3 /ruta/a/mostro.db "SELECT SUM(fee * 2) as total_fees_sats FROM orders WHERE status = 'success';"</code></pre>
+# Ingresos totales por comisiones (fee del nodo + dev_fee)
+sqlite3 /ruta/a/mostro.db "SELECT SUM(fee) as node_fees, SUM(dev_fee) as dev_fees, SUM(fee + dev_fee) as total_fees_sats FROM orders WHERE status = 'success';"</code></pre>
 
       <!-- ===== SECTION 6 ===== -->
       <h2 id="costs">6. Desglose de Costos</h2>
@@ -988,7 +988,7 @@ relays = [
 
       <div style="text-align:center; margin-top:48px; padding:24px; border-top:1px solid var(--border);">
         <p>Esta guía es mantenida por la comunidad Mostro. ¿Encontraste un error o quieres mejorarla?<br>
-        Las contribuciones son bienvenidas en <a href="https://github.com/MostroP2P/mostro" target="_blank" rel="noopener noreferrer">github.com/MostroP2P/mostro</a></p>
+        Las contribuciones son bienvenidas en <a href="https://github.com/MostroP2P/community" target="_blank" rel="noopener noreferrer">github.com/MostroP2P/community</a></p>
         <p style="color:var(--text-secondary); margin-top:12px;">Última actualización: Febrero 2026 · Mostro v0.16.3</p>
       </div>
     </article>
@@ -1028,15 +1028,15 @@ relays = [
   }
   .badge-easy {
     background: rgba(76, 175, 80, 0.15);
-    color: #4CAF50;
+    color: #2E7D32;
   }
   .badge-medium {
     background: rgba(255, 193, 7, 0.15);
-    color: #FFC107;
+    color: #7B5800;
   }
   .badge-hard {
     background: rgba(244, 67, 54, 0.15);
-    color: #F44336;
+    color: #B71C1C;
   }
 </style>
 
