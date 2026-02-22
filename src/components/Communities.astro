@@ -6,7 +6,7 @@ const { locale } = Astro.props;
 const i = t(locale);
 
 const communities = [
-  { key: 'cuba' as const, region: "🇨🇺 Cuba", currencies: ["CUP", "MLC", "Any currency"], telegram: "https://t.me/Cuba_Bitcoin/72997", website: "https://cubabitcoin.org/kmbalache/" },
+  { key: 'cuba' as const, region: "🇨🇺 Cuba", currencies: ["CUP", "MLC"], telegram: "https://t.me/Cuba_Bitcoin/72997", website: "https://cubabitcoin.org/kmbalache/" },
 ];
 ---
 
@@ -28,6 +28,7 @@ const communities = [
             {c.currencies.map((cur) => (
               <span class="currency-tag">{cur}</span>
             ))}
+            <span class="currency-tag">{i.communities.anyCurrency}</span>
           </div>
           <div class="card-actions">
             <a href={c.telegram} target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-sm">{i.communities.join}</a>
