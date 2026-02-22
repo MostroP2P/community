@@ -21,20 +21,20 @@ const otherLocales = getOtherLocales(locale);
       <a href={getLocalePath(locale, '/call-for-action')}>{i.nav.joinNav}</a>
       <a href="https://mostro.network" target="_blank" class="btn btn-outline btn-sm">{i.nav.protocol}</a>
       <div class="lang-dropdown">
-        <button class="lang-switch" id="lang-toggle">{i.langSwitch} {getLocaleLabel(locale).split(' ')[0]}</button>
-        <div class="lang-menu" id="lang-menu">
+        <button class="lang-switch" id="lang-toggle" aria-expanded="false" aria-haspopup="true" aria-controls="lang-menu">{i.langSwitch} {getLocaleLabel(locale).split(' ')[0]}</button>
+        <div class="lang-menu" id="lang-menu" role="menu">
           {otherLocales.map(l => (
-            <a href={getLocalePath(l)} class="lang-option">{getLocaleLabel(l)}</a>
+            <a href={getLocalePath(l)} class="lang-option" role="menuitem" data-locale={l}>{getLocaleLabel(l)}</a>
           ))}
         </div>
       </div>
     </nav>
     <div class="mobile-actions">
       <div class="lang-dropdown">
-        <button class="lang-switch" id="lang-toggle-mobile">{i.langSwitch} {getLocaleLabel(locale).split(' ')[0]}</button>
-        <div class="lang-menu" id="lang-menu-mobile">
+        <button class="lang-switch" id="lang-toggle-mobile" aria-expanded="false" aria-haspopup="true" aria-controls="lang-menu-mobile">{i.langSwitch} {getLocaleLabel(locale).split(' ')[0]}</button>
+        <div class="lang-menu" id="lang-menu-mobile" role="menu">
           {otherLocales.map(l => (
-            <a href={getLocalePath(l)} class="lang-option">{getLocaleLabel(l)}</a>
+            <a href={getLocalePath(l)} class="lang-option" role="menuitem" data-locale={l}>{getLocaleLabel(l)}</a>
           ))}
         </div>
       </div>
@@ -191,15 +191,44 @@ const otherLocales = getOtherLocales(locale);
 
     toggle.addEventListener('click', (e) => {
       e.stopPropagation();
-      menu.classList.toggle('open');
+      const isOpen = menu.classList.toggle('open');
+      toggle.setAttribute('aria-expanded', String(isOpen));
     });
   }
+
+  // Fix language links to preserve current page path
+  function fixLangLinks() {
+    const path = window.location.pathname;
+    // Extract current page (e.g. /guide, /call-for-action) from path
+    const segments = path.split('/').filter(Boolean);
+    // Remove locale prefix if present
+    const locales = ['es', 'it', 'pt'];
+    let pagePath = '/';
+    if (segments.length > 0 && locales.includes(segments[0])) {
+      pagePath = segments.length > 1 ? '/' + segments.slice(1).join('/') : '/';
+    } else {
+      pagePath = segments.length > 0 ? '/' + segments.join('/') : '/';
+    }
+
+    document.querySelectorAll('.lang-option').forEach((link) => {
+      const locale = (link as HTMLElement).dataset.locale;
+      if (!locale) return;
+      if (locale === 'en') {
+        (link as HTMLAnchorElement).href = pagePath;
+      } else {
+        (link as HTMLAnchorElement).href = `/${locale}${pagePath === '/' ? '' : pagePath}`;
+      }
+    });
+  }
+
+  fixLangLinks();
 
   setupLangDropdown('lang-toggle', 'lang-menu');
   setupLangDropdown('lang-toggle-mobile', 'lang-menu-mobile');
 
   document.addEventListener('click', () => {
     document.querySelectorAll('.lang-menu').forEach(m => m.classList.remove('open'));
+    document.querySelectorAll('.lang-switch').forEach(b => b.setAttribute('aria-expanded', 'false'));
   });
 
   document.getElementById('mobile-menu-btn')?.addEventListener('click', () => {
