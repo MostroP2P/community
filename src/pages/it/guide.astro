@@ -1,0 +1,557 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Header from '../../components/Header.astro';
+import Footer from '../../components/Footer.astro';
+import '../../styles/guide.css';
+
+const locale = 'it' as const;
+---
+
+<Layout title="Guida alla Configurazione del Nodo — Mostro Community" description="Guida completa per eseguire il tuo nodo Mostro P2P per lo scambio di Bitcoin." locale={locale}>
+  <Header locale={locale} />
+
+  <div class="container guide-layout">
+    <nav class="toc">
+      <div class="toc-title">In questa pagina</div>
+      <ul class="toc-list">
+        <li><a href="#what-is-mostro">1. Cos'è Mostro?</a></li>
+        <li class="toc-h3"><a href="#why-run">Perché un nodo?</a></li>
+        <li class="toc-h3"><a href="#how-it-works">Come funziona</a></li>
+        <li><a href="#prerequisites">2. Prerequisiti</a></li>
+        <li class="toc-h3"><a href="#vps">Server (VPS)</a></li>
+        <li class="toc-h3"><a href="#lnd">Nodo Lightning (LND)</a></li>
+        <li class="toc-h3"><a href="#liquidity">Liquidità Lightning</a></li>
+        <li class="toc-h3"><a href="#nostr-keys">Chiavi Nostr</a></li>
+        <li><a href="#setup">3. Installazione guidata</a></li>
+        <li class="toc-h3"><a href="#common-steps">Passi comuni</a></li>
+        <li class="toc-h3"><a href="#option-a">Opzione A: Docker Hub</a></li>
+        <li class="toc-h3"><a href="#option-b">Opzione B: Docker Build</a></li>
+        <li class="toc-h3"><a href="#option-c">Opzione C: Nativo</a></li>
+        <li><a href="#configuration">4. Configurazione</a></li>
+        <li class="toc-h3"><a href="#fees">Commissioni</a></li>
+        <li class="toc-h3"><a href="#limits">Limiti ordini</a></li>
+        <li class="toc-h3"><a href="#profile">Profilo del nodo</a></li>
+        <li><a href="#operating">5. Gestione del nodo</a></li>
+        <li class="toc-h3"><a href="#disputes">Dispute</a></li>
+        <li class="toc-h3"><a href="#mostrix">Mostrix</a></li>
+        <li class="toc-h3"><a href="#watchdog">mostro-watchdog</a></li>
+      </ul>
+    </nav>
+
+    <div class="toc-mobile">
+      <button class="toc-toggle" id="toc-toggle">📑 Indice</button>
+      <div class="toc-mobile-list" id="toc-mobile-list">
+        <ul class="toc-list">
+          <li><a href="#what-is-mostro">1. Cos'è Mostro?</a></li>
+          <li><a href="#prerequisites">2. Prerequisiti</a></li>
+          <li><a href="#setup">3. Installazione</a></li>
+          <li><a href="#configuration">4. Configurazione</a></li>
+          <li><a href="#operating">5. Gestione del nodo</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <article class="guide-content">
+      <h1>Eseguire il Tuo Nodo Mostro</h1>
+      <p class="guide-version">Mostro v0.16.3 — Guida della Comunità · Febbraio 2026</p>
+
+      <h2 id="what-is-mostro">1. Cos'è Mostro e perché la tua comunità dovrebbe gestirne uno?</h2>
+
+      <p>Mostro è un exchange peer-to-peer di Bitcoin che permette alle persone di comprare e vendere Bitcoin usando valute locali (dollari, euro, qualsiasi valuta) senza dover fornire documenti d'identità (KYC). È un mercato decentralizzato dove compratori e venditori possono scambiare direttamente.</p>
+
+      <p>Funziona utilizzando due tecnologie:</p>
+      <ul>
+        <li><strong>Lightning Network</strong> — lo strato software sopra Bitcoin che permette pagamenti istantanei e con commissioni minime</li>
+        <li><strong>Nostr</strong> — un protocollo di comunicazione resistente alla censura (un sistema di messaggistica che nessuno può spegnere)</li>
+      </ul>
+
+      <p>Mostro fa da garante tra compratore e venditore, mantenendo i Bitcoin del venditore in una "cassaforte" temporanea (chiamata hold invoice) fino a quando l'acquirente conferma di aver inviato il pagamento in valuta locale. Mostro non controlla mai i fondi di nessuno; li trattiene solo brevemente durante lo scambio.</p>
+
+      <h3 id="why-run">Perché la tua comunità vorrebbe gestire un nodo Mostro?</h3>
+      <ul>
+        <li><strong>Entrate dalle commissioni</strong> — Ogni scambio completato genera una commissione (0,6% di default). Se la tua comunità effettua $10.000 di scambi mensili, avrete circa $60/mese in commissioni.</li>
+        <li><strong>Trading P2P senza KYC</strong> — I membri della tua comunità possono comprare e vendere Bitcoin senza fornire documenti d'identità.</li>
+        <li><strong>Dispute nella tua lingua</strong> — Quando uno scambio non va a buon fine, la tua comunità lo risolve, nella tua lingua.</li>
+        <li><strong>Indipendenza</strong> — Nessuna azienda può chiudere il tuo exchange. Nessun governo può fare pressione su un singolo operatore.</li>
+        <li><strong>Personalizzazione</strong> — Tu scegli quali valute supportare, quali metodi di pagamento permettere e quali commissioni applicare.</li>
+      </ul>
+
+      <h3 id="how-it-works">Come funziona Mostro (Semplificato)</h3>
+      <ol>
+        <li><strong>Alice vuole VENDERE</strong> Bitcoin per $50 USD → Crea un ordine su Mostro</li>
+        <li><strong>Bob vuole COMPRARE</strong> Bitcoin con $50 USD → Vede l'ordine di Alice e lo accetta</li>
+        <li><strong>Mostro crea la "cassaforte"</strong> (hold invoice) → Alice invia i suoi Bitcoin nella cassaforte</li>
+        <li><strong>Bob invia $50</strong> ad Alice tramite bonifico, Zelle, contanti, ecc. → Bob clicca "Fiat inviato"</li>
+        <li><strong>Alice conferma</strong> di aver ricevuto i $50 → Clicca "Rilascia"</li>
+        <li><strong>Mostro rilascia</strong> i Bitcoin dalla cassaforte a Bob → Scambio completato! ✓</li>
+      </ol>
+
+      <p>Se qualcosa va storto, una delle parti può aprire una disputa, e gli arbitri della tua comunità indagano e risolvono il problema.</p>
+
+      <h2 id="prerequisites">2. Prerequisiti — Cosa ti serve prima di iniziare</h2>
+
+      <h3 id="vps">2.1 Un Server (VPS)</h3>
+      <p>Un VPS (Virtual Private Server) è un computer in un data center che funziona 24/7. Ne affitterai uno per ospitare il tuo nodo Mostro.</p>
+
+      <table class="guide-table">
+        <thead><tr><th>Risorsa</th><th>Minimo</th><th>Consigliato</th></tr></thead>
+        <tbody>
+          <tr><td>CPU</td><td>2 vCPU (condivise)</td><td>2+ vCPU</td></tr>
+          <tr><td>RAM</td><td>2 GB</td><td>4 GB</td></tr>
+          <tr><td>Storage</td><td>60 GB SSD</td><td>100 GB SSD</td></tr>
+          <tr><td>Banda</td><td>3 TB/mese</td><td>3+ TB/mese</td></tr>
+          <tr><td>SO</td><td>Ubuntu 22.04+ LTS</td><td>Ubuntu 24.04 LTS</td></tr>
+        </tbody>
+      </table>
+
+      <p>Costo mensile stimato: <strong>$10–$24/mese</strong>.</p>
+
+      <p>Provider VPS popolari:</p>
+      <ul>
+        <li><a href="https://www.hostinger.com/" target="_blank" rel="noopener noreferrer">Hostinger</a> — da ~$7/mese · Accetta Bitcoin</li>
+        <li><a href="https://www.hetzner.com/" target="_blank" rel="noopener noreferrer">Hetzner</a> — €3,49-8/mese (ottimo rapporto qualità-prezzo, basato in UE)</li>
+        <li><a href="https://www.digitalocean.com/" target="_blank" rel="noopener noreferrer">Digital Ocean</a> — $24/mese</li>
+        <li><a href="https://www.lunanode.com/" target="_blank" rel="noopener noreferrer">Lunanode</a> — Accetta pagamenti in Bitcoin</li>
+      </ul>
+
+      <div class="callout tip">
+        <div class="callout-title">💡 Suggerimento</div>
+        <p>Molti provider VPS accettano pagamenti in Bitcoin. Cerca questa opzione se vuoi restare coerente con la filosofia Bitcoin.</p>
+      </div>
+
+      <h3 id="lnd">2.2 Un Nodo Lightning Network (LND)</h3>
+      <p>Per far funzionare Mostro, ti serve un nodo LND (Lightning Network Daemon) — la versione di Lightning con cui funziona Mostro.</p>
+
+      <table class="guide-table">
+        <thead><tr><th>Opzione</th><th>Difficoltà</th><th>Costo</th><th>Note</th></tr></thead>
+        <tbody>
+          <tr><td>Usare un nodo LND esistente</td><td>Facile</td><td>Gratuito</td><td>Meglio se qualcuno ne ha già uno</td></tr>
+          <tr><td>Eseguire LND sullo stesso VPS</td><td>Difficile</td><td>Stesso VPS + liquidità</td><td>Richiede 4GB+ RAM</td></tr>
+          <tr><td>Soluzione nodo-in-scatola</td><td>Medio</td><td>$200-600 + liquidità</td><td>Start9, Umbrel, RaspiBlitz</td></tr>
+          <tr><td>StartOS con pacchetto Mostro</td><td>Molto facile</td><td>$300-600 + liquidità</td><td>Pacchetto Mostro con un clic</td></tr>
+          <tr><td>Voltage.cloud</td><td>Facile</td><td>Da ~$20/mese</td><td>LND ospitato</td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout important">
+        <div class="callout-title">⚠️ Importante</div>
+        <p>Mostro richiede specificamente <strong>LND</strong> (non CLN/Core Lightning, non Eclair, non LDK). Assicurati che il tuo nodo Lightning utilizzi LND.</p>
+      </div>
+
+      <p>Cosa ti serve dal tuo nodo LND:</p>
+      <ul>
+        <li>Il file <code>tls.cert</code> (un certificato di sicurezza)</li>
+        <li>Il file <code>admin.macaroon</code> (un token di autenticazione)</li>
+        <li>L'indirizzo gRPC (tipicamente <code>https://127.0.0.1:10009</code>)</li>
+      </ul>
+
+      <h3 id="liquidity">2.3 Liquidità Lightning</h3>
+      <p>Per facilitare gli scambi, il tuo nodo Lightning ha bisogno di canali con dei Bitcoin al loro interno.</p>
+
+      <table class="guide-table">
+        <thead><tr><th>Volume di trading</th><th>Liquidità suggerita</th><th>BTC approssimativo</th></tr></thead>
+        <tbody>
+          <tr><td>Comunità piccola</td><td>1–5 milioni di sats</td><td>0,01–0,05 BTC</td></tr>
+          <tr><td>Comunità media</td><td>5–20 milioni di sats</td><td>0,05–0,20 BTC</td></tr>
+          <tr><td>Comunità attiva</td><td>20–100 milioni di sats</td><td>0,20–1,0 BTC</td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout tip">
+        <div class="callout-title">💡 Inizia in piccolo</div>
+        <p>Inizia in piccolo, cresci gradualmente. Quando i trader segnalano ordini falliti per capacità insufficiente, quello è il segnale per aggiungerne di più.</p>
+      </div>
+
+      <h3 id="nostr-keys">2.4 Chiavi Nostr</h3>
+      <p>Il tuo nodo Mostro ha bisogno di una propria identità sulla rete Nostr.</p>
+
+      <div class="callout important">
+        <div class="callout-title">⚠️ Importante</div>
+        <p>Non riutilizzare mai le chiavi Nostr tra istanze di Mostro. Ogni nodo ha bisogno della propria identità unica.</p>
+      </div>
+
+      <p>Generare chiavi Nostr sicure localmente con <code>rana</code>:</p>
+      <pre><code># Installare Rust (se non già installato)
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+source ~/.cargo/env
+
+# Installare rana - generatore locale di chiavi Nostr
+cargo install rana
+
+# Generare una nuova coppia di chiavi
+rana</code></pre>
+
+      <h2 id="setup">3. Installazione guidata</h2>
+
+      <p>Tutte le opzioni di installazione condividono gli stessi primi passi. Poi scegli l'opzione che preferisci:</p>
+      <ul>
+        <li><strong>Opzione A (Docker Hub):</strong> La più veloce. Senza compilare, senza clonare. <strong>Consigliata per la maggior parte.</strong></li>
+        <li><strong>Opzione B (Docker Build):</strong> Costruisci l'immagine localmente dal repository.</li>
+        <li><strong>Opzione C (Compilazione nativa):</strong> Più controllo, meglio per amministratori di sistema esperti.</li>
+      </ul>
+
+      <h3 id="common-steps">Passi comuni (per tutte e 3 le opzioni)</h3>
+
+      <h4>Passo 1: Connettiti al tuo VPS</h4>
+      <pre><code>ssh root@INDIRIZZO_IP_DEL_TUO_VPS</code></pre>
+
+      <h4>Passo 2: Aggiorna il sistema</h4>
+      <pre><code># Scarica le ultime informazioni sui pacchetti
+apt update
+
+# Installa tutti gli aggiornamenti disponibili
+apt upgrade -y</code></pre>
+
+      <h4>Passo 3: Installare Docker e Docker Compose</h4>
+      <div class="callout tip">
+        <div class="callout-title">💡 Nota</div>
+        <p>Docker è necessario per le opzioni A e B. Se compili manualmente (Opzione C), puoi saltare questo passo.</p>
+      </div>
+      <pre><code># Installa Docker con lo script ufficiale
+curl -fsSL https://get.docker.com | sh
+
+# Verifica che Docker sia installato
+docker --version
+
+# Verifica Docker Compose
+docker compose version</code></pre>
+
+      <h4>Passo 4: Installare strumenti aggiuntivi</h4>
+      <pre><code>apt install -y git make</code></pre>
+
+      <p>✅ Passi comuni completati. Ora scegli la tua opzione di installazione:</p>
+
+      <h3 id="option-a">Opzione A: Docker Hub (La più veloce — Consigliata)</h3>
+      <p>Esegui Mostro direttamente da Docker Hub senza clonare il repository o compilare.</p>
+
+      <h4>Passo 5: Creare la directory di configurazione</h4>
+      <pre><code>mkdir -p ~/mostro-config/lnd</code></pre>
+
+      <h4>Passo 6: Ottenere il template di configurazione</h4>
+      <pre><code>curl -sL https://raw.githubusercontent.com/MostroP2P/mostro/v0.16.3/settings.tpl.toml \
+  -o ~/mostro-config/settings.toml</code></pre>
+
+      <h4>Passo 7: Copiare le credenziali LND</h4>
+      <pre><code>cp /percorso/del/tuo/tls.cert ~/mostro-config/lnd/tls.cert
+cp /percorso/del/tuo/admin.macaroon ~/mostro-config/lnd/admin.macaroon</code></pre>
+
+      <h4>Passo 8: Modificare la configurazione</h4>
+      <pre><code>nano ~/mostro-config/settings.toml</code></pre>
+
+      <p>Modifiche necessarie:</p>
+      <pre><code>[lightning]
+lnd_cert_file = '/config/lnd/tls.cert'
+lnd_macaroon_file = '/config/lnd/admin.macaroon'
+lnd_grpc_host = 'https://host.docker.internal:10009'
+
+[database]
+url = "sqlite:///config/mostro.db"
+
+[nostr]
+nsec_privkey = 'LA_TUA_CHIAVE_NSEC'
+relays = ['wss://relay.mostro.network', 'wss://nos.lol']
+
+[mostro]
+fee = 0.006
+max_order_amount = 1000000
+min_payment_amount = 100
+fiat_currencies_accepted = ['USD', 'EUR']</code></pre>
+
+      <h4>Passo 9: Impostare i permessi</h4>
+      <div class="callout important">
+        <div class="callout-title">⚠️ Importante</div>
+        <p>Evita <code>chmod 777</code>. Usa i permessi minimi necessari.</p>
+      </div>
+      <pre><code>sudo chown -R 1000:1000 ~/mostro-config
+chmod 700 ~/mostro-config
+chmod 600 ~/mostro-config/settings.toml
+chmod 600 ~/mostro-config/lnd/admin.macaroon</code></pre>
+
+      <h4>Passo 10: Eseguire il container</h4>
+      <p>Se LND è sullo stesso VPS:</p>
+      <pre><code>docker run -d --name mostro \
+  --restart unless-stopped \
+  --add-host=host.docker.internal:host-gateway \
+  -v ~/mostro-config:/config \
+  mostrop2p/mostro:v0.16.3</code></pre>
+
+      <p>Se LND è su un server diverso:</p>
+      <pre><code>docker run -d --name mostro \
+  --restart unless-stopped \
+  -v ~/mostro-config:/config \
+  mostrop2p/mostro:v0.16.3</code></pre>
+
+      <h4>Passo 11: Controllare i log</h4>
+      <pre><code>docker logs -f mostro</code></pre>
+
+      <p>Cerca questi messaggi:</p>
+      <ul>
+        <li><strong>Settings correctly loaded</strong> — Configurazione valida</li>
+        <li><strong>Connected to LND</strong> — Connessione Lightning riuscita</li>
+        <li><strong>Connected to relay</strong> — Relay Nostr stabilito</li>
+      </ul>
+
+      <div class="callout tip">
+        <div class="callout-title">💡 Risoluzione problemi</div>
+        <p>Se vedi <code>Permission denied (os error 13)</code>, ripristina i permessi: <code>chown -R 1000:1000 ~/mostro-config</code> e riavvia: <code>docker restart mostro</code>.</p>
+      </div>
+
+      <p>🎉 <strong>Congratulazioni!</strong> Se vedi connessioni riuscite nei log, il tuo nodo Mostro è attivo!</p>
+
+      <h4>Aggiornamento (Docker Hub)</h4>
+      <pre><code>export MOSTRO_TAG=v0.16.3
+docker pull mostrop2p/mostro:$MOSTRO_TAG
+docker stop mostro
+docker rm mostro
+docker run -d --name mostro \
+  --restart unless-stopped \
+  --add-host=host.docker.internal:host-gateway \
+  -v ~/mostro-config:/config \
+  mostrop2p/mostro:$MOSTRO_TAG</code></pre>
+
+      <div class="callout security">
+        <div class="callout-title">🔒 Nota di sicurezza</div>
+        <p>Usa tag di versione specifici (es. <code>mostrop2p/mostro:v0.16.3</code>) invece di <code>:latest</code> per aggiornamenti controllati.</p>
+      </div>
+
+      <h3 id="option-b">Opzione B: Docker Build (Costruisci l'immagine localmente)</h3>
+
+      <h4>Passo 5: Scaricare Mostro</h4>
+      <pre><code>cd /opt
+git clone https://github.com/MostroP2P/mostro.git
+cd mostro</code></pre>
+
+      <h4>Passo 6: Configurare i file</h4>
+      <pre><code>cd docker
+mkdir -p config
+cp ../settings.tpl.toml config/settings.toml</code></pre>
+
+      <h4>Passo 7: Modificare il file di configurazione</h4>
+      <pre><code>nano config/settings.toml</code></pre>
+      <p>Modifica le stesse impostazioni dell'Opzione A, Passo 8.</p>
+
+      <h4>Passo 8: Costruire l'immagine Docker</h4>
+      <pre><code>cd ..
+LND_CERT_FILE=/root/.lnd/tls.cert \
+LND_MACAROON_FILE=/root/.lnd/data/chain/bitcoin/mainnet/admin.macaroon \
+make docker-build</code></pre>
+
+      <h4>Passo 9: Impostare password database (Opzionale)</h4>
+      <pre><code># Crea file docker/.env
+echo "MOSTRO_DB_PASSWORD='TuaPasswordForte'" > docker/.env</code></pre>
+
+      <h4>Passo 10: Avviare Mostro</h4>
+      <pre><code>make docker-up
+
+# Verifica
+docker compose -f compose.yml ps
+
+# Visualizza log
+docker compose -f compose.yml logs -f mostro</code></pre>
+
+      <p>🎉 <strong>Congratulazioni!</strong> Se vedi connessioni riuscite, il tuo nodo Mostro è in funzione!</p>
+
+      <h3 id="option-c">Opzione C: Compilazione nativa (Per operatori tecnici)</h3>
+
+      <h4>Passo 5: Installare Rust</h4>
+      <pre><code>curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+source /root/.cargo/env
+rustc --version
+cargo --version</code></pre>
+
+      <div class="callout important">
+        <div class="callout-title">⚠️ Importante</div>
+        <p>NON installare Rust via <code>apt install rustc</code>. Usa sempre <code>rustup</code>. Il pacchetto di sistema è spesso obsoleto.</p>
+      </div>
+
+      <h4>Passo 6: Installare le dipendenze</h4>
+      <pre><code>apt install -y cmake build-essential libsqlite3-dev libssl-dev \
+  pkg-config git sqlite3 protobuf-compiler</code></pre>
+
+      <h4>Passo 7: Scaricare e compilare Mostro</h4>
+      <pre><code>cd /opt
+git clone https://github.com/MostroP2P/mostro.git
+cd mostro
+cargo build --release</code></pre>
+
+      <div class="callout tip">
+        <div class="callout-title">💡 Suggerimento</div>
+        <p>Se la compilazione fallisce per mancanza di RAM, aggiungi spazio swap:</p>
+      </div>
+      <pre><code>fallocate -l 2G /swapfile
+chmod 600 /swapfile
+mkswap /swapfile
+swapon /swapfile</code></pre>
+
+      <h4>Passo 8–10: Installare, inizializzare e pulire</h4>
+      <pre><code>install target/release/mostrod /usr/local/bin
+cargo install sqlx-cli --version 0.6.2
+./init_db.sh
+cargo clean  # Libera 2+ GB</code></pre>
+
+      <h4>Passo 11–12: Creare utente e configurare</h4>
+      <pre><code>adduser --disabled-login mostro
+mkdir -p /opt/mostro
+cp settings.tpl.toml /opt/mostro/settings.toml
+nano /opt/mostro/settings.toml</code></pre>
+      <p>Modifica le stesse impostazioni dell'Opzione A, Passo 8.</p>
+
+      <h4>Passo 13–15: Test, permessi e servizio systemd</h4>
+      <pre><code># Test di esecuzione
+/usr/local/bin/mostrod -d /opt/mostro
+
+# Impostare i permessi
+chown -R mostro:mostro /opt/mostro</code></pre>
+
+      <p>Creare il servizio systemd:</p>
+      <pre><code># /etc/systemd/system/mostro.service
+[Unit]
+Description=Mostro daemon
+After=network.target
+
+[Service]
+Type=simple
+User=mostro
+WorkingDirectory=/home/mostro
+Environment=RUST_LOG=info
+ExecStart=/usr/local/bin/mostrod -d /opt/mostro
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target</code></pre>
+
+      <pre><code>systemctl daemon-reload
+systemctl enable mostro.service
+systemctl start mostro.service
+systemctl status mostro.service</code></pre>
+
+      <p>🎉 <strong>Congratulazioni!</strong> Il tuo nodo Mostro funziona come servizio di sistema!</p>
+
+      <h2 id="configuration">4. Configurazione in dettaglio</h2>
+
+      <h3 id="fees">4.1 Commissioni — Come guadagni</h3>
+      <pre><code>[mostro]
+fee = 0.006
+dev_fee_percentage = 0.30</code></pre>
+
+      <p><strong>Commissione di trading</strong> (<code>fee</code>): Percentuale addebitata per scambio, divisa tra acquirente e venditore.</p>
+      <ul>
+        <li><code>0.006</code> = 0,6% (ogni parte paga 0,3%)</li>
+        <li><code>0.01</code> = 1,0% (ogni parte paga 0,5%)</li>
+        <li><code>0</code> = gratuito (buono per far crescere la base utenti)</li>
+      </ul>
+
+      <p><strong>Commissione di sviluppo</strong> (<code>dev_fee_percentage</code>): Una percentuale delle tue entrate da commissioni destinata allo sviluppo di Mostro.</p>
+      <ul>
+        <li><code>0.30</code> = 30% (default) — su 600 sats, 180 vanno al fondo di sviluppo</li>
+        <li>Minimo: 10%, Massimo: 100%</li>
+        <li>Tutti i pagamenti verificabili pubblicamente tramite eventi Nostr (kind 8383)</li>
+      </ul>
+
+      <h3 id="limits">4.2 Limiti ordini e valute</h3>
+      <pre><code>[mostro]
+max_order_amount = 1000000
+min_payment_amount = 100
+fiat_currencies_accepted = ['USD', 'EUR', 'ARS', 'CUP']</code></pre>
+
+      <h3 id="profile">4.3 Profilo del nodo (Opzionale ma consigliato)</h3>
+      <pre><code>[mostro]
+name = "Italia Mostro"
+about = "Exchange P2P di Bitcoin per l'Italia. Supporto in italiano."
+picture = "https://example.com/your-logo.png"
+website = "https://your-community-site.com"</code></pre>
+
+      <h3>4.4 Tempi e scadenze</h3>
+      <pre><code>[mostro]
+expiration_hours = 24        # Quanto tempo un ordine resta aperto
+expiration_seconds = 900     # Tempo per completare (15 min)
+hold_invoice_expiration_window = 300  # Validità hold invoice (5 min)</code></pre>
+
+      <h3>4.5 Anti-Spam</h3>
+      <pre><code>[mostro]
+pow = 0  # 0 = disabilitato; 10-20 = moderato. Inizia con 0.</code></pre>
+
+      <h2 id="operating">5. Gestione del tuo nodo Mostro</h2>
+
+      <h3 id="disputes">5.1 Come funzionano le dispute</h3>
+      <p>Le dispute sono la tua responsabilità operativa più importante.</p>
+
+      <p><strong>Quando si verificano le dispute?</strong></p>
+      <ul>
+        <li>L'acquirente dice di aver pagato, il venditore dice di non aver ricevuto</li>
+        <li>Il venditore rifiuta di rilasciare i Bitcoin dopo aver ricevuto il pagamento</li>
+        <li>Una delle parti non risponde</li>
+      </ul>
+
+      <p><strong>Il processo di disputa:</strong></p>
+      <ol>
+        <li><strong>L'utente apre una disputa</strong> — Una delle parti clicca "Disputa" nel client</li>
+        <li><strong>Mostro segnala l'ordine</strong> — Lo stato cambia in "Disputa", i fondi restano bloccati</li>
+        <li><strong>L'arbitro prende il caso</strong> — Un admin assegnato al tuo nodo indaga</li>
+        <li><strong>Indagine</strong> — Comunica con entrambe le parti, richiede prove</li>
+        <li><strong>Risoluzione</strong> — L'arbitro decide: rilascio all'acquirente, o rimborso al venditore</li>
+      </ol>
+
+      <div class="callout important">
+        <div class="callout-title">⚠️ Importante</div>
+        <p>Scegli gli arbitri con cura. Hanno il potere di decidere dove vanno i fondi bloccati. Scegli membri fidati e imparziali della comunità. Si consigliano 2-3 arbitri.</p>
+      </div>
+
+      <h3 id="mostrix">5.2 Mostrix — Il tuo strumento di amministrazione</h3>
+      <p>Mostrix è un client basato su terminale (TUI) per la risoluzione delle dispute. Se gestisci un nodo Mostro, ti serve Mostrix.</p>
+
+      <pre><code># Installare le dipendenze
+sudo apt install -y cmake build-essential pkg-config
+
+# Clonare e compilare
+git clone https://github.com/MostroP2P/mostrix.git
+cd mostrix
+cargo build --release
+cargo run</code></pre>
+
+      <p>Configurare Mostrix in modalità admin in <code>~/.mostrix/settings.toml</code>:</p>
+      <pre><code>mostro_pubkey = "LA_TUA_PUBKEY_MOSTRO_HEX"
+nsec_privkey = "nsec1la_tua_chiave_personale"
+admin_privkey = "nsec1la_tua_chiave_admin"
+relays = ["wss://relay.mostro.network", "wss://nos.lol"]
+currencies = ["USD", "EUR", "ARS"]
+user_mode = "admin"</code></pre>
+
+      <h3 id="watchdog">5.3 mostro-watchdog — Notifiche sulle dispute</h3>
+      <p><code>mostro-watchdog</code> monitora il tuo nodo Mostro per le dispute e invia avvisi istantanei su Telegram. Essenziale per tempi di risposta rapidi.</p>
+
+      <pre><code>git clone https://github.com/MostroP2P/mostro-watchdog.git
+cd mostro-watchdog
+cargo build --release
+cp config.example.toml config.toml
+nano config.toml</code></pre>
+
+      <pre><code>[mostro]
+pubkey = "LA_TUA_PUBKEY_MOSTRO"
+
+[nostr]
+relays = ["wss://relay.mostro.network", "wss://nos.lol"]
+
+[telegram]
+bot_token = "IL_TUO_BOT_TOKEN"
+chat_id = "IL_TUO_CHAT_ID"</code></pre>
+
+      <div class="callout tip">
+        <div class="callout-title">💡 Suggerimento</div>
+        <p>Esegui <code>mostro-watchdog</code> come servizio systemd insieme al tuo nodo Mostro per monitoraggio 24/7.</p>
+      </div>
+
+      <pre><code>./target/release/mostro-watchdog</code></pre>
+
+      <p style="text-align:center; margin-top:48px; font-size:1.2rem;">🎉 <strong>Tutto pronto! Benvenuto nella rete Mostro.</strong></p>
+    </article>
+  </div>
+
+  <Footer locale={locale} />
+</Layout>
+
+<script>
+  document.getElementById('toc-toggle')?.addEventListener('click', () => {
+    document.getElementById('toc-mobile-list')?.classList.toggle('open');
+  });
+</script>

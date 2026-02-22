@@ -1,10 +1,10 @@
 ---
-import { type Locale, t, getLocalePath, getSwitchLocale } from '../i18n/translations';
+import { type Locale, t, getLocalePath, getOtherLocales, getLocaleLabel } from '../i18n/translations';
 
 interface Props { locale: Locale; }
 const { locale } = Astro.props;
 const i = t(locale);
-const switchLocale = getSwitchLocale(locale);
+const otherLocales = getOtherLocales(locale);
 ---
 <header class="header">
   <div class="container header-inner">
@@ -20,10 +20,24 @@ const switchLocale = getSwitchLocale(locale);
       <a href={getLocalePath(locale, '/guide')}>{i.nav.guideNav}</a>
       <a href={getLocalePath(locale, '/call-for-action')}>{i.nav.joinNav}</a>
       <a href="https://mostro.network" target="_blank" class="btn btn-outline btn-sm">{i.nav.protocol}</a>
-      <a href={getLocalePath(switchLocale)} class="lang-switch">{i.langSwitch}</a>
+      <div class="lang-dropdown">
+        <button class="lang-switch" id="lang-toggle" aria-expanded="false" aria-haspopup="true" aria-controls="lang-menu">{i.langSwitch} {getLocaleLabel(locale).split(' ')[0]}</button>
+        <div class="lang-menu" id="lang-menu" role="menu">
+          {otherLocales.map(l => (
+            <a href={getLocalePath(l)} class="lang-option" role="menuitem" data-locale={l}>{getLocaleLabel(l)}</a>
+          ))}
+        </div>
+      </div>
     </nav>
     <div class="mobile-actions">
-      <a href={getLocalePath(switchLocale)} class="lang-switch">{i.langSwitch}</a>
+      <div class="lang-dropdown">
+        <button class="lang-switch" id="lang-toggle-mobile" aria-expanded="false" aria-haspopup="true" aria-controls="lang-menu-mobile">{i.langSwitch} {getLocaleLabel(locale).split(' ')[0]}</button>
+        <div class="lang-menu" id="lang-menu-mobile" role="menu">
+          {otherLocales.map(l => (
+            <a href={getLocalePath(l)} class="lang-option" role="menuitem" data-locale={l}>{getLocaleLabel(l)}</a>
+          ))}
+        </div>
+      </div>
       <button class="mobile-menu" aria-label="Menu" id="mobile-menu-btn">
         <span></span><span></span><span></span>
       </button>
@@ -81,6 +95,10 @@ const switchLocale = getSwitchLocale(locale);
 
   .btn-sm { padding: 8px 18px; font-size: 0.85rem; }
 
+  .lang-dropdown {
+    position: relative;
+  }
+
   .lang-switch {
     padding: 6px 14px;
     border-radius: 8px;
@@ -88,13 +106,50 @@ const switchLocale = getSwitchLocale(locale);
     border: 1px solid var(--border);
     font-size: 0.85rem;
     font-weight: 600;
-    color: var(--accent) !important;
+    color: var(--accent);
     transition: all 0.2s;
+    cursor: pointer;
   }
 
   .lang-switch:hover {
     background: rgba(140, 198, 63, 0.15);
     border-color: var(--border-hover);
+  }
+
+  .lang-menu {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 8px;
+    background: rgba(29, 33, 44, 0.95);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 4px;
+    min-width: 100px;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    z-index: 200;
+  }
+
+  .lang-menu.open {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .lang-option {
+    padding: 8px 14px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--text-secondary) !important;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+
+  .lang-option:hover {
+    background: rgba(140, 198, 63, 0.1);
+    color: var(--text-primary) !important;
   }
 
   .mobile-actions {
@@ -123,12 +178,59 @@ const switchLocale = getSwitchLocale(locale);
 
   @media (max-width: 768px) {
     .nav { display: none; }
-    .nav .lang-switch { display: none; }
+    .nav .lang-dropdown { display: none; }
     .mobile-actions { display: flex; }
   }
 </style>
 
 <script>
+  function setupLangDropdown(toggleId: string, menuId: string) {
+    const toggle = document.getElementById(toggleId);
+    const menu = document.getElementById(menuId);
+    if (!toggle || !menu) return;
+
+    toggle.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const isOpen = menu.classList.toggle('open');
+      toggle.setAttribute('aria-expanded', String(isOpen));
+    });
+  }
+
+  // Fix language links to preserve current page path
+  function fixLangLinks() {
+    const path = window.location.pathname;
+    // Extract current page (e.g. /guide, /call-for-action) from path
+    const segments = path.split('/').filter(Boolean);
+    // Remove locale prefix if present
+    const locales = ['es', 'it', 'pt'];
+    let pagePath = '/';
+    if (segments.length > 0 && locales.includes(segments[0])) {
+      pagePath = segments.length > 1 ? '/' + segments.slice(1).join('/') : '/';
+    } else {
+      pagePath = segments.length > 0 ? '/' + segments.join('/') : '/';
+    }
+
+    document.querySelectorAll('.lang-option').forEach((link) => {
+      const locale = (link as HTMLElement).dataset.locale;
+      if (!locale) return;
+      if (locale === 'en') {
+        (link as HTMLAnchorElement).href = pagePath;
+      } else {
+        (link as HTMLAnchorElement).href = `/${locale}${pagePath === '/' ? '' : pagePath}`;
+      }
+    });
+  }
+
+  fixLangLinks();
+
+  setupLangDropdown('lang-toggle', 'lang-menu');
+  setupLangDropdown('lang-toggle-mobile', 'lang-menu-mobile');
+
+  document.addEventListener('click', () => {
+    document.querySelectorAll('.lang-menu').forEach(m => m.classList.remove('open'));
+    document.querySelectorAll('.lang-switch').forEach(b => b.setAttribute('aria-expanded', 'false'));
+  });
+
   document.getElementById('mobile-menu-btn')?.addEventListener('click', () => {
     const nav = document.querySelector('.nav') as HTMLElement;
     if (nav) {

@@ -1,0 +1,303 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Header from '../../components/Header.astro';
+import Footer from '../../components/Footer.astro';
+import '../../styles/guide.css';
+
+const locale = 'pt' as const;
+---
+
+<Layout title="Programa de Nós Confiáveis — Mostro Community" description="Opere o exchange de Bitcoin da sua comunidade. Junte-se ao Programa de Nós Confiáveis do Mostro." locale={locale}>
+  <Header locale={locale} />
+
+  <div class="container guide-layout">
+    <nav class="toc">
+      <div class="toc-title">Nesta página</div>
+      <ul class="toc-list">
+        <li><a href="#your-exchange">1. Sua comunidade, seu exchange</a></li>
+        <li><a href="#what-is-node">2. O que é um nó Mostro?</a></li>
+        <li><a href="#benefits">3. Benefícios</a></li>
+        <li><a href="#who-should-apply">4. Quem deve se candidatar?</a></li>
+        <li><a href="#what-you-need">5. O que você precisa</a></li>
+        <li><a href="#trusted-program">6. Programa de nós confiáveis</a></li>
+        <li><a href="#success-stories">7. Casos de sucesso</a></li>
+        <li><a href="#how-to-apply">8. Como se candidatar</a></li>
+        <li><a href="#cta-faq">9. Perguntas frequentes</a></li>
+      </ul>
+    </nav>
+
+    <div class="toc-mobile">
+      <button class="toc-toggle" id="toc-toggle">📑 Índice</button>
+      <div class="toc-mobile-list" id="toc-mobile-list">
+        <ul class="toc-list">
+          <li><a href="#your-exchange">1. Seu exchange</a></li>
+          <li><a href="#benefits">3. Benefícios</a></li>
+          <li><a href="#trusted-program">6. O programa</a></li>
+          <li><a href="#how-to-apply">8. Como se candidatar</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <article class="guide-content">
+      <h1>Opere o exchange de Bitcoin da sua comunidade</h1>
+      <p class="guide-version">Programa de Nós Confiáveis do Mostro · Fevereiro 2026</p>
+
+      <div class="callout tip">
+        <div class="callout-title">⚡ Resumo</div>
+        <p>O Mostro permite que comunidades bitcoiners operem seu próprio exchange P2P — sem KYC, sem intermediários, sem ponto único de falha. Você ganha taxas em cada operação, resolve disputas no seu idioma e dá à sua comunidade verdadeira soberania financeira. Os custos de infraestrutura começam em ~$20/mês. Estamos buscando comunidades Bitcoin estabelecidas para a primeira onda de nós confiáveis. As candidaturas estão abertas.</p>
+      </div>
+
+      <h2 id="your-exchange">1. Sua comunidade, seu exchange</h2>
+
+      <p>Vamos falar de um problema que todo bitcoiner conhece.</p>
+
+      <p>Os exchanges centralizados pedem sua identificação. Congelam contas. Reportam aos governos. São hackeados, vão à falência, ou simplesmente decidem que não querem mais atender seu país. Lembra quando os exchanges abandonaram regiões inteiras da noite para o dia? Quando congelaram saques durante corridas bancárias? Quando usuários na Venezuela, Nigéria e dezenas de outros países ficaram bloqueados das mesmas ferramentas que supostamente lhes dariam liberdade financeira?</p>
+
+      <p>A promessa do Bitcoin era soberania. Os exchanges centralizados quebraram essa promessa.</p>
+
+      <p>O trading peer-to-peer resolve isso — mas até agora, operar um exchange P2P significava depender de plataformas como Telegram ou sites centralizados. Melhor, claro. Mas ainda é um ponto único de falha. Ainda é a plataforma de outra pessoa. As regras de outra pessoa.</p>
+
+      <p><strong>O Mostro muda tudo.</strong></p>
+
+      <p>Mostro é um exchange peer-to-peer de Bitcoin construído sobre duas tecnologias que não podem ser desligadas:</p>
+      <ul>
+        <li><strong>Lightning Network</strong> — pagamentos Bitcoin rápidos e baratos</li>
+        <li><strong>Nostr</strong> — um protocolo de comunicação sem servidor central, sem empresa, sem botão de desligar</li>
+      </ul>
+
+      <p>Juntos, criam algo que nunca existiu: um exchange P2P que nenhum governo, nenhuma empresa e nenhum indivíduo pode desconectar. Em vez de um grande exchange controlado por uma equipe, o Mostro é uma <strong>rede de nós independentes operados por comunidades</strong>. Cada comunidade opera seu próprio exchange, define suas próprias regras, suporta suas próprias moedas e resolve suas próprias disputas.</p>
+
+      <p><strong>Sua comunidade. Seu exchange. Suas regras.</strong></p>
+
+      <p>E o momento não poderia ser melhor. Mostro não é um whitepaper ou conceito. É software funcionando. Existe um app mobile. O protocolo foi testado em batalha através do seu predecessor <a href="https://lnp2pbot.com" target="_blank" rel="noopener noreferrer">@lnp2pBot</a>, que processou milhares de operações reais desde 2021 — especialmente na América Latina, Cuba e Venezuela, onde as pessoas o usam diariamente para escapar de sistemas financeiros quebrados.</p>
+
+      <h2 id="what-is-node">2. O que é um nó Mostro?</h2>
+
+      <p>Um nó Mostro é o mercado Bitcoin da sua comunidade — como um exchange local, mas que funciona na internet, opera 24/7 e não pode ser censurado ou desligado.</p>
+
+      <p>Veja como funciona uma operação, em 30 segundos:</p>
+      <ol>
+        <li><strong>Alice quer vender</strong> Bitcoin → Publica uma oferta: "Vendo 100.000 sats por R$250 via transferência bancária"</li>
+        <li><strong>Bob quer comprar</strong> → Vê a oferta da Alice e aceita</li>
+        <li><strong>Mostro cria um "cofre" temporário</strong> → Alice deposita seus Bitcoin lá</li>
+        <li><strong>Bob envia R$250</strong> para Alice via transferência → (Pix, dinheiro, pagamento móvel — o que sua comunidade usar)</li>
+        <li><strong>Alice confirma</strong> que recebeu o dinheiro → Mostro libera o Bitcoin para Bob</li>
+      </ol>
+
+      <p>✔ Pronto. Sem KYC. Sem intermediários. Sem exchange centralizado.</p>
+
+      <p>Se algo der errado, qualquer uma das partes pode abrir uma disputa. E isso é o que torna o Mostro especial: <strong>sua comunidade resolve</strong>. Não uma equipe de suporte em outro país que não fala sua língua. Seu pessoal. Seu critério. Seu idioma.</p>
+
+      <div class="callout security">
+        <div class="callout-title">🔒 Testado em batalha desde 2021</div>
+        <p>O mecanismo de custódia temporária no coração do Mostro — usando hold invoices da Lightning — está em produção desde 2021 através do @lnp2pBot no Telegram. Milhares de operações. Dinheiro real. Pessoas reais dependendo dele todos os dias.</p>
+      </div>
+
+      <h2 id="benefits">3. Benefícios para sua comunidade</h2>
+
+      <h3>💰 Receita</h3>
+      <p>Seu nó ganha uma taxa em cada operação. A taxa padrão é 0,6% (dividida entre comprador e vendedor).</p>
+
+      <table class="guide-table">
+        <thead><tr><th>Volume mensal</th><th>Receita de taxas</th><th>Contribuição Dev (30%)</th><th>Receita líquida</th></tr></thead>
+        <tbody>
+          <tr><td>$1.000</td><td>$6</td><td>$1,80</td><td>$4,20</td></tr>
+          <tr><td>$5.000</td><td>$30</td><td>$9</td><td>$21</td></tr>
+          <tr><td>$10.000</td><td>$60</td><td>$18</td><td>$42</td></tr>
+          <tr><td>$50.000</td><td>$300</td><td>$90</td><td>$210</td></tr>
+          <tr><td>$100.000</td><td>$600</td><td>$180</td><td>$420</td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout warning">
+        <div class="callout-title">⚠️ Uma dose de realidade</div>
+        <p>A maioria dos novos nós leva tempo para construir volume. Não espere ficar rico no primeiro dia. O verdadeiro valor é o serviço que você oferece à sua comunidade — a receita é um bônus que cresce com a adoção.</p>
+      </div>
+
+      <h3>🔐 Soberania financeira</h3>
+      <p>Sem KYC. Sem verificação de identidade. Sem dados pessoais coletados. Os membros da sua comunidade podem comprar e vender Bitcoin como deveria ser — de forma privada e livre. Isso não é uma funcionalidade. É o ponto central.</p>
+
+      <h3>🌍 Controle local</h3>
+      <p>Quando ocorre uma disputa, sua comunidade a resolve. Pessoas que entendem seu idioma, sua cultura, seus métodos de pagamento locais.</p>
+
+      <h3>🏗️ Independência</h3>
+      <p>Não há nenhuma empresa por trás do Mostro que possa ser pressionada, fechada ou adquirida. Seu nó é seu. Mesmo que todos os outros nós Mostro caiam, o seu continua funcionando.</p>
+
+      <h3>⚙️ Personalização</h3>
+      <ul>
+        <li><strong>Suas moedas:</strong> USD, EUR, BRL, Naira, Bolívares — o que sua comunidade usar</li>
+        <li><strong>Seus métodos de pagamento:</strong> Pix, transferência bancária, dinheiro, pagamento móvel</li>
+        <li><strong>Suas taxas:</strong> 0,6%, 1%, ou até 0% enquanto cresce</li>
+        <li><strong>Seus limites:</strong> defina tamanhos de operação conforme sua liquidez</li>
+        <li><strong>Suas regras:</strong> você é o operador, você decide</li>
+      </ul>
+
+      <h3>🚀 Vantagem de quem chega primeiro</h3>
+      <p>As comunidades que se juntarem agora serão listadas como <strong>nós confiáveis no app mobile</strong> — os nós padrão que novos usuários veem primeiro. À medida que a rede cresce, os operadores iniciais terão reputação estabelecida e bases de usuários fiéis. Este é o térreo.</p>
+
+      <h2 id="who-should-apply">4. Quem deve se candidatar?</h2>
+
+      <p>Buscamos comunidades estabelecidas com pessoas reais que se importam com Bitcoin e liberdade financeira:</p>
+      <ul>
+        <li><strong>Uma comunidade estabelecida</strong> — Não precisa de milhares de membros. Uma comunidade de 50 membros ativos vale mais que 5.000 seguidores passivos.</li>
+        <li><strong>Operadores responsáveis</strong> — Alguém disposto a manter o nó e resolver disputas com justiça.</li>
+        <li><strong>Compromisso com resolução de disputas</strong> — A responsabilidade operacional mais importante.</li>
+        <li><strong>Pensamento de longo prazo</strong> — Isso não é um esquema para ficar rico rápido. É infraestrutura.</li>
+      </ul>
+
+      <h2 id="what-you-need">5. O que você precisa</h2>
+
+      <h3>👥 Pessoas</h3>
+      <ul>
+        <li>Uma comunidade com membros ativos interessados em trading P2P de Bitcoin</li>
+        <li>Um operador — alguém confortável seguindo instruções técnicas</li>
+        <li>2-3 árbitros — membros confiáveis que possam resolver disputas com justiça</li>
+      </ul>
+
+      <h3>💵 Dinheiro</h3>
+      <ul>
+        <li><strong>Infraestrutura:</strong> ~$20-30/mês por um VPS. Alguns provedores aceitam Bitcoin.</li>
+        <li><strong>Liquidez Lightning:</strong> Comece com 0,01-0,05 BTC. Não é um gasto — é capital que continua sendo seu.</li>
+        <li><strong>Tempo:</strong> 4-8 horas de configuração inicial. 1-3 horas/semana de manutenção.</li>
+      </ul>
+
+      <table class="guide-table">
+        <thead><tr><th>O quê</th><th>Por quê</th><th>Dificuldade</th></tr></thead>
+        <tbody>
+          <tr><td>Um VPS</td><td>Roda seu nó 24/7</td><td>Fácil · ~$20/mês</td></tr>
+          <tr><td>Um nó Lightning LND</td><td>Processa pagamentos Bitcoin</td><td>Difícil mas ajudamos</td></tr>
+          <tr><td>Liquidez Lightning</td><td>Capital de giro para operações</td><td>Médio · comece pequeno</td></tr>
+          <tr><td>Um par de chaves Nostr</td><td>A identidade do seu nó</td><td>Fácil · 30 segundos</td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout tip">
+        <div class="callout-title">💡 A verdade honesta</div>
+        <p>Configurar o nó Lightning é a parte mais complexa. Se sua comunidade tem alguém técnico, essa pessoa consegue lidar. Se não, vamos ajudar. Confira nosso <a href="/pt/guide">Guia de instalação passo a passo</a>.</p>
+      </div>
+
+      <h2 id="trusted-program">6. O Programa de Nós Confiáveis</h2>
+
+      <p>Os nós confiáveis são verificados pela equipe do Mostro e listados por padrão no app mobile. Quando um novo usuário abre o app, vê os nós confiáveis primeiro. Isso é uma vantagem significativa.</p>
+
+      <h3>O processo de candidatura</h3>
+      <ol>
+        <li><strong>📋 Preencha a candidatura</strong> — Conte-nos sobre sua comunidade, sua equipe e seus objetivos.</li>
+        <li><strong>📞 Chamada introdutória</strong> — Uma videochamada de 30 minutos com a equipe do Mostro. Sem pressão, apenas uma conversa.</li>
+        <li><strong>✅ Aprovação</strong> — Revisamos sua candidatura e decidimos juntos se há fit.</li>
+        <li><strong>🛠️ Configuração assistida</strong> — Ajudamos você a colocar seu nó para funcionar. Não é "aqui estão os docs, boa sorte." Estaremos em chamada com você.</li>
+        <li><strong>🧪 Período de teste (2-4 semanas)</strong> — Seu nó funciona com operações reais. Verificamos uptime, gestão de disputas e confiabilidade.</li>
+        <li><strong>🚀 Listado como nó confiável</strong> — Você está no app mobile. As operações começam a fluir.</li>
+      </ol>
+
+      <h3>O que oferecemos</h3>
+      <ul>
+        <li>Suporte técnico durante a configuração — pessoas reais ajudando você</li>
+        <li>Documentação completa — guias passo a passo</li>
+        <li>Uma comunidade de operadores — conecte-se com outros operadores de nós</li>
+        <li>Suporte contínuo — não desaparecemos depois da configuração</li>
+      </ul>
+
+      <h3>O que esperamos</h3>
+      <ul>
+        <li><strong>Compromisso de uptime</strong> — Seu nó deve funcionar 24/7</li>
+        <li><strong>Resolução responsiva de disputas</strong> — Dentro de 24 horas</li>
+        <li><strong>Engajamento comunitário</strong> — Promova ativamente seu nó</li>
+        <li><strong>Jogo limpo</strong> — Resolva disputas imparcialmente</li>
+      </ul>
+
+      <h2 id="success-stories">7. Como é o sucesso</h2>
+
+      <p><em>Estes são cenários hipotéticos baseados em padrões reais do @lnp2pBot.</em></p>
+
+      <h3>🇻🇪 "Bolívar Libre" — Caracas, Venezuela</h3>
+      <p>María dirige uma comunidade Bitcoin de 200 membros. Quando o governo endureceu os controles de capital, sua comunidade não tinha como converter bolívares em Bitcoin. Ela montou um nó Mostro suportando VES e USD. Em três meses: $15.000/mês em operações, ~$63/mês de receita líquida. Seus árbitros resolvem disputas em espanhol, entendendo que transferências bancárias na Venezuela podem levar 24 horas — isso não é golpe, é como o sistema funciona.</p>
+
+      <h3>🇪🇺 "Bitcoin Munich" — Munique, Alemanha</h3>
+      <p>Thomas organiza um meetup mensal com 80 participantes. O volume é modesto — $5.000/mês — mas o meetup cresceu 40% em seis meses porque novos membros entram especificamente pelo trading sem KYC. Três disputas em quatro meses. As transferências SEPA são rápidas e confiáveis.</p>
+
+      <h3>🇳🇬 "Satoshi Lagos" — Lagos, Nigéria</h3>
+      <p>Depois que o CBN restringiu transferências bancárias para exchanges cripto, os 150 traders do Adebayo precisavam de uma alternativa. Começou com $2.000/mês, cresceu para $30.000/mês no quarto mês. Seus árbitros entendem as nuances do dinheiro móvel — transferências podem aparecer como "pendentes" por horas.</p>
+
+      <h3>🌱 "Bitcoin Beach 2.0" — Costa Rica</h3>
+      <p>Uma iniciativa de economia circular onde negócios locais aceitam Bitcoin. O nó Mostro fornece a rampa de acesso: membros da comunidade compram Bitcoin com colones. $3.000/mês — pequeno, mas é a cola que mantém a economia circular unida.</p>
+
+      <h2 id="how-to-apply">8. Como se candidatar</h2>
+
+      <p>Envie-nos uma candidatura incluindo:</p>
+      <ul>
+        <li><strong>Nome da comunidade</strong> e uma breve descrição</li>
+        <li><strong>Tamanho da comunidade</strong> — quantos membros ativos?</li>
+        <li><strong>Localização</strong> — onde estão seus membros?</li>
+        <li><strong>Moedas</strong> — quais moedas fiat quer suportar?</li>
+        <li><strong>Métodos de pagamento</strong> — Pix, transferência bancária, dinheiro, etc.</li>
+        <li><strong>Sua equipe</strong> — quem operará o nó e gerenciará disputas?</li>
+        <li><strong>Seu "porquê"</strong> — por que quer rodar um nó Mostro?</li>
+      </ul>
+
+      <div class="apply-box glass" style="text-align:center; padding:40px; margin:32px 0;">
+        <h3 style="margin-top:0;">Pronto para começar?</h3>
+        <p style="color:var(--text-secondary);">Junte-se ao nosso grupo no Telegram e conte-nos sobre sua comunidade.</p>
+        <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap; margin-top:20px;">
+          <a href="https://t.me/MostroP2P" target="_blank" class="btn btn-primary">Candidatar-se no Telegram →</a>
+          <a href="/pt/guide" class="btn btn-outline">Ler o guia de instalação</a>
+        </div>
+      </div>
+
+      <table class="guide-table">
+        <thead><tr><th>Cronograma</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td>Candidaturas</td><td><strong style="color:var(--accent);">Abertas agora</strong></td></tr>
+          <tr><td>Primeira onda</td><td>Q2 2026</td></tr>
+          <tr><td>Contínuo</td><td>Base contínua</td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout tip">
+        <div class="callout-title">💚 Não espere</div>
+        <p>Não precisa ter tudo resolvido. Se tem interesse mas não tem certeza sobre o lado técnico, entre em contato mesmo assim. Preferimos ajudá-lo a começar do que perder sua participação porque achou que não estava pronto.</p>
+      </div>
+
+      <h2 id="cta-faq">9. Perguntas frequentes</h2>
+
+      <h3>É legal?</h3>
+      <p>Mostro é software de código aberto. A legalidade depende da sua jurisdição. Na maioria dos países, a troca de Bitcoin entre pessoas é legal, mas algumas jurisdições podem exigir licenças. Recomendamos consultar as regulamentações locais. O projeto Mostro não fornece assessoria jurídica.</p>
+
+      <h3>Quanto custa operar?</h3>
+      <p>$20-30/mês por um VPS. Liquidez Lightning de 0,01-0,05 BTC (capital de giro que continua sendo seu). 1-3 horas/semana do seu tempo.</p>
+
+      <h3>Preciso ser técnico?</h3>
+      <p>Alguém na sua equipe precisa conseguir seguir instruções técnicas — confortável trabalhando em um terminal. Temos guias passo a passo e fornecemos ajuda prática. Pense em montar um móvel da IKEA, não em marcenaria.</p>
+
+      <h3>Quanto posso ganhar?</h3>
+      <p>$10.000/mês em operações ≈ $42/mês líquido. $50.000/mês ≈ $210. Não comece principalmente pelo dinheiro — comece porque sua comunidade precisa. A receita segue a adoção.</p>
+
+      <h3>Quais são os riscos?</h3>
+      <p>Sejamos honestos:</p>
+      <ul>
+        <li>Mostro é software em estágio inicial. Embora a custódia temporária esteja testada desde 2021, bugs são possíveis.</li>
+        <li>Existem riscos da Lightning Network — fechar canais forçadamente durante taxas altas pode ser caro.</li>
+        <li>O capital fica bloqueado nos canais enquanto está em uso.</li>
+        <li>O volume leva tempo — a maioria dos nós leva meses para construir operações significativas.</li>
+      </ul>
+      <p>Acreditamos em transparência. Isso é infraestrutura real, não um esquema de renda passiva.</p>
+
+      <h3>Podem desligar meu nó?</h3>
+      <p>Seu nó roda em um servidor que você controla, através do Nostr (sem servidor central). Para desligá-lo, alguém teria que atacar seu servidor específico. Você pode mitigar isso com Tor ou VPN. Mesmo que seu nó caia, o resto da rede continua funcionando.</p>
+
+      <div style="text-align:center; margin-top:56px; padding:32px; border-top:1px solid var(--border);">
+        <h3 style="font-size:1.5rem;">O panorama geral</h3>
+        <p style="color:var(--text-secondary); max-width:600px; margin:16px auto;">Cada nó Mostro que entra no ar torna a rede mais forte. Cada comunidade que opera seu próprio exchange é uma comunidade a menos dependente de plataformas centralizadas. Isso não é apenas sobre trocar Bitcoin. É sobre construir infraestrutura para liberdade financeira.</p>
+        <p style="font-size:1.1rem; color:var(--accent); font-weight:600; margin-top:24px;">Sua comunidade merece seu próprio exchange. Vamos ajudá-lo a construí-lo.</p>
+      </div>
+    </article>
+  </div>
+
+  <Footer locale={locale} />
+</Layout>
+
+<script>
+  document.getElementById('toc-toggle')?.addEventListener('click', () => {
+    document.getElementById('toc-mobile-list')?.classList.toggle('open');
+  });
+</script>
