@@ -1,0 +1,28 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Header from '../../components/Header.astro';
+import Hero from '../../components/Hero.astro';
+import Communities from '../../components/Communities.astro';
+import HowItWorks from '../../components/HowItWorks.astro';
+import GetStarted from '../../components/GetStarted.astro';
+import FAQ from '../../components/FAQ.astro';
+import Footer from '../../components/Footer.astro';
+
+const locale = 'it' as const;
+---
+
+<Layout
+  title="Comunità Mostro — Trading P2P di Bitcoin con Lightning + Nostr"
+  description="Trova e unisciti a comunità Bitcoin che usano Mostro — l'exchange P2P non-custodial su Lightning + Nostr"
+  locale={locale}
+>
+  <Header locale={locale} />
+  <main>
+    <Hero locale={locale} />
+    <Communities locale={locale} />
+    <HowItWorks locale={locale} />
+    <FAQ locale={locale} />
+    <GetStarted locale={locale} />
+  </main>
+  <Footer locale={locale} />
+</Layout>
