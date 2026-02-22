@@ -28,6 +28,7 @@ export const translations = {
       title: "Find your community",
       subtitle: "Join a local community or the global group. Trade in your local currency with people near you.",
       join: "Join on Telegram",
+      website: "Web Site",
       startTitle: "🤝 Want to start a community in your country?",
       startCta: "Start a community →",
       growing: "Growing",
@@ -46,7 +47,7 @@ export const translations = {
         desc: "Brazilian P2P Bitcoin trading community via Lightning.",
       },
       cuba: {
-        name: "Mostro 🇨🇺 Cuba",
+        name: "Kmbalache",
         desc: "Cuban P2P Bitcoin exchange community. Bitcoin as a tool for financial freedom.",
       },
       global: {
@@ -160,6 +161,7 @@ export const translations = {
       title: "Encuentra tu comunidad",
       subtitle: "Únete a una comunidad local o al grupo global. Opera en tu moneda local con personas cercanas.",
       join: "Unirse en Telegram",
+      website: "Sitio Web",
       startTitle: "🤝 ¿Quieres iniciar una comunidad en tu país?",
       startCta: "Inicia una comunidad →",
       growing: "Creciendo",
@@ -178,7 +180,7 @@ export const translations = {
         desc: "Comunidad brasileña de trading P2P de Bitcoin vía Lightning.",
       },
       cuba: {
-        name: "Mostro 🇨🇺 Cuba",
+        name: "Kmbalache",
         desc: "Comunidad cubana de intercambio P2P de Bitcoin. Bitcoin como herramienta de libertad financiera.",
       },
       global: {
@@ -292,6 +294,7 @@ export const translations = {
       title: "Trova la tua comunità",
       subtitle: "Unisciti a una comunità locale o al gruppo globale. Fai trading nella tua valuta locale con persone vicine a te.",
       join: "Unisciti su Telegram",
+      website: "Sito Web",
       startTitle: "🤝 Vuoi avviare una comunità nel tuo paese?",
       startCta: "Avvia una comunità →",
       growing: "In crescita",
@@ -310,7 +313,7 @@ export const translations = {
         desc: "Comunità brasiliana di trading P2P di Bitcoin via Lightning.",
       },
       cuba: {
-        name: "Mostro 🇨🇺 Cuba",
+        name: "Kmbalache",
         desc: "Comunità cubana di scambio P2P di Bitcoin. Bitcoin come strumento di libertà finanziaria.",
       },
       global: {
@@ -424,6 +427,7 @@ export const translations = {
       title: "Encontre sua comunidade",
       subtitle: "Junte-se a uma comunidade local ou ao grupo global. Negocie na sua moeda local com pessoas perto de você.",
       join: "Entrar no Telegram",
+      website: "Site",
       startTitle: "🤝 Quer iniciar uma comunidade no seu país?",
       startCta: "Inicie uma comunidade →",
       growing: "Crescendo",
@@ -442,7 +446,7 @@ export const translations = {
         desc: "Comunidade brasileira de trading P2P de Bitcoin via Lightning.",
       },
       cuba: {
-        name: "Mostro 🇨🇺 Cuba",
+        name: "Kmbalache",
         desc: "Comunidade cubana de troca P2P de Bitcoin. Bitcoin como ferramenta de liberdade financeira.",
       },
       global: {
