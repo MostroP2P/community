@@ -676,7 +676,11 @@ systemctl status mostro.service
 journalctl -u mostro -f
 journalctl -u mostro | grep -E "(error|warn|connected)" --ignore-case
 
-# Docker
+# Docker Hub (Opción A)
+docker ps --filter name=mostro
+docker logs -f mostro
+
+# Docker Build (Opción B)
 docker compose -f /opt/mostro/docker/compose.yml ps
 docker compose -f /opt/mostro/docker/compose.yml logs -f mostro</code></pre>
 
@@ -734,7 +738,11 @@ cp /opt/mostro/settings.toml /root/mostro-backups/settings.toml.$(date +%Y%m%d)
 cp /opt/mostro/mostro.db /root/mostro-backups/mostro.db.$(date +%Y%m%d)</code></pre>
 
       <p><strong>Respaldo diario automatizado</strong> (agregar al crontab con <code>crontab -e</code>):</p>
-      <pre><code>0 3 * * * mkdir -p /root/mostro-backups && cp /opt/mostro/mostro.db /root/mostro-backups/mostro.db.$(date +\%Y\%m\%d) && cp /opt/mostro/settings.toml /root/mostro-backups/settings.toml.$(date +\%Y\%m\%d)</code></pre>
+      <pre><code># Docker Hub (Opción A):
+0 3 * * * mkdir -p /root/mostro-backups && cp ~/mostro-config/mostro.db /root/mostro-backups/mostro.db.$(date +\%Y\%m\%d) && cp ~/mostro-config/settings.toml /root/mostro-backups/settings.toml.$(date +\%Y\%m\%d)
+
+# Nativo (Opción C) / Docker Build (Opción B):
+0 3 * * * mkdir -p /root/mostro-backups && cp /opt/mostro/mostro.db /root/mostro-backups/mostro.db.$(date +\%Y\%m\%d) && cp /opt/mostro/settings.toml /root/mostro-backups/settings.toml.$(date +\%Y\%m\%d)</code></pre>
 
       <div class="callout important">
         <div class="callout-title">⚠️ Crítico</div>
