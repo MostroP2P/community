@@ -219,10 +219,10 @@ source ~/.cargo/env
 # Instalar rana - generador local de claves Nostr
 cargo install rana
 
-# Generar un nuevo par de claves
-rana</code></pre>
+# Generar un nuevo par de claves (con frase semilla de 12 palabras)
+rana --generate 12</code></pre>
 
-      <p>Rana generará tanto tu clave privada (nsec) como tu clave pública (npub). <strong>¡Guarda ambas de forma segura!</strong> Nunca generes claves importantes como estas usando servicios online — siempre usa herramientas locales como rana por seguridad.</p>
+      <p>Rana generará tu clave privada (nsec), tu clave pública (npub) y una frase semilla de respaldo. <strong>¡Guarda todo de forma segura!</strong> Nota: ejecutar <code>rana</code> sin argumentos inicia minería PoW (dificultad 10) que puede tardar minutos — usa <code>--generate</code> para generación instantánea. Nunca generes claves importantes usando servicios online.</p>
 
       <h3 id="skill-level">2.5 Nivel de conocimiento técnico</h3>
 
@@ -457,7 +457,7 @@ swapon /swapfile</code></pre>
 
       <h4>Paso 8–10: Instalar, inicializar y limpiar</h4>
       <pre><code>install target/release/mostrod /usr/local/bin
-cargo install sqlx-cli --version 0.6.2
+cargo install sqlx-cli --version 0.6.3
 ./init_db.sh
 cargo clean  # Ahorra 2+ GB de espacio</code></pre>
 
@@ -711,7 +711,7 @@ git pull origin main
 cargo build --release
 install target/release/mostrod /usr/local/bin
 cargo clean
-cargo install sqlx-cli --version 0.6.2
+cargo install sqlx-cli --version 0.6.3
 sqlx migrate run
 systemctl restart mostro.service</code></pre>
 
@@ -734,7 +734,7 @@ cp /opt/mostro/settings.toml /root/mostro-backups/settings.toml.$(date +%Y%m%d)
 cp /opt/mostro/mostro.db /root/mostro-backups/mostro.db.$(date +%Y%m%d)</code></pre>
 
       <p><strong>Respaldo diario automatizado</strong> (agregar al crontab con <code>crontab -e</code>):</p>
-      <pre><code>0 3 * * * cp /opt/mostro/mostro.db /root/mostro-backups/mostro.db.$(date +\%Y\%m\%d)</code></pre>
+      <pre><code>0 3 * * * mkdir -p /root/mostro-backups && cp /opt/mostro/mostro.db /root/mostro-backups/mostro.db.$(date +\%Y\%m\%d) && cp /opt/mostro/settings.toml /root/mostro-backups/settings.toml.$(date +\%Y\%m\%d)</code></pre>
 
       <div class="callout important">
         <div class="callout-title">⚠️ Crítico</div>
@@ -966,7 +966,7 @@ journalctl -u mostro -f        # Ver logs
 # Base de datos
 sqlite3 mostro.db "SELECT COUNT(*) FROM orders;"                           # Total de órdenes
 sqlite3 mostro.db "SELECT COUNT(*) FROM orders WHERE status='success';"    # Operaciones exitosas
-sqlite3 mostro.db "SELECT SUM(fee*2) FROM orders WHERE status='success';"  # Total de comisiones</code></pre>
+sqlite3 mostro.db "SELECT SUM(fee + dev_fee) FROM orders WHERE status='success';"  # Total de comisiones</code></pre>
 
       <h3>Configuración recomendada para nodos nuevos</h3>
       <pre><code>[mostro]
