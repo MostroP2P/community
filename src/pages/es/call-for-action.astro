@@ -99,7 +99,7 @@ const locale = 'es' as const;
       <p>Tu nodo gana una comisión en cada operación. La comisión por defecto es 0.6% (dividida entre comprador y vendedor).</p>
 
       <table class="guide-table">
-        <thead><tr><th>Monthly Volume</th><th>Fee Revenue</th><th>Dev Contribution (30%)</th><th>Your Net Revenue</th></tr></thead>
+        <thead><tr><th>Volumen mensual</th><th>Comisiones</th><th>Contribución Dev (30%)</th><th>Ingresos netos</th></tr></thead>
         <tbody>
           <tr><td>$1,000</td><td>$6</td><td>$1.80</td><td>$4.20</td></tr>
           <tr><td>$5,000</td><td>$30</td><td>$9</td><td>$21</td></tr>
@@ -109,9 +109,14 @@ const locale = 'es' as const;
         </tbody>
       </table>
 
+      <div class="callout tip">
+        <div class="callout-title">📊 Sobre la Contribución al Desarrollo</div>
+        <p>La "Contribución Dev" es un porcentaje configurable (30% por defecto, mínimo 10%) de tus ingresos por comisiones que apoya el desarrollo continuo de Mostro. Es transparente y verificable en Nostr.</p>
+      </div>
+
       <div class="callout warning">
         <div class="callout-title">⚠️ Una dosis de realidad</div>
-        <p>La mayoría de los nodos nuevos tardan en construir volumen. No esperes hacerte rico el primer día. El verdadero valor es el servicio que le das a tu comunidad — los ingresos son un bonus que crece con la adopción.</p>
+        <p>La mayoría de los nodos nuevos tardan en construir volumen. No esperes hacerte rico el primer día. El verdadero valor es el servicio que le das a tu comunidad — los ingresos son un bonus que crece con la adopción. Piénsalo como manejar un negocio local: toma tiempo construir confianza y volumen, pero una vez que lo logras, se mantiene solo.</p>
       </div>
 
       <h3>🔐 Soberanía financiera</h3>
@@ -132,12 +137,50 @@ const locale = 'es' as const;
         <li><strong>Tus reglas:</strong> tú eres el operador, tú decides</li>
       </ul>
 
+      <h3>🤝 Construcción de comunidad</h3>
+      <p>Un nodo Mostro no es solo una herramienta de trading — es la columna vertebral económica de tu comunidad. Da a las personas un motivo para participar activamente, crea un caso de uso real para Bitcoin, y fortalece los lazos entre los miembros. Las personas que comercian juntas, se mantienen unidas.</p>
+
       <h3>🚀 Ventaja del primer movimiento</h3>
       <p>Las comunidades que se unan ahora serán listadas como <strong>nodos confiables en la app móvil</strong> — los nodos por defecto que los nuevos usuarios ven primero. A medida que la red crece, los operadores tempranos tendrán reputación establecida y bases de usuarios leales. Esta es la planta baja.</p>
 
       <h2 id="who-should-apply">4. ¿Quién debería aplicar?</h2>
 
-      <p>Buscamos comunidades establecidas con personas reales que se preocupan por Bitcoin y la libertad financiera:</p>
+      <p>Buscamos comunidades establecidas con personas reales que se preocupan por Bitcoin y la libertad financiera. En particular:</p>
+
+      <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap:16px; margin:24px 0;">
+        <div class="glass" style="padding:20px; border-radius:12px; text-align:center;">
+          <div style="font-size:2rem;">🎤</div>
+          <h4 style="margin:8px 0 4px;">Grupos Meetup Bitcoin</h4>
+          <p style="color:var(--text-secondary); font-size:0.9rem; margin:0;">Ya tienes a las personas. Dales una herramienta para comerciar.</p>
+        </div>
+        <div class="glass" style="padding:20px; border-radius:12px; text-align:center;">
+          <div style="font-size:2rem;">🔄</div>
+          <h4 style="margin:8px 0 4px;">Iniciativas de Economía Circular</h4>
+          <p style="color:var(--text-secondary); font-size:0.9rem; margin:0;">Agrega rampas de acceso/salida de Bitcoin a tu economía local.</p>
+        </div>
+        <div class="glass" style="padding:20px; border-radius:12px; text-align:center;">
+          <div style="font-size:2rem;">📚</div>
+          <h4 style="margin:8px 0 4px;">Organizaciones Educativas Bitcoin</h4>
+          <p style="color:var(--text-secondary); font-size:0.9rem; margin:0;">Enseña Bitcoin dejando que la gente lo use.</p>
+        </div>
+        <div class="glass" style="padding:20px; border-radius:12px; text-align:center;">
+          <div style="font-size:2rem;">🌎</div>
+          <h4 style="margin:8px 0 4px;">Grupos de Adopción Regional</h4>
+          <p style="color:var(--text-secondary); font-size:0.9rem; margin:0;">Acelera la adopción con infraestructura económica real.</p>
+        </div>
+        <div class="glass" style="padding:20px; border-radius:12px; text-align:center;">
+          <div style="font-size:2rem;">💬</div>
+          <h4 style="margin:8px 0 4px;">Comunidades Bitcoin Online</h4>
+          <p style="color:var(--text-secondary); font-size:0.9rem; margin:0;">Grupos de Telegram, servidores Discord, foros con traders activos.</p>
+        </div>
+        <div class="glass" style="padding:20px; border-radius:12px; text-align:center;">
+          <div style="font-size:2rem;">🤝</div>
+          <h4 style="margin:8px 0 4px;">Cualquier Comunidad de Confianza</h4>
+          <p style="color:var(--text-secondary); font-size:0.9rem; margin:0;">Si tus miembros confían entre sí y quieren comerciar Bitcoin, eres candidato.</p>
+        </div>
+      </div>
+
+      <h3>Lo que buscamos</h3>
       <ul>
         <li><strong>Una comunidad establecida</strong> — No necesitas miles de miembros. Una comunidad de 50 miembros activos vale más que 5,000 seguidores pasivos.</li>
         <li><strong>Operadores responsables</strong> — Alguien dispuesto a mantener el nodo y resolver disputas con justicia.</li>
@@ -162,12 +205,12 @@ const locale = 'es' as const;
       </ul>
 
       <table class="guide-table">
-        <thead><tr><th>What</th><th>Why</th><th>Difficulty</th></tr></thead>
+        <thead><tr><th>Qué</th><th>Por qué</th><th>Dificultad</th></tr></thead>
         <tbody>
-          <tr><td>A VPS</td><td>Runs your node 24/7</td><td>Easy · ~$20/month</td></tr>
-          <tr><td>An LND Lightning node</td><td>Handles Bitcoin payments</td><td>Hard but we help</td></tr>
-          <tr><td>Lightning liquidity</td><td>Working capital for trades</td><td>Medium · start small</td></tr>
-          <tr><td>A Nostr key pair</td><td>Your node's identity</td><td>Easy · 30 seconds</td></tr>
+          <tr><td>Un VPS</td><td>Corre tu nodo 24/7</td><td>Fácil · ~$20/mes</td></tr>
+          <tr><td>Un nodo Lightning LND</td><td>Maneja pagos Bitcoin</td><td>Difícil pero te ayudamos</td></tr>
+          <tr><td>Liquidez Lightning</td><td>Capital de trabajo para operaciones</td><td>Medio · empieza pequeño</td></tr>
+          <tr><td>Un par de llaves Nostr</td><td>La identidad de tu nodo</td><td>Fácil · 30 segundos</td></tr>
         </tbody>
       </table>
 
@@ -178,7 +221,16 @@ const locale = 'es' as const;
 
       <h2 id="trusted-program">6. El programa de nodos confiables</h2>
 
-      <p>Los nodos confiables son verificados por el equipo de Mostro y listados por defecto en la app móvil. Cuando un nuevo usuario abre la app, ve los nodos confiables primero. Esta es una ventaja significativa.</p>
+      <h3>¿Qué significa "confiable"?</h3>
+      <p>Los nodos confiables son <strong>verificados por el equipo de Mostro</strong> y listados por defecto en la app móvil. Cuando un nuevo usuario abre la app por primera vez, ve los nodos confiables. Esta es una ventaja significativa — significa que los usuarios llegan a ti.</p>
+
+      <p>Ser "confiable" significa:</p>
+      <ul>
+        <li>Tu comunidad ha sido verificada como legítima</li>
+        <li>Tus operadores han demostrado compromiso</li>
+        <li>Has completado exitosamente un período de prueba</li>
+        <li>Estás listado de forma prominente en la app móvil</li>
+      </ul>
 
       <h3>El proceso de aplicación</h3>
       <ol>
@@ -235,6 +287,25 @@ const locale = 'es' as const;
         <li><strong>Tu "por qué"</strong> — ¿por qué quieres correr un nodo Mostro?</li>
       </ul>
 
+      <h3>Dónde aplicar</h3>
+      <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap:12px; margin:20px 0;">
+        <a href="https://t.me/MostroP2P" target="_blank" rel="noopener noreferrer" class="glass" style="padding:16px; border-radius:12px; text-align:center; display:block;">
+          <div style="font-size:1.5rem;">💬</div>
+          <div style="font-weight:600; margin:4px 0;">Telegram</div>
+          <div style="color:var(--text-secondary); font-size:0.85rem;">@MostroP2P</div>
+        </a>
+        <a href="https://github.com/MostroP2P/mostro" target="_blank" rel="noopener noreferrer" class="glass" style="padding:16px; border-radius:12px; text-align:center; display:block;">
+          <div style="font-size:1.5rem;">🐙</div>
+          <div style="font-weight:600; margin:4px 0;">GitHub</div>
+          <div style="color:var(--text-secondary); font-size:0.85rem;">Abre una Discusión</div>
+        </a>
+        <a href="https://mostro.network" target="_blank" rel="noopener noreferrer" class="glass" style="padding:16px; border-radius:12px; text-align:center; display:block;">
+          <div style="font-size:1.5rem;">🟣</div>
+          <div style="font-weight:600; margin:4px 0;">Nostr</div>
+          <div style="color:var(--text-secondary); font-size:0.85rem;">npub en nuestro sitio</div>
+        </a>
+      </div>
+
       <div class="apply-box glass" style="text-align:center; padding:40px; margin:32px 0;">
         <h3 style="margin-top:0;">¿Listo para empezar?</h3>
         <p style="color:var(--text-secondary);">Únete a nuestro grupo de Telegram y cuéntanos sobre tu comunidad.</p>
@@ -245,11 +316,11 @@ const locale = 'es' as const;
       </div>
 
       <table class="guide-table">
-        <thead><tr><th>Timeline</th><th>Status</th></tr></thead>
+        <thead><tr><th>Cronograma</th><th>Estado</th></tr></thead>
         <tbody>
-          <tr><td>Applications</td><td><strong style="color:var(--accent);">Open Now</strong></td></tr>
-          <tr><td>First Wave</td><td>Q2 2026</td></tr>
-          <tr><td>Ongoing</td><td>Rolling Basis</td></tr>
+          <tr><td>Aplicaciones</td><td><strong style="color:var(--accent);">Abiertas ahora</strong></td></tr>
+          <tr><td>Primera ola</td><td>Q2 2026</td></tr>
+          <tr><td>Continuo</td><td>Base continua</td></tr>
         </tbody>
       </table>
 
@@ -282,8 +353,47 @@ const locale = 'es' as const;
       </ul>
       <p>Creemos en la transparencia. Esto es infraestructura real, no un esquema de ingresos pasivos.</p>
 
+      <h3>¿Qué pasa si algo sale mal?</h3>
+      <p>Tendrás soporte del equipo de desarrollo de Mostro y una comunidad de otros operadores de nodos. Los problemas comunes tienen soluciones documentadas. Para bugs, puedes reportarlos en GitHub y el equipo responde rápidamente. Recuerda: la tecnología central funciona desde 2021.</p>
+
+      <h3>¿Qué pasa si no tengo suficiente liquidez Lightning?</h3>
+      <p>Empieza pequeño. Incluso 0.01 BTC (~1 millón de sats) es suficiente para facilitar operaciones pequeñas. A medida que tu comunidad crece, puedes agregar liquidez incrementalmente. Tus usuarios te dirán cuando necesiten más — las operaciones empezarán a fallar por capacidad insuficiente. Crece con la demanda.</p>
+
+      <h3>¿Puedo cambiar las comisiones después?</h3>
+      <p>Sí. Puedes modificar el porcentaje de comisión, las monedas soportadas, los métodos de pago y los límites de órdenes en cualquier momento editando el archivo de configuración y reiniciando.</p>
+
+      <h3>¿Qué pasa durante las disputas?</h3>
+      <p>Tus árbitros designados (miembros de confianza de la comunidad) investigan la disputa, se comunican con ambas partes, revisan la evidencia y toman una decisión. Pueden liberar el Bitcoin al comprador o cancelar la operación (devolviendo el Bitcoin al vendedor). Es una responsabilidad seria — elige a tus árbitros con cuidado.</p>
+
+      <h3>¿Necesito correr mi propio nodo Lightning?</h3>
+      <p>Sí, Mostro requiere un nodo LND. Las opciones incluyen correr LND en el mismo servidor, usar una solución nodo-en-caja como Start9 (que tiene un paquete Mostro de un clic), usar un servicio hospedado como Voltage.cloud, o conectarse a un nodo LND existente en tu comunidad.</p>
+
       <h3>¿Pueden cerrar mi nodo?</h3>
       <p>Tu nodo corre en un servidor que tú controlas, sobre Nostr (sin servidor central). Para cerrarlo, alguien tendría que atacar tu servidor específico. Puedes mitigar esto con Tor o una VPN. Incluso si tu nodo se cae, el resto de la red sigue funcionando.</p>
+
+      <h2 id="contact">📬 Contacto</h2>
+      <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap:12px; margin:20px 0;">
+        <a href="https://t.me/MostroP2P" target="_blank" rel="noopener noreferrer" class="glass" style="padding:16px; border-radius:12px; text-align:center; display:block;">
+          <div style="font-size:1.5rem;">💬</div>
+          <div style="font-weight:600; margin:4px 0;">Telegram</div>
+          <div style="color:var(--text-secondary); font-size:0.85rem;">@MostroP2P</div>
+        </a>
+        <a href="https://t.me/mostro_dev" target="_blank" rel="noopener noreferrer" class="glass" style="padding:16px; border-radius:12px; text-align:center; display:block;">
+          <div style="font-size:1.5rem;">👨‍💻</div>
+          <div style="font-weight:600; margin:4px 0;">Grupo Desarrolladores</div>
+          <div style="color:var(--text-secondary); font-size:0.85rem;">@mostro_dev</div>
+        </a>
+        <a href="https://github.com/MostroP2P/mostro" target="_blank" rel="noopener noreferrer" class="glass" style="padding:16px; border-radius:12px; text-align:center; display:block;">
+          <div style="font-size:1.5rem;">🐙</div>
+          <div style="font-weight:600; margin:4px 0;">GitHub</div>
+          <div style="color:var(--text-secondary); font-size:0.85rem;">MostroP2P/mostro</div>
+        </a>
+        <a href="https://mostro.network" target="_blank" rel="noopener noreferrer" class="glass" style="padding:16px; border-radius:12px; text-align:center; display:block;">
+          <div style="font-size:1.5rem;">🌐</div>
+          <div style="font-weight:600; margin:4px 0;">Sitio Web</div>
+          <div style="color:var(--text-secondary); font-size:0.85rem;">mostro.network</div>
+        </a>
+      </div>
 
       <div style="text-align:center; margin-top:56px; padding:32px; border-top:1px solid var(--border);">
         <h3 style="font-size:1.5rem;">El panorama completo</h3>
