@@ -1,5 +1,5 @@
 ---
-import { type Locale, t } from '../i18n/translations';
+import { type Locale, t, getLocalePath } from '../i18n/translations';
 
 interface Props { locale: Locale; }
 const { locale } = Astro.props;
@@ -32,7 +32,7 @@ const communities = [
           </div>
           <div class="card-actions">
             <a href={c.telegram} target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-sm">{i.communities.join}</a>
-            <a href={c.website} target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-sm">{i.communities.website}</a>
+            {c.website && <a href={c.website} target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-sm">{i.communities.website}</a>}
           </div>
         </div>
       ))}
@@ -40,7 +40,7 @@ const communities = [
 
     <div class="add-community">
       <p>{i.communities.startTitle}</p>
-      <a href={locale === 'en' ? '/call-for-action' : '/es/call-for-action'} class="btn btn-outline">{i.communities.startCta}</a>
+      <a href={getLocalePath(locale, '/call-for-action')} class="btn btn-outline">{i.communities.startCta}</a>
     </div>
   </div>
 </section>
