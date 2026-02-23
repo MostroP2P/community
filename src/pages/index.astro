@@ -11,7 +11,11 @@ import Footer from '../components/Footer.astro';
 const locale = 'en' as const;
 ---
 
-<Layout title="Mostro Community — P2P Bitcoin Trading on Lightning + Nostr" locale={locale}>
+<Layout
+  title="Mostro Community — Buy & Sell Bitcoin P2P on Lightning Network + Nostr"
+  description="Join a Mostro community to buy and sell Bitcoin peer-to-peer without KYC. Non-custodial escrow on Lightning Network, encrypted via Nostr. Find your local community."
+  locale={locale}
+>
   <Header locale={locale} />
   <main>
     <Hero locale={locale} />
