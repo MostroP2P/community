@@ -1,0 +1,413 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Header from '../../components/Header.astro';
+import Footer from '../../components/Footer.astro';
+import '../../styles/guide.css';
+
+const locale = 'fr' as const;
+---
+
+<Layout title="Programme de Nœuds de Confiance — Mostro Community" description="Opérez l'exchange Bitcoin de votre communauté. Rejoignez le programme de nœuds de confiance de Mostro." locale={locale}>
+  <Header locale={locale} />
+
+  <div class="container guide-layout">
+    <nav class="toc">
+      <div class="toc-title">Sur cette page</div>
+      <ul class="toc-list">
+        <li><a href="#your-exchange">1. Votre communauté, votre exchange</a></li>
+        <li><a href="#what-is-node">2. Qu'est-ce qu'un nœud Mostro ?</a></li>
+        <li><a href="#benefits">3. Avantages</a></li>
+        <li><a href="#who-should-apply">4. Qui devrait postuler ?</a></li>
+        <li><a href="#what-you-need">5. Ce dont vous avez besoin</a></li>
+        <li><a href="#trusted-program">6. Programme de nœuds de confiance</a></li>
+        <li><a href="#success-stories">7. Cas de réussite</a></li>
+        <li><a href="#how-to-apply">8. Comment postuler</a></li>
+        <li><a href="#cta-faq">9. Questions fréquentes</a></li>
+      </ul>
+    </nav>
+
+    <div class="toc-mobile">
+      <button class="toc-toggle" id="toc-toggle">📑 Sommaire</button>
+      <div class="toc-mobile-list" id="toc-mobile-list">
+        <ul class="toc-list">
+          <li><a href="#your-exchange">1. Votre exchange</a></li>
+          <li><a href="#benefits">3. Avantages</a></li>
+          <li><a href="#trusted-program">6. Le programme</a></li>
+          <li><a href="#how-to-apply">8. Postuler</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <article class="guide-content">
+      <h1>Opérez l'exchange Bitcoin de votre communauté</h1>
+      <p class="guide-version">Programme de Nœuds de Confiance de Mostro · Février 2026</p>
+
+      <div class="callout tip">
+        <div class="callout-title">⚡ Résumé</div>
+        <p>Mostro permet aux communautés bitcoiners d'opérer leur propre exchange P2P — sans KYC, sans intermédiaire, sans point de défaillance unique. Vous gagnez des frais sur chaque transaction, résolvez les litiges dans votre langue, et offrez à votre communauté une véritable souveraineté financière. Les coûts d'infrastructure commencent à environ 20 $/mois. Nous recherchons des communautés Bitcoin établies pour la première vague de nœuds de confiance. Les candidatures sont ouvertes.</p>
+      </div>
+
+      <h2 id="your-exchange">1. Votre communauté, votre exchange</h2>
+
+      <p>Parlons d'un problème que tout bitcoiner connaît.</p>
+
+      <p>Les exchanges centralisés demandent votre pièce d'identité. Ils gèlent les comptes. Ils rapportent aux gouvernements. Ils se font pirater, font faillite, ou décident simplement de ne plus servir votre pays. Vous souvenez-vous quand des exchanges ont abandonné des régions entières du jour au lendemain ? Quand ils ont gelé les retraits pendant des paniques bancaires ? Quand des utilisateurs au Venezuela, au Nigeria et dans des dizaines d'autres pays se sont retrouvés bloqués des outils mêmes qui étaient censés leur donner la liberté financière ?</p>
+
+      <p>La promesse de Bitcoin était la souveraineté. Les exchanges centralisés ont trahi cette promesse.</p>
+
+      <p>L'échange peer-to-peer résout ce problème — mais jusqu'à présent, opérer un exchange P2P signifiait dépendre de plateformes comme Telegram ou de sites web centralisés. Mieux, certes. Mais cela reste un point de défaillance unique. La plateforme de quelqu'un d'autre. Les règles de quelqu'un d'autre.</p>
+
+      <p><strong>Mostro change tout.</strong></p>
+
+      <p>Mostro est un exchange peer-to-peer de Bitcoin construit sur deux technologies qu'on ne peut pas éteindre :</p>
+      <ul>
+        <li><strong>Lightning Network</strong> — des paiements Bitcoin rapides et peu coûteux</li>
+        <li><strong>Nostr</strong> — un protocole de communication sans serveur central, sans entreprise, sans interrupteur</li>
+      </ul>
+
+      <p>Ensemble, ils créent quelque chose qui n'a jamais existé : un exchange P2P qu'aucun gouvernement, aucune entreprise et aucun individu ne peut déconnecter. Au lieu d'un grand exchange contrôlé par une équipe, Mostro est un <strong>réseau de nœuds indépendants opérés par des communautés</strong>. Chaque communauté gère son propre exchange, établit ses propres règles, supporte ses propres devises et résout ses propres litiges.</p>
+
+      <p><strong>Votre communauté. Votre exchange. Vos règles.</strong></p>
+
+      <p>Et le moment ne pourrait être meilleur. Mostro n'est pas un whitepaper ni un concept. C'est un logiciel fonctionnel. Il y a une application mobile. Le protocole a été éprouvé à travers son prédécesseur <a href="https://lnp2pbot.com" target="_blank" rel="noopener noreferrer">@lnp2pBot</a>, qui a traité des milliers de transactions réelles depuis 2021 — notamment en Amérique latine, à Cuba et au Venezuela, où les gens l'utilisent quotidiennement pour échapper à des systèmes financiers défaillants.</p>
+
+      <h2 id="what-is-node">2. Qu'est-ce qu'un nœud Mostro ?</h2>
+
+      <p>Un nœud Mostro est le marché Bitcoin de votre communauté — comme un exchange local, mais qui fonctionne sur internet, opère 24h/24 et 7j/7, et ne peut être ni censuré ni arrêté.</p>
+
+      <p>Voici comment fonctionne une transaction, en 30 secondes :</p>
+      <ol>
+        <li><strong>Alice veut vendre</strong> du Bitcoin → Elle publie une offre : « Je vends 100 000 sats pour 50 $ par virement bancaire »</li>
+        <li><strong>Bob veut acheter</strong> → Il voit l'offre d'Alice et la prend</li>
+        <li><strong>Mostro crée un « coffre-fort » temporaire</strong> → Alice y dépose ses Bitcoin</li>
+        <li><strong>Bob envoie 50 $</strong> à Alice par virement → (Zelle, espèces, paiement mobile — ce que votre communauté utilise)</li>
+        <li><strong>Alice confirme</strong> qu'elle a reçu l'argent → Mostro libère les Bitcoin vers Bob</li>
+      </ol>
+
+      <p>✔ Terminé. Sans KYC. Sans intermédiaire. Sans exchange centralisé.</p>
+
+      <p>Si quelque chose tourne mal, l'une des parties peut ouvrir un litige. Et c'est ce qui rend Mostro spécial : <strong>votre communauté le résout</strong>. Pas une équipe de support dans un autre pays qui ne parle pas votre langue. Vos gens. Votre jugement. Votre langue.</p>
+
+      <div class="callout security">
+        <div class="callout-title">🔒 Éprouvé depuis 2021</div>
+        <p>Le mécanisme de séquestre temporaire au cœur de Mostro — utilisant les hold invoices Lightning — fonctionne en production depuis 2021 à travers @lnp2pBot sur Telegram. Des milliers de transactions. De l'argent réel. Des personnes réelles qui en dépendent chaque jour.</p>
+      </div>
+
+      <h2 id="benefits">3. Avantages pour votre communauté</h2>
+
+      <h3>💰 Revenus</h3>
+      <p>Votre nœud gagne des frais sur chaque transaction. Les frais par défaut sont de 0.6% (répartis entre acheteur et vendeur).</p>
+
+      <table class="guide-table">
+        <thead><tr><th>Volume mensuel</th><th>Frais</th><th>Contribution Dev (30%)</th><th>Revenus nets</th></tr></thead>
+        <tbody>
+          <tr><td>1 000 $</td><td>6 $</td><td>1,80 $</td><td>4,20 $</td></tr>
+          <tr><td>5 000 $</td><td>30 $</td><td>9 $</td><td>21 $</td></tr>
+          <tr><td>10 000 $</td><td>60 $</td><td>18 $</td><td>42 $</td></tr>
+          <tr><td>50 000 $</td><td>300 $</td><td>90 $</td><td>210 $</td></tr>
+          <tr><td>100 000 $</td><td>600 $</td><td>180 $</td><td>420 $</td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout tip">
+        <div class="callout-title">📊 À propos de la Contribution au Développement</div>
+        <p>La « Contribution Dev » est un pourcentage configurable (30% par défaut, minimum 10%) de vos revenus de frais qui soutient le développement continu de Mostro. Elle est transparente et vérifiable sur Nostr.</p>
+      </div>
+
+      <div class="callout warning">
+        <div class="callout-title">⚠️ Une dose de réalité</div>
+        <p>La plupart des nouveaux nœuds mettent du temps à construire du volume. N'espérez pas devenir riche le premier jour. La vraie valeur est le service que vous rendez à votre communauté — les revenus sont un bonus qui croît avec l'adoption. Voyez-le comme gérer un commerce local : il faut du temps pour construire la confiance et le volume, mais une fois établi, ça se maintient tout seul.</p>
+      </div>
+
+      <h3>🔐 Souveraineté financière</h3>
+      <p>Sans KYC. Sans vérification d'identité. Aucune donnée personnelle collectée. Les membres de votre communauté peuvent acheter et vendre du Bitcoin comme il se doit — de manière privée et libre. Ce n'est pas une fonctionnalité. C'est le but même.</p>
+
+      <h3>🌍 Contrôle local</h3>
+      <p>Quand un litige survient, votre communauté le gère. Des personnes qui comprennent votre langue, votre culture, vos méthodes de paiement locales.</p>
+
+      <h3>🏗️ Indépendance</h3>
+      <p>Aucune entreprise derrière Mostro ne peut être mise sous pression, fermée ou rachetée. Votre nœud est le vôtre. Même si tous les autres nœuds Mostro tombent en panne, le vôtre continue de fonctionner.</p>
+
+      <h3>⚙️ Personnalisation</h3>
+      <ul>
+        <li><strong>Vos devises :</strong> USD, EUR, CHF, CFA, Naira — ce que votre communauté utilise</li>
+        <li><strong>Vos méthodes de paiement :</strong> virements bancaires, paiement mobile, espèces, Zelle, PayPal</li>
+        <li><strong>Vos frais :</strong> 0.6%, 1%, ou même 0% pendant votre croissance</li>
+        <li><strong>Vos limites :</strong> définissez les tailles de transaction selon votre liquidité</li>
+        <li><strong>Vos règles :</strong> vous êtes l'opérateur, vous décidez</li>
+      </ul>
+
+      <h3>🤝 Construction de communauté</h3>
+      <p>Un nœud Mostro n'est pas seulement un outil d'échange — c'est l'épine dorsale économique de votre communauté. Il donne aux gens une raison de participer activement, crée un cas d'usage réel pour Bitcoin, et renforce les liens entre les membres. Les gens qui échangent ensemble restent ensemble.</p>
+
+      <h3>🚀 Avantage du premier arrivé</h3>
+      <p>Les communautés qui rejoignent maintenant seront listées comme <strong>nœuds de confiance dans l'application mobile</strong> — les nœuds par défaut que les nouveaux utilisateurs voient en premier. À mesure que le réseau grandit, les opérateurs précoces auront une réputation établie et des bases d'utilisateurs fidèles. C'est le rez-de-chaussée.</p>
+
+      <h2 id="who-should-apply">4. Qui devrait postuler ?</h2>
+
+      <p>Nous recherchons des communautés établies avec de vraies personnes qui se soucient de Bitcoin et de la liberté financière. En particulier :</p>
+
+      <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap:16px; margin:24px 0;">
+        <div class="glass" style="padding:20px; border-radius:12px; text-align:center;">
+          <div style="font-size:2rem;">🎤</div>
+          <h4 style="margin:8px 0 4px;">Groupes Meetup Bitcoin</h4>
+          <p style="color:var(--text-secondary); font-size:0.9rem; margin:0;">Vous avez déjà les personnes. Donnez-leur un outil pour échanger.</p>
+        </div>
+        <div class="glass" style="padding:20px; border-radius:12px; text-align:center;">
+          <div style="font-size:2rem;">🔄</div>
+          <h4 style="margin:8px 0 4px;">Initiatives d'Économie Circulaire</h4>
+          <p style="color:var(--text-secondary); font-size:0.9rem; margin:0;">Ajoutez des rampes d'accès/sortie Bitcoin à votre économie locale.</p>
+        </div>
+        <div class="glass" style="padding:20px; border-radius:12px; text-align:center;">
+          <div style="font-size:2rem;">📚</div>
+          <h4 style="margin:8px 0 4px;">Organisations Éducatives Bitcoin</h4>
+          <p style="color:var(--text-secondary); font-size:0.9rem; margin:0;">Enseignez Bitcoin en laissant les gens l'utiliser.</p>
+        </div>
+        <div class="glass" style="padding:20px; border-radius:12px; text-align:center;">
+          <div style="font-size:2rem;">🌎</div>
+          <h4 style="margin:8px 0 4px;">Groupes d'Adoption Régionale</h4>
+          <p style="color:var(--text-secondary); font-size:0.9rem; margin:0;">Accélérez l'adoption avec une infrastructure économique réelle.</p>
+        </div>
+        <div class="glass" style="padding:20px; border-radius:12px; text-align:center;">
+          <div style="font-size:2rem;">💬</div>
+          <h4 style="margin:8px 0 4px;">Communautés Bitcoin en Ligne</h4>
+          <p style="color:var(--text-secondary); font-size:0.9rem; margin:0;">Groupes Telegram, serveurs Discord, forums avec des traders actifs.</p>
+        </div>
+        <div class="glass" style="padding:20px; border-radius:12px; text-align:center;">
+          <div style="font-size:2rem;">🤝</div>
+          <h4 style="margin:8px 0 4px;">Toute Communauté de Confiance</h4>
+          <p style="color:var(--text-secondary); font-size:0.9rem; margin:0;">Si vos membres se font confiance et veulent échanger du Bitcoin, vous êtes candidat.</p>
+        </div>
+      </div>
+
+      <h3>Ce que nous recherchons</h3>
+      <ul>
+        <li><strong>Une communauté établie</strong> — Pas besoin de milliers de membres. Une communauté de 50 membres actifs vaut plus que 5 000 abonnés passifs.</li>
+        <li><strong>Des opérateurs responsables</strong> — Quelqu'un prêt à maintenir le nœud et résoudre les litiges avec équité.</li>
+        <li><strong>Un engagement envers la résolution des litiges</strong> — La responsabilité opérationnelle la plus importante.</li>
+        <li><strong>Une vision à long terme</strong> — Ce n'est pas un système pour s'enrichir rapidement. C'est de l'infrastructure.</li>
+      </ul>
+
+      <h2 id="what-you-need">5. Ce dont vous avez besoin</h2>
+
+      <h3>👥 Personnes</h3>
+      <ul>
+        <li>Une communauté avec des membres actifs intéressés par l'échange P2P de Bitcoin</li>
+        <li>Un opérateur — quelqu'un à l'aise pour suivre des instructions techniques</li>
+        <li>2-3 arbitres — des membres de confiance capables de résoudre les litiges avec équité</li>
+      </ul>
+
+      <h3>💵 Budget</h3>
+      <ul>
+        <li><strong>Infrastructure :</strong> environ 20-30 $/mois pour un VPS. Certains fournisseurs acceptent le Bitcoin.</li>
+        <li><strong>Liquidité Lightning :</strong> Commencez avec 0.01-0.05 BTC. Ce n'est pas une dépense — c'est du capital qui reste le vôtre.</li>
+        <li><strong>Temps :</strong> 4-8 heures de configuration initiale. 1-3 heures/semaine de maintenance.</li>
+      </ul>
+
+      <table class="guide-table">
+        <thead><tr><th>Quoi</th><th>Pourquoi</th><th>Difficulté</th></tr></thead>
+        <tbody>
+          <tr><td>Un VPS</td><td>Fait tourner votre nœud 24h/24 et 7j/7</td><td>Facile · environ 20 $/mois</td></tr>
+          <tr><td>Un nœud Lightning LND</td><td>Gère les paiements Bitcoin</td><td>Difficile mais on vous aide</td></tr>
+          <tr><td>Liquidité Lightning</td><td>Fonds de roulement pour les transactions</td><td>Moyen · commencez petit</td></tr>
+          <tr><td>Une paire de clés Nostr</td><td>L'identité de votre nœud</td><td>Facile · 30 secondes</td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout tip">
+        <div class="callout-title">💡 La vérité honnête</div>
+        <p>La configuration du nœud Lightning est la partie la plus complexe. Si votre communauté compte quelqu'un de technique, il peut s'en occuper. Sinon, nous vous aiderons. Consultez notre <a href="/fr/guide">Guide d'installation pas à pas</a>.</p>
+      </div>
+
+      <h2 id="trusted-program">6. Le programme de nœuds de confiance</h2>
+
+      <h3>Que signifie « de confiance » ?</h3>
+      <p>Les nœuds de confiance sont <strong>vérifiés par l'équipe Mostro</strong> et listés par défaut dans l'application mobile. Quand un nouvel utilisateur ouvre l'application pour la première fois, il voit les nœuds de confiance. C'est un avantage significatif — cela signifie que les utilisateurs viennent à vous.</p>
+
+      <p>Être « de confiance » signifie :</p>
+      <ul>
+        <li>Votre communauté a été vérifiée comme légitime</li>
+        <li>Vos opérateurs ont démontré leur engagement</li>
+        <li>Vous avez réussi une période d'essai</li>
+        <li>Vous êtes listé de manière visible dans l'application mobile</li>
+      </ul>
+
+      <h3>Le processus de candidature</h3>
+      <ol>
+        <li><strong>📋 Remplissez la candidature</strong> — Parlez-nous de votre communauté, votre équipe et vos objectifs.</li>
+        <li><strong>📞 Appel d'introduction</strong> — Un appel vidéo de 30 minutes avec l'équipe Mostro. Sans pression, juste une conversation.</li>
+        <li><strong>✅ Approbation</strong> — Nous examinons votre candidature et décidons ensemble si c'est un bon match.</li>
+        <li><strong>🛠️ Configuration assistée</strong> — Nous vous aidons à mettre votre nœud en marche. Ce n'est pas « voici la doc, bonne chance ». Nous serons en appel avec vous.</li>
+        <li><strong>🧪 Période d'essai (2-4 semaines)</strong> — Votre nœud fonctionne avec de vraies transactions. Nous vérifions la disponibilité, la gestion des litiges et la fiabilité.</li>
+        <li><strong>🚀 Inscription comme nœud de confiance</strong> — Vous êtes dans l'application mobile. Les transactions commencent à affluer.</li>
+      </ol>
+
+      <h3>Ce que nous offrons</h3>
+      <ul>
+        <li>Support technique pendant la configuration — de vraies personnes pour vous aider</li>
+        <li>Documentation complète — guides pas à pas</li>
+        <li>Une communauté d'opérateurs — connectez-vous avec d'autres opérateurs de nœuds</li>
+        <li>Support continu — nous ne disparaissons pas après la configuration</li>
+      </ul>
+
+      <h3>Ce que nous attendons</h3>
+      <ul>
+        <li><strong>Engagement de disponibilité</strong> — Votre nœud doit fonctionner 24h/24 et 7j/7</li>
+        <li><strong>Résolution réactive des litiges</strong> — Sous 24 heures</li>
+        <li><strong>Participation communautaire</strong> — Promouvez activement votre nœud</li>
+        <li><strong>Jeu équitable</strong> — Résolvez les litiges de manière impartiale</li>
+      </ul>
+
+      <h2 id="success-stories">7. À quoi ressemble le succès</h2>
+
+      <p><em>Ce sont des scénarios hypothétiques basés sur des schémas réels de @lnp2pBot.</em></p>
+
+      <h3>🇻🇪 « Bolívar Libre » — Caracas, Venezuela</h3>
+      <p>María dirige une communauté Bitcoin de 200 membres. Quand le gouvernement a durci les contrôles de capitaux, sa communauté n'avait aucun moyen de convertir des bolívares en Bitcoin. Elle a monté un nœud Mostro supportant VES et USD. En trois mois : 15 000 $/mois de transactions, environ 63 $/mois de revenu net. Ses arbitres résolvent les litiges en espagnol, comprenant que les virements bancaires au Venezuela peuvent prendre 24 heures — ce n'est pas une arnaque, c'est ainsi que fonctionne le système.</p>
+
+      <h3>🇪🇺 « Bitcoin Munich » — Munich, Allemagne</h3>
+      <p>Thomas organise un meetup mensuel avec 80 participants. Le volume est modeste — 5 000 $/mois — mais le meetup a grandi de 40% en six mois parce que de nouveaux membres rejoignent spécifiquement pour l'échange sans KYC. Trois litiges en quatre mois. Les virements SEPA sont rapides et fiables.</p>
+
+      <h3>🇳🇬 « Satoshi Lagos » — Lagos, Nigeria</h3>
+      <p>Après que la CBN a restreint les virements bancaires vers les exchanges crypto, les 150 traders d'Adebayo avaient besoin d'une alternative. Il a commencé avec 2 000 $/mois, atteignant 30 000 $/mois au quatrième mois. Ses arbitres comprennent les nuances de l'argent mobile — les transferts peuvent apparaître comme « en attente » pendant des heures.</p>
+
+      <h3>🌱 « Bitcoin Beach 2.0 » — Costa Rica</h3>
+      <p>Une initiative d'économie circulaire où des commerces locaux acceptent Bitcoin. Le nœud Mostro fournit la rampe d'accès : les membres de la communauté achètent du Bitcoin avec des colones. 3 000 $/mois — petit, mais c'est le ciment qui maintient l'économie circulaire ensemble.</p>
+
+      <h2 id="how-to-apply">8. Comment postuler</h2>
+
+      <p>Envoyez-nous une candidature incluant :</p>
+      <ul>
+        <li><strong>Nom de la communauté</strong> et une brève description</li>
+        <li><strong>Taille de la communauté</strong> — combien de membres actifs ?</li>
+        <li><strong>Localisation</strong> — où sont vos membres ?</li>
+        <li><strong>Devises</strong> — quelles devises fiat souhaitez-vous supporter ?</li>
+        <li><strong>Méthodes de paiement</strong> — virements bancaires, paiement mobile, espèces, etc.</li>
+        <li><strong>Votre équipe</strong> — qui opérera le nœud et gérera les litiges ?</li>
+        <li><strong>Votre « pourquoi »</strong> — pourquoi voulez-vous faire tourner un nœud Mostro ?</li>
+      </ul>
+
+      <h3>Où postuler</h3>
+      <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap:12px; margin:20px 0;">
+        <a href="https://t.me/MostroP2P" target="_blank" rel="noopener noreferrer" class="glass" style="padding:16px; border-radius:12px; text-align:center; display:block;">
+          <div style="font-size:1.5rem;">💬</div>
+          <div style="font-weight:600; margin:4px 0;">Telegram</div>
+          <div style="color:var(--text-secondary); font-size:0.85rem;">@MostroP2P</div>
+        </a>
+        <a href="https://github.com/MostroP2P/mostro/discussions" target="_blank" rel="noopener noreferrer" class="glass" style="padding:16px; border-radius:12px; text-align:center; display:block;">
+          <div style="font-size:1.5rem;">🐙</div>
+          <div style="font-weight:600; margin:4px 0;">GitHub</div>
+          <div style="color:var(--text-secondary); font-size:0.85rem;">Ouvrez une Discussion</div>
+        </a>
+        <a href="https://mostro.network" target="_blank" rel="noopener noreferrer" class="glass" style="padding:16px; border-radius:12px; text-align:center; display:block;">
+          <div style="font-size:1.5rem;">🟣</div>
+          <div style="font-weight:600; margin:4px 0;">Nostr</div>
+          <div style="color:var(--text-secondary); font-size:0.85rem;">npub sur notre site</div>
+        </a>
+      </div>
+
+      <div class="apply-box glass" style="text-align:center; padding:40px; margin:32px 0;">
+        <h3 style="margin-top:0;">Prêt à commencer ?</h3>
+        <p style="color:var(--text-secondary);">Rejoignez notre groupe Telegram et parlez-nous de votre communauté.</p>
+        <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap; margin-top:20px;">
+          <a href="https://t.me/MostroP2P" target="_blank" rel="noopener noreferrer" class="btn btn-primary">Postuler sur Telegram →</a>
+          <a href="/fr/guide" class="btn btn-outline">Lire le guide d'installation</a>
+        </div>
+      </div>
+
+      <table class="guide-table">
+        <thead><tr><th>Calendrier</th><th>Statut</th></tr></thead>
+        <tbody>
+          <tr><td>Candidatures</td><td><strong style="color:var(--accent);">Ouvertes</strong></td></tr>
+          <tr><td>Première vague</td><td>T2 2026</td></tr>
+          <tr><td>En continu</td><td>Base continue</td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout tip">
+        <div class="callout-title">💚 N'attendez pas</div>
+        <p>Vous n'avez pas besoin d'avoir tout résolu. Si ça vous intéresse mais que vous n'êtes pas sûr du côté technique, écrivez-nous quand même. Nous préférons vous aider à démarrer que de perdre votre participation parce que vous pensiez ne pas être prêt.</p>
+      </div>
+
+      <h2 id="cta-faq">9. Questions fréquentes</h2>
+
+      <h3>Est-ce légal ?</h3>
+      <p>Mostro est un logiciel open source. La légalité dépend de votre juridiction. Dans la plupart des pays, l'échange de Bitcoin entre personnes est légal, mais certaines juridictions peuvent exiger des licences. Nous recommandons de consulter les réglementations locales. Le projet Mostro ne fournit pas de conseil juridique.</p>
+
+      <h3>Combien coûte l'exploitation ?</h3>
+      <p>20-30 $/mois pour un VPS. Liquidité Lightning de 0.01-0.05 BTC (fonds de roulement qui restent les vôtres). 1-3 heures/semaine de votre temps.</p>
+
+      <h3>Faut-il être technique ?</h3>
+      <p>Quelqu'un dans votre équipe doit pouvoir suivre des instructions techniques — à l'aise avec un terminal. Nous avons des guides pas à pas et fournissons une aide pratique. Pensez au montage de meubles IKEA, pas à de la menuiserie.</p>
+
+      <h3>Combien puis-je gagner ?</h3>
+      <p>10 000 $/mois de transactions ≈ 42 $/mois net. 50 000 $/mois ≈ 210 $. Ne commencez pas principalement pour l'argent — commencez parce que votre communauté en a besoin. Les revenus suivent l'adoption.</p>
+
+      <h3>Quels sont les risques ?</h3>
+      <p>Soyons honnêtes :</p>
+      <ul>
+        <li>Mostro est un logiciel en phase précoce. Bien que le séquestre temporaire soit éprouvé depuis 2021, des bugs sont possibles.</li>
+        <li>Les risques du Lightning Network existent — fermer des canaux par la force pendant des périodes de frais élevés peut être coûteux.</li>
+        <li>Le capital est bloqué dans les canaux tant qu'il est déployé.</li>
+        <li>Le volume prend du temps — la plupart des nœuds mettent des mois à construire des transactions significatives.</li>
+      </ul>
+      <p>Nous croyons en la transparence. C'est de l'infrastructure réelle, pas un système de revenus passifs.</p>
+
+      <h3>Que se passe-t-il si quelque chose tourne mal ?</h3>
+      <p>Vous aurez le support de l'équipe de développement de Mostro et d'une communauté d'autres opérateurs de nœuds. Les problèmes courants ont des solutions documentées. Pour les bugs, vous pouvez les signaler sur GitHub et l'équipe répond rapidement. Rappellez-vous : la technologie centrale fonctionne depuis 2021.</p>
+
+      <h3>Et si je n'ai pas assez de liquidité Lightning ?</h3>
+      <p>Commencez petit. Même 0.01 BTC (environ 1 million de sats) suffit pour faciliter de petites transactions. À mesure que votre communauté grandit, vous pouvez ajouter de la liquidité progressivement. Vos utilisateurs vous le diront quand ils en auront besoin de plus — les transactions commenceront à échouer par manque de capacité. Grandissez avec la demande.</p>
+
+      <h3>Puis-je changer les frais après ?</h3>
+      <p>Oui. Vous pouvez modifier le pourcentage de frais, les devises supportées, les méthodes de paiement et les limites d'ordres à tout moment en éditant le fichier de configuration et en redémarrant.</p>
+
+      <h3>Que se passe-t-il pendant les litiges ?</h3>
+      <p>Vos arbitres désignés (membres de confiance de la communauté) enquêtent sur le litige, communiquent avec les deux parties, examinent les preuves et prennent une décision. Ils peuvent libérer le Bitcoin vers l'acheteur ou annuler la transaction (restituant le Bitcoin au vendeur). C'est une responsabilité sérieuse — choisissez vos arbitres avec soin.</p>
+
+      <h3>Dois-je faire tourner mon propre nœud Lightning ?</h3>
+      <p>Oui, Mostro nécessite un nœud LND. Les options incluent faire tourner LND sur le même serveur, utiliser une solution nœud-en-boîte comme Start9 (qui a un paquet Mostro en un clic), utiliser un service hébergé comme Voltage.cloud, ou se connecter à un nœud LND existant dans votre communauté.</p>
+
+      <h3>Peut-on fermer mon nœud ?</h3>
+      <p>Votre nœud tourne sur un serveur que vous contrôlez, sur Nostr (sans serveur central). Pour le fermer, il faudrait attaquer votre serveur spécifique. Vous pouvez atténuer cela avec Tor ou un VPN. Même si votre nœud tombe, le reste du réseau continue de fonctionner.</p>
+
+      <h2 id="contact">📬 Contact</h2>
+      <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap:12px; margin:20px 0;">
+        <a href="https://t.me/MostroP2P" target="_blank" rel="noopener noreferrer" class="glass" style="padding:16px; border-radius:12px; text-align:center; display:block;">
+          <div style="font-size:1.5rem;">💬</div>
+          <div style="font-weight:600; margin:4px 0;">Telegram</div>
+          <div style="color:var(--text-secondary); font-size:0.85rem;">@MostroP2P</div>
+        </a>
+        <a href="https://t.me/mostro_dev" target="_blank" rel="noopener noreferrer" class="glass" style="padding:16px; border-radius:12px; text-align:center; display:block;">
+          <div style="font-size:1.5rem;">👨💻</div>
+          <div style="font-weight:600; margin:4px 0;">Groupe Développeurs</div>
+          <div style="color:var(--text-secondary); font-size:0.85rem;">@mostro_dev</div>
+        </a>
+        <a href="https://github.com/MostroP2P/mostro/discussions" target="_blank" rel="noopener noreferrer" class="glass" style="padding:16px; border-radius:12px; text-align:center; display:block;">
+          <div style="font-size:1.5rem;">🐙</div>
+          <div style="font-weight:600; margin:4px 0;">GitHub</div>
+          <div style="color:var(--text-secondary); font-size:0.85rem;">MostroP2P/mostro</div>
+        </a>
+        <a href="https://mostro.network" target="_blank" rel="noopener noreferrer" class="glass" style="padding:16px; border-radius:12px; text-align:center; display:block;">
+          <div style="font-size:1.5rem;">🌐</div>
+          <div style="font-weight:600; margin:4px 0;">Site Web</div>
+          <div style="color:var(--text-secondary); font-size:0.85rem;">mostro.network</div>
+        </a>
+      </div>
+
+      <div style="text-align:center; margin-top:56px; padding:32px; border-top:1px solid var(--border);">
+        <h3 style="font-size:1.5rem;">La vue d'ensemble</h3>
+        <p style="color:var(--text-secondary); max-width:600px; margin:16px auto;">Chaque nœud Mostro qui s'active rend le réseau plus fort. Chaque communauté qui opère son propre exchange est une communauté de moins dépendante des plateformes centralisées. Il ne s'agit pas seulement d'échanger du Bitcoin. Il s'agit de construire l'infrastructure de la liberté financière.</p>
+        <p style="font-size:1.1rem; color:var(--accent); font-weight:600; margin-top:24px;">Votre communauté mérite son propre exchange. Nous vous aiderons à le construire.</p>
+      </div>
+    </article>
+  </div>
+
+  <Footer locale={locale} />
+</Layout>
+
+<script>
+  document.getElementById('toc-toggle')?.addEventListener('click', () => {
+    document.getElementById('toc-mobile-list')?.classList.toggle('open');
+  });
+</script>
