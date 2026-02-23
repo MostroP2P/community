@@ -535,10 +535,144 @@ export const translations = {
     },
     langSwitch: "🌐",
   },
+  fr: {
+    nav: {
+      communities: "Communautés",
+      howItWorks: "Comment ça marche",
+      getStarted: "Commencer",
+      faqNav: "FAQ",
+      guideNav: "Guide",
+      joinNav: "Rejoindre le programme",
+      protocol: "Protocole Mostro",
+    },
+    hero: {
+      badge: "⚡ Échange de Bitcoin peer-to-peer",
+      title: "Rejoignez une communauté",
+      titleHighlight: "Mostro",
+      titleEnd: "",
+      desc: "Achetez et vendez du Bitcoin sans intermédiaire. Trouvez votre communauté locale, échangez en peer-to-peer sur le Lightning Network et prenez le contrôle de votre souveraineté financière.",
+      cta: "🚀 Rejoindre le programme",
+      ctaSecondary: "Découvrez comment ça marche →",
+      stat1: "Non-custodial",
+      stat1Label: "Vos clés, vos coins",
+      stat2: "Rapide comme l'éclair",
+      stat2Label: "Règlements instantanés",
+      stat3: "Résistant à la censure",
+      stat3Label: "Construit sur Nostr",
+    },
+    communities: {
+      title: "Trouvez votre communauté",
+      subtitle: "Rejoignez une communauté locale ou le groupe mondial. Échangez dans votre monnaie locale avec des personnes proches de vous.",
+      join: "Rejoindre sur Telegram",
+      website: "Site Web",
+      anyCurrency: "Autres devises",
+      startTitle: "🤝 Vous voulez créer une communauté dans votre pays ?",
+      startCta: "Créer une communauté →",
+      growing: "En croissance",
+    },
+    communityList: {
+      argentina: {
+        name: "Mostro 🇦🇷 Argentina",
+        desc: "Communauté argentine d'échange P2P de Bitcoin. Transactions ARS/BTC via Lightning.",
+      },
+      venezuela: {
+        name: "Mostro 🇻🇪 Venezuela",
+        desc: "Communauté vénézuélienne d'échange P2P de Bitcoin. Transactions en bolívares.",
+      },
+      brasil: {
+        name: "Mostro 🇧🇷 Brasil",
+        desc: "Communauté brésilienne d'échange P2P de Bitcoin via Lightning.",
+      },
+      cuba: {
+        name: "Kmbalache",
+        desc: "Communauté cubaine d'échange P2P de Bitcoin. Le Bitcoin comme outil de liberté financière.",
+      },
+      global: {
+        name: "Mostro 🌎 Global",
+        desc: "La communauté principale de Mostro. Toutes les devises, toutes les régions. Rejoignez-nous si votre pays n'est pas encore listé !",
+      },
+    },
+    howItWorks: {
+      title: "Comment fonctionne Mostro ?",
+      subtitle: "Échange P2P non-custodial en 4 étapes simples. Sans intermédiaire, sans KYC.",
+      step1: "Obtenez un portefeuille Lightning",
+      step1Desc: "Téléchargez un portefeuille compatible Lightning (Phoenix, Mutiny, Zeus, etc.) et alimentez-le avec quelques sats.",
+      step2: "Ouvrez Mostro",
+      step2Desc: "Utilisez l'application mobile Mostro ou le client web pour vous connecter. Sans KYC, sans inscription — juste vos clés Nostr.",
+      step3: "Créez ou prenez un ordre",
+      step3Desc: "Publiez un ordre d'achat/vente avec votre prix et méthode de paiement, ou parcourez les offres des autres traders.",
+      step4: "Échangez en peer-to-peer",
+      step4Desc: "Mostro retient le Bitcoin en séquestre via des hold invoices Lightning. Une fois le paiement fiat confirmé, les sats sont libérés instantanément.",
+      feature1: "Séquestre non-custodial",
+      feature1Desc: "Le Bitcoin est retenu dans des hold invoices Lightning — ni Mostro ni personne d'autre ne contrôle vos fonds.",
+      feature2: "Confidentialité par défaut",
+      feature2Desc: "Toutes les communications sont chiffrées avec NIP-59 gift wraps. Personne ne peut voir vos transactions.",
+      feature3: "Résolution des litiges",
+      feature3Desc: "Les administrateurs de la communauté peuvent arbitrer les litiges. Processus transparent, résultats équitables.",
+    },
+    getStarted: {
+      title: "Prêt à commencer à échanger ?",
+      subtitle: "Téléchargez l'application, rejoignez une communauté et effectuez votre premier échange. Sans KYC, sans intermédiaire, juste du P2P.",
+      mobile: "Application Mobile",
+      mobileDesc: "Téléchargez Mostro pour Android. iOS bientôt disponible.",
+      docs: "Documentation",
+      docsDesc: "Apprenez le protocole, guides de configuration et documentation pour développeurs.",
+      openSource: "Open Source",
+      openSourceDesc: "100% open source. Examinez le code, contribuez, construisez par-dessus.",
+    },
+    footer: {
+      desc: "Exchange P2P de Bitcoin non-custodial construit sur le Lightning Network et Nostr.",
+      protocol: "Protocole",
+      daemon: "Daemon (Rust)",
+      mobileApp: "Application Mobile",
+      community: "Communauté",
+      supportedBy: "Soutenu par",
+      bottom: "Fait avec ⚡ par la communauté Mostro · 100% Open Source",
+    },
+    faq: {
+      title: "Questions Fréquentes",
+      subtitle: "Tout ce que vous devez savoir pour créer une communauté Mostro.",
+      items: [
+        {
+          q: "Qu'est-ce que Mostro ?",
+          a: "Mostro est un exchange peer-to-peer de Bitcoin non-custodial construit sur le Lightning Network et Nostr. Il permet l'échange direct de Bitcoin entre personnes sans intermédiaire — sans KYC, sans garde des fonds, entièrement chiffré et résistant à la censure. En savoir plus sur mostro.network.",
+        },
+        {
+          q: "Qu'est-ce que Mostro Community ?",
+          a: "Mostro Community est un programme de soutien pour les communautés bitcoiners qui souhaitent faire tourner leur propre nœud Mostro. Nous offrons un accompagnement technique, une aide à l'installation et à la configuration, partageons les bonnes pratiques d'autres communautés, et travaillons ensemble pour développer un réseau décentralisé de nœuds P2P fiables à travers le monde.",
+        },
+        {
+          q: "Ai-je besoin d'une autorisation pour utiliser Mostro dans ma communauté ?",
+          a: "Absolument pas. Mostro est 100% open source et sans permission requise. N'importe qui peut faire tourner son propre nœud Mostro, inviter sa communauté à l'utiliser et commencer à échanger — sans demander la permission à personne, sans s'inscrire nulle part. Le code est sur GitHub et fonctionne tel quel.",
+        },
+        {
+          q: "Quels sont les avantages de rejoindre ce programme ?",
+          a: "Les communautés qui rejoignent le programme reçoivent un soutien direct de l'équipe Mostro : aide à la configuration de votre nœud, construction de la confiance au fil du temps, apprentissage de l'expérience d'autres communautés, et à terme, inclusion en tant que nœud de confiance dans l'application mobile Mostro. Il s'agit de construire une relation — nous apprenons à connaître votre communauté, vos leaders et votre fonctionnement. La confiance va dans les deux sens.",
+        },
+        {
+          q: "De quoi ai-je besoin pour créer une communauté ?",
+          a: "Une communauté Bitcoin active avec des leaders engagés, et la volonté de faire tourner un nœud Mostro. Vous n'avez pas besoin d'être technique — nous vous guiderons dans la configuration. Ce qui compte le plus, c'est d'avoir des personnes réelles qui veulent échanger en P2P dans leur monnaie locale.",
+        },
+        {
+          q: "Puis-je faire tourner un nœud Mostro sans rejoindre ce programme ?",
+          a: "Bien sûr. C'est la beauté de l'open source — ça fonctionne avec ou sans nous. Vous pouvez déployer votre propre nœud, le configurer comme vous le souhaitez, et dire à vos utilisateurs d'ajouter la clé publique de votre nœud. Pas de gardien, pas d'approbation nécessaire. Ce programme facilite simplement le parcours et vous connecte au réseau plus large.",
+        },
+        {
+          q: "Quel support technique est inclus ?",
+          a: "Nous aidons avec l'installation du nœud, la configuration, la connectivité Lightning et le dépannage. Nous fournissons également de la documentation, partageons les bonnes pratiques opérationnelles et vous mettons en contact avec d'autres opérateurs de communautés qui sont déjà passés par le processus.",
+        },
+        {
+          q: "Puis-je créer une communauté dans mon pays ?",
+          a: "Oui ! S'il n'y a pas encore de communauté Mostro dans votre pays, vous pouvez être le premier. Rejoignez le groupe Telegram mondial, connectez-vous avec l'équipe, et nous vous aiderons à démarrer. Chaque communauté de ce réseau a commencé avec une personne qui a décidé de faire le premier pas.",
+        },
+      ],
+    },
+    langSwitch: "🌐",
+  },
 } as const;
 
 export type Locale = keyof typeof translations;
-export const locales: Locale[] = ['en', 'es', 'it', 'pt'];
+export const locales: Locale[] = ['en', 'es', 'fr', 'it', 'pt'];
 
 export function t(locale: Locale) {
   return translations[locale];
@@ -547,6 +681,7 @@ export function t(locale: Locale) {
 export function getLocaleFromUrl(url: URL): Locale {
   const [, lang] = url.pathname.split('/');
   if (lang === 'es') return 'es';
+  if (lang === 'fr') return 'fr';
   if (lang === 'it') return 'it';
   if (lang === 'pt') return 'pt';
   return 'en';
@@ -565,6 +700,7 @@ export function getLocaleLabel(locale: Locale): string {
   const labels: Record<Locale, string> = {
     en: 'EN 🇺🇸',
     es: 'ES 🇪🇸',
+    fr: 'FR 🇫🇷',
     it: 'IT 🇮🇹',
     pt: 'PT 🇧🇷',
   };
