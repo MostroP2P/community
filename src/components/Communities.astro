@@ -4,10 +4,6 @@ import { type Locale, t, getLocalePath } from '../i18n/translations';
 interface Props { locale: Locale; }
 const { locale } = Astro.props;
 const i = t(locale);
-
-const communities = [
-  { key: 'cuba' as const, region: "🇨🇺 Cuba", currencies: ["CUP", "MLC"], anyCurrency: true, telegram: "https://t.me/Cuba_Bitcoin/72997", website: "https://cubabitcoin.org/kmbalache/" },
-];
 ---
 
 <section class="section" id="communities">
@@ -15,27 +11,18 @@ const communities = [
     <h2 class="section-title">{i.communities.title}</h2>
     <p class="section-subtitle">{i.communities.subtitle}</p>
 
-    <div class="communities-grid">
-      {communities.map((c) => (
-        <div class="community-card glass">
-          <div class="card-header">
-            <span class="card-region">{c.region}</span>
-            <span class="card-members">{i.communities.growing}</span>
-          </div>
-          <h3 class="card-name">{i.communityList[c.key].name}</h3>
-          <p class="card-desc">{i.communityList[c.key].desc}</p>
-          <div class="card-currencies">
-            {c.currencies.map((cur) => (
-              <span class="currency-tag">{cur}</span>
-            ))}
-            {c.anyCurrency && <span class="currency-tag">{i.communities.anyCurrency}</span>}
-          </div>
-          <div class="card-actions">
-            <a href={c.telegram} target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-sm">{i.communities.join}</a>
-            {c.website && <a href={c.website} target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-sm">{i.communities.website}</a>}
-          </div>
+    <div class="communities-grid" id="communities-grid">
+      <!-- Loading skeleton -->
+      <div class="community-card glass skeleton-card" id="skeleton-1">
+        <div class="skeleton-line skeleton-short"></div>
+        <div class="skeleton-line skeleton-medium"></div>
+        <div class="skeleton-line skeleton-long"></div>
+        <div class="skeleton-line skeleton-long"></div>
+        <div class="skeleton-currencies">
+          <div class="skeleton-tag"></div>
+          <div class="skeleton-tag"></div>
         </div>
-      ))}
+      </div>
     </div>
 
     <div class="add-community">
@@ -45,30 +32,367 @@ const communities = [
   </div>
 </section>
 
+<script>
+  const COMMUNITIES = [
+    {
+      pubkey: '00000235a3e904cfe1213a8a54d6f1ec1bef7cc6bfaabd6193e82931ccf1366a',
+      region: '🇨🇺 Cuba',
+      social: [
+        { type: 'telegram', url: 'https://t.me/Cuba_Bitcoin' },
+      ],
+      website: 'https://cubabitcoin.org/kmbalache/',
+    },
+  ];
+
+  const RELAY = 'wss://relay.mostro.network';
+
+  const SOCIAL_ICONS: Record<string, string> = {
+    telegram: '💬',
+    signal: '📡',
+    x: '𝕏',
+    twitter: '𝕏',
+    instagram: '📸',
+    nostr: '🟣',
+    discord: '🎮',
+    whatsapp: '📱',
+    matrix: '🔗',
+  };
+
+  interface NostrEvent {
+    id: string;
+    pubkey: string;
+    kind: number;
+    tags: string[][];
+    content: string;
+    sig: string;
+    created_at: number;
+  }
+
+  interface CommunityData {
+    pubkey: string;
+    region: string;
+    social: { type: string; url: string }[];
+    website?: string;
+    // From kind 0
+    name?: string;
+    about?: string;
+    picture?: string;
+    metaWebsite?: string;
+    // From kind 38385
+    currencies?: string[];
+    minAmount?: string;
+    maxAmount?: string;
+    fee?: string;
+  }
+
+  function formatSats(sats: string): string {
+    const num = parseInt(sats, 10);
+    if (isNaN(num)) return sats;
+    if (num >= 1_000_000) return (num / 1_000_000).toFixed(1).replace(/\.0$/, '') + 'M';
+    if (num >= 1_000) return (num / 1_000).toFixed(0) + 'K';
+    return num.toLocaleString();
+  }
+
+  function renderCard(c: CommunityData): string {
+    const name = c.name || c.region;
+    const desc = c.about || '';
+    const picture = c.picture || '';
+    const website = c.metaWebsite || c.website || '';
+    const currencies = c.currencies || [];
+    const minMax = c.minAmount && c.maxAmount
+      ? `${formatSats(c.minAmount)} – ${formatSats(c.maxAmount)} sats`
+      : '';
+    const fee = c.fee ? `${(parseFloat(c.fee) * 100).toFixed(1)}%` : '';
+
+    const pictureHtml = picture
+      ? `<img src="${picture}" alt="${name}" class="card-avatar" loading="lazy" />`
+      : `<div class="card-avatar-placeholder">🧌</div>`;
+
+    const currenciesHtml = currencies.length > 0
+      ? currencies.map(cur => `<span class="currency-tag">${cur}</span>`).join('')
+      : '';
+
+    const socialHtml = c.social.map(s => {
+      const icon = SOCIAL_ICONS[s.type] || '🔗';
+      const label = s.type.charAt(0).toUpperCase() + s.type.slice(1);
+      return `<a href="${s.url}" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-sm" title="${label}">${icon} ${label}</a>`;
+    }).join('');
+
+    const websiteHtml = website
+      ? `<a href="${website}" target="_blank" rel="noopener noreferrer" class="btn btn-outline btn-sm" title="Website">🌐 Web</a>`
+      : '';
+
+    const statsHtml = (minMax || fee)
+      ? `<div class="card-stats">
+          ${minMax ? `<span class="stat-item">📊 ${minMax}</span>` : ''}
+          ${fee ? `<span class="stat-item">💰 Fee: ${fee}</span>` : ''}
+        </div>`
+      : '';
+
+    const pubkeyShort = c.pubkey.slice(0, 8) + '…' + c.pubkey.slice(-8);
+
+    return `
+      <div class="community-card glass">
+        <div class="card-header">
+          <div class="card-identity">
+            ${pictureHtml}
+            <div>
+              <h3 class="card-name">${name}</h3>
+              <span class="card-region">${c.region}</span>
+            </div>
+          </div>
+          <button class="copy-pubkey" data-pubkey="${c.pubkey}" title="Copy node pubkey: ${pubkeyShort}">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          </button>
+        </div>
+        ${desc ? `<p class="card-desc">${desc}</p>` : ''}
+        ${currenciesHtml ? `<div class="card-currencies">${currenciesHtml}</div>` : ''}
+        ${statsHtml}
+        <div class="card-actions">
+          ${socialHtml}
+          ${websiteHtml}
+        </div>
+      </div>
+    `;
+  }
+
+  function renderCopyToast(): void {
+    let toast = document.getElementById('copy-toast');
+    if (!toast) {
+      toast = document.createElement('div');
+      toast.id = 'copy-toast';
+      toast.className = 'copy-toast';
+      toast.textContent = '✅ Pubkey copied!';
+      document.body.appendChild(toast);
+    }
+    toast.classList.add('show');
+    setTimeout(() => toast!.classList.remove('show'), 2000);
+  }
+
+  async function fetchFromRelay(pubkeys: string[]): Promise<Map<string, { kind0?: NostrEvent; kind38385?: NostrEvent }>> {
+    const results = new Map<string, { kind0?: NostrEvent; kind38385?: NostrEvent }>();
+    pubkeys.forEach(pk => results.set(pk, {}));
+
+    return new Promise((resolve) => {
+      const timeout = setTimeout(() => {
+        try { ws.close(); } catch {}
+        resolve(results);
+      }, 10000);
+
+      let ws: WebSocket;
+      try {
+        ws = new WebSocket(RELAY);
+      } catch {
+        clearTimeout(timeout);
+        resolve(results);
+        return;
+      }
+
+      const subId = 'mostro-' + Math.random().toString(36).slice(2, 8);
+
+      ws.onopen = () => {
+        // Request kind 0 and kind 38385 for all pubkeys
+        const req = JSON.stringify([
+          'REQ', subId,
+          { kinds: [0], authors: pubkeys },
+          { kinds: [38385], authors: pubkeys, '#y': ['mostro'] },
+        ]);
+        ws.send(req);
+      };
+
+      ws.onmessage = (msg) => {
+        try {
+          const data = JSON.parse(msg.data);
+          if (data[0] === 'EVENT' && data[1] === subId) {
+            const event: NostrEvent = data[2];
+            const entry = results.get(event.pubkey);
+            if (!entry) return;
+
+            if (event.kind === 0) {
+              if (!entry.kind0 || event.created_at > entry.kind0.created_at) {
+                entry.kind0 = event;
+              }
+            } else if (event.kind === 38385) {
+              if (!entry.kind38385 || event.created_at > entry.kind38385.created_at) {
+                entry.kind38385 = event;
+              }
+            }
+          } else if (data[0] === 'EOSE') {
+            clearTimeout(timeout);
+            ws.send(JSON.stringify(['CLOSE', subId]));
+            ws.close();
+            resolve(results);
+          }
+        } catch {}
+      };
+
+      ws.onerror = () => {
+        clearTimeout(timeout);
+        resolve(results);
+      };
+    });
+  }
+
+  function getTag(event: NostrEvent, name: string): string | undefined {
+    const tag = event.tags.find(t => t[0] === name);
+    return tag ? tag[1] : undefined;
+  }
+
+  async function loadCommunities() {
+    const grid = document.getElementById('communities-grid');
+    if (!grid) return;
+
+    const pubkeys = COMMUNITIES.map(c => c.pubkey);
+    const nostrData = await fetchFromRelay(pubkeys);
+
+    const cards: CommunityData[] = COMMUNITIES.map(c => {
+      const data = nostrData.get(c.pubkey);
+      const result: CommunityData = { ...c };
+
+      if (data?.kind0) {
+        try {
+          const meta = JSON.parse(data.kind0.content);
+          result.name = meta.name || undefined;
+          result.about = meta.about || undefined;
+          result.picture = meta.picture || undefined;
+          result.metaWebsite = meta.website || undefined;
+        } catch {}
+      }
+
+      if (data?.kind38385) {
+        const ev = data.kind38385;
+        const fiat = getTag(ev, 'fiat_currencies_accepted');
+        if (fiat) result.currencies = fiat.split(',').map(s => s.trim()).filter(Boolean);
+        result.minAmount = getTag(ev, 'min_order_amount');
+        result.maxAmount = getTag(ev, 'max_order_amount');
+        result.fee = getTag(ev, 'fee');
+      }
+
+      return result;
+    });
+
+    // Render
+    grid.innerHTML = cards.map(renderCard).join('');
+
+    // Attach copy handlers
+    grid.querySelectorAll('.copy-pubkey').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const pubkey = (btn as HTMLElement).dataset.pubkey;
+        if (!pubkey) return;
+        try {
+          await navigator.clipboard.writeText(pubkey);
+          renderCopyToast();
+        } catch {
+          // Fallback
+          const ta = document.createElement('textarea');
+          ta.value = pubkey;
+          ta.style.position = 'fixed';
+          ta.style.opacity = '0';
+          document.body.appendChild(ta);
+          ta.select();
+          document.execCommand('copy');
+          document.body.removeChild(ta);
+          renderCopyToast();
+        }
+      });
+    });
+  }
+
+  loadCommunities();
+</script>
+
 <style>
   .communities-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
     gap: 24px;
     margin-top: 48px;
   }
 
-  .community-card { padding: 28px; display: flex; flex-direction: column; gap: 12px; }
-  .card-header { display: flex; justify-content: space-between; align-items: center; }
-  .card-region { font-size: 0.9rem; color: var(--text-muted); }
-
-  .card-members {
-    font-size: 0.8rem;
-    color: var(--accent);
-    background: rgba(140, 198, 63, 0.1);
-    padding: 4px 10px;
-    border-radius: 99px;
+  .community-card {
+    padding: 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
   }
 
-  .card-name { font-size: 1.3rem; font-weight: 700; }
-  .card-desc { color: var(--text-secondary); font-size: 0.95rem; flex: 1; }
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+  }
 
-  .card-currencies { display: flex; gap: 8px; flex-wrap: wrap; }
+  .card-identity {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    min-width: 0;
+  }
+
+  .card-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    object-fit: cover;
+    flex-shrink: 0;
+    border: 1px solid var(--border);
+  }
+
+  .card-avatar-placeholder {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: rgba(140, 198, 63, 0.1);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    flex-shrink: 0;
+  }
+
+  .card-name {
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin: 0;
+    line-height: 1.3;
+  }
+
+  .card-region {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+  }
+
+  .copy-pubkey {
+    background: rgba(140, 198, 63, 0.08);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px;
+    cursor: pointer;
+    color: var(--text-secondary);
+    transition: all 0.2s;
+    flex-shrink: 0;
+  }
+
+  .copy-pubkey:hover {
+    background: rgba(140, 198, 63, 0.15);
+    color: var(--accent);
+    border-color: var(--accent);
+  }
+
+  .card-desc {
+    color: var(--text-secondary);
+    font-size: 0.93rem;
+    line-height: 1.5;
+    margin: 0;
+  }
+
+  .card-currencies {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
 
   .currency-tag {
     background: rgba(140, 198, 63, 0.08);
@@ -80,8 +404,32 @@ const communities = [
     font-weight: 500;
   }
 
-  .card-actions { margin-top: 8px; display: flex; gap: 10px; flex-wrap: wrap; }
-  .btn-sm { padding: 8px 18px; font-size: 0.85rem; }
+  .card-stats {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .stat-item {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    background: rgba(255, 255, 255, 0.03);
+    padding: 4px 10px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+  }
+
+  .card-actions {
+    margin-top: 4px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .btn-sm {
+    padding: 8px 18px;
+    font-size: 0.85rem;
+  }
 
   .add-community {
     text-align: center;
@@ -90,5 +438,69 @@ const communities = [
     border-top: 1px solid var(--border);
   }
 
-  .add-community p { color: var(--text-secondary); margin-bottom: 16px; font-size: 1.1rem; }
+  .add-community p {
+    color: var(--text-secondary);
+    margin-bottom: 16px;
+    font-size: 1.1rem;
+  }
+
+  /* Loading skeleton */
+  .skeleton-card {
+    min-height: 200px;
+  }
+
+  .skeleton-line {
+    height: 16px;
+    border-radius: 8px;
+    background: linear-gradient(90deg, rgba(255,255,255,0.04) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.04) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+  }
+
+  .skeleton-short { width: 30%; margin-bottom: 12px; }
+  .skeleton-medium { width: 60%; height: 20px; margin-bottom: 12px; }
+  .skeleton-long { width: 90%; margin-bottom: 8px; }
+
+  .skeleton-currencies {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+  }
+
+  .skeleton-tag {
+    width: 50px;
+    height: 28px;
+    border-radius: 6px;
+    background: linear-gradient(90deg, rgba(255,255,255,0.04) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.04) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+  }
+
+  @keyframes shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+
+  /* Copy toast */
+  :global(.copy-toast) {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: rgba(140, 198, 63, 0.95);
+    color: #0a0f1a;
+    padding: 10px 24px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    z-index: 1000;
+    opacity: 0;
+    transition: all 0.3s ease;
+    pointer-events: none;
+  }
+
+  :global(.copy-toast.show) {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
 </style>
