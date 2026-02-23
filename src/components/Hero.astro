@@ -1,6 +1,6 @@
 ---
 import HeroAnimation from './HeroAnimation.astro';
-import { type Locale, t } from '../i18n/translations';
+import { type Locale, t, getLocalePath } from '../i18n/translations';
 
 interface Props { locale: Locale; }
 const { locale } = Astro.props;
@@ -15,7 +15,7 @@ const i = t(locale);
     </h1>
     <p class="hero-desc">{i.hero.desc}</p>
     <div class="hero-actions">
-      <a href={locale === 'en' ? '/call-for-action' : '/es/call-for-action'} class="btn btn-primary">{i.hero.cta}</a>
+      <a href={getLocalePath(locale, '/call-for-action')} class="btn btn-primary">{i.hero.cta}</a>
       <a href="#how-it-works" class="btn btn-outline">{i.hero.ctaSecondary}</a>
     </div>
     <div class="hero-stats">
