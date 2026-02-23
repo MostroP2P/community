@@ -202,7 +202,7 @@ const otherLocales = getOtherLocales(locale);
     // Extract current page (e.g. /guide, /call-for-action) from path
     const segments = path.split('/').filter(Boolean);
     // Remove locale prefix if present
-    const locales = ['es', 'it', 'pt'];
+    const locales = ['es', 'fr', 'it', 'pt'];
     let pagePath = '/';
     if (segments.length > 0 && locales.includes(segments[0])) {
       pagePath = segments.length > 1 ? '/' + segments.slice(1).join('/') : '/';
