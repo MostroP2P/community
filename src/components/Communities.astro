@@ -110,7 +110,7 @@ const i = t(locale);
 
     const currenciesHtml = currencies.length > 0
       ? currencies.map(cur => `<span class="currency-tag">${cur}</span>`).join('')
-      : '';
+      : c.maxAmount ? '<span class="currency-tag currency-all">🌍 All currencies</span>' : '';
 
     const socialHtml = c.social.map(s => {
       const icon = SOCIAL_ICONS[s.type] || '🔗';
@@ -262,7 +262,7 @@ const i = t(locale);
       if (data?.kind38385) {
         const ev = data.kind38385;
         const fiat = getTag(ev, 'fiat_currencies_accepted');
-        if (fiat) result.currencies = fiat.split(',').map(s => s.trim()).filter(Boolean);
+        result.currencies = fiat ? fiat.split(',').map(s => s.trim()).filter(Boolean) : [];
         result.minAmount = getTag(ev, 'min_order_amount');
         result.maxAmount = getTag(ev, 'max_order_amount');
         result.fee = getTag(ev, 'fee');
