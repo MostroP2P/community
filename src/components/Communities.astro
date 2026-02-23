@@ -85,32 +85,46 @@ const i = t(locale);
     fee?: string;
   }
 
+  function escapeHtml(str: string): string {
+    const div = document.createElement('div');
+    div.appendChild(document.createTextNode(str));
+    return div.innerHTML;
+  }
+
+  function isValidUrl(str: string): boolean {
+    try {
+      const url = new URL(str);
+      return url.protocol === 'https:' || url.protocol === 'http:';
+    } catch { return false; }
+  }
+
   function formatSats(sats: string): string {
     const num = parseInt(sats, 10);
-    if (isNaN(num)) return sats;
+    if (isNaN(num)) return '';
     if (num >= 1_000_000) return (num / 1_000_000).toFixed(1).replace(/\.0$/, '') + 'M';
     if (num >= 1_000) return (num / 1_000).toFixed(0) + 'K';
     return num.toLocaleString();
   }
 
   function renderCard(c: CommunityData): string {
-    const name = c.name || c.region;
-    const desc = c.about || '';
-    const picture = c.picture || '';
-    const website = c.metaWebsite || c.website || '';
+    const name = escapeHtml(c.name || c.region);
+    const desc = c.about ? escapeHtml(c.about) : '';
+    const picture = c.picture && isValidUrl(c.picture) ? c.picture : '';
+    const website = c.metaWebsite && isValidUrl(c.metaWebsite) ? c.metaWebsite : (c.website || '');
     const currencies = c.currencies || [];
+    const hasRelayData = c.currencies !== undefined;
     const minMax = c.minAmount && c.maxAmount
       ? `${formatSats(c.minAmount)} – ${formatSats(c.maxAmount)} sats`
       : '';
     const fee = c.fee ? `${(parseFloat(c.fee) * 100).toFixed(1)}%` : '';
 
     const pictureHtml = picture
-      ? `<img src="${picture}" alt="${name}" class="card-avatar" loading="lazy" />`
+      ? `<img src="${escapeHtml(picture)}" alt="${name}" class="card-avatar" loading="lazy" />`
       : `<div class="card-avatar-placeholder">🧌</div>`;
 
     const currenciesHtml = currencies.length > 0
-      ? currencies.map(cur => `<span class="currency-tag">${cur}</span>`).join('')
-      : c.maxAmount ? '<span class="currency-tag currency-all">🌍 All currencies</span>' : '';
+      ? currencies.map(cur => `<span class="currency-tag">${escapeHtml(cur)}</span>`).join('')
+      : hasRelayData ? '<span class="currency-tag currency-all">🌍 All currencies</span>' : '';
 
     const socialHtml = c.social.map(s => {
       const icon = SOCIAL_ICONS[s.type] || '🔗';
@@ -119,7 +133,7 @@ const i = t(locale);
     }).join('');
 
     const websiteHtml = website
-      ? `<a href="${website}" target="_blank" rel="noopener noreferrer" class="btn btn-outline btn-sm" title="Website">🌐 Web</a>`
+      ? `<a href="${escapeHtml(website)}" target="_blank" rel="noopener noreferrer" class="btn btn-outline btn-sm" title="Website">🌐 Web</a>`
       : '';
 
     const statsHtml = (minMax || fee)
