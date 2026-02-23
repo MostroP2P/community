@@ -695,12 +695,12 @@ docker compose -f /opt/mostro/docker/compose.yml logs -f mostro</code></pre>
       <pre><code>export MOSTRO_TAG=v0.16.3
 docker stop mostro
 docker rm mostro
-docker pull mostrop2p/mostro:${MOSTRO_TAG}
+docker pull mostrop2p/mostro:$MOSTRO_TAG
 docker run -d --name mostro \
   --restart unless-stopped \
   --add-host=host.docker.internal:host-gateway \
   -v ~/mostro-config:/config \
-  mostrop2p/mostro:${MOSTRO_TAG}</code></pre>
+  mostrop2p/mostro:$MOSTRO_TAG</code></pre>
 
       <p><strong>Docker Build:</strong></p>
       <pre><code>cd /opt/mostro
