@@ -30,6 +30,10 @@ const i = t(locale);
         <a href="https://hrf.org" target="_blank" class="sponsor-logo">
           <img src="/images/hrf-logo.png" alt="Human Rights Foundation" height="36" />
         </a>
+        <a href="https://opensats.org" target="_blank" class="sponsor-logo opensats-link">
+          <img src="/images/opensats-logo.svg" alt="OpenSats" height="22" />
+          <span>OpenSats</span>
+        </a>
       </div>
     </div>
     <div class="footer-bottom">
@@ -55,6 +59,16 @@ const i = t(locale);
   }
 
   .sponsor-logo:hover img { opacity: 1; }
+
+  .opensats-link {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+  }
+
+  .opensats-link:hover { color: var(--accent); }
 
   .footer-bottom { width: 100%; text-align: center; padding-top: 32px; border-top: 1px solid var(--border); margin-top: 16px; }
   .footer-bottom p { color: var(--text-muted); font-size: 0.8rem; }
