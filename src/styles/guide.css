@@ -54,6 +54,8 @@
 /* Guide content */
 .guide-content {
   max-width: 800px;
+  min-width: 0;
+  overflow-wrap: break-word;
 }
 
 .guide-content h1 {
@@ -186,9 +188,10 @@
   margin-bottom: 24px;
   background: var(--bg-card);
   border-radius: 8px;
-  overflow: hidden;
+  overflow-x: auto;
   border: 1px solid var(--border);
   font-size: 0.9rem;
+  display: block;
 }
 
 .guide-table thead th {
