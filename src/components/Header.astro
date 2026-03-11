@@ -63,6 +63,7 @@ const otherLocales = getOtherLocales(locale);
     align-items: center;
     justify-content: space-between;
     height: 72px;
+    min-width: 0; /* Allow flex children to shrink within container */
   }
 
   .logo {
@@ -72,11 +73,25 @@ const otherLocales = getOtherLocales(locale);
     font-size: 1.3rem;
     font-weight: 700;
     color: var(--text-primary);
+    flex-shrink: 0;      /* Prevent logo from being squeezed by flex siblings */
+    white-space: nowrap; /* Prevent "Mostro.community" from wrapping or merging */
   }
 
   .logo:hover { color: var(--text-primary); }
+
   .logo-icon { font-size: 1.6rem; }
   .logo-accent { color: var(--accent); }
+
+  /* Scale logo down on narrow phones so lang button has room */
+  @media (max-width: 480px) {
+    .logo {
+      font-size: 1.05rem;
+      gap: 6px;
+    }
+    .logo-icon {
+      font-size: 1.35rem;
+    }
+  }
 
   .nav {
     display: flex;
@@ -176,7 +191,33 @@ const otherLocales = getOtherLocales(locale);
     transition: 0.3s;
   }
 
-  @media (max-width: 768px) {
+  /*
+   * Tier 1 — Graceful compression (1025px–1200px)
+   * The nav has 8 items. This tier tightens spacing to keep all
+   * links visible on large tablets / small laptops before collapsing.
+   */
+  @media (max-width: 1280px) {
+    .nav {
+      gap: 16px;
+    }
+
+    .nav a {
+      font-size: 0.875rem;
+    }
+
+    .btn-sm {
+      padding: 7px 14px;
+      font-size: 0.8rem;
+    }
+  }
+
+  /*
+   * Tier 2 — Mobile / tablet collapse (≤1024px)
+   * Raised from 768px → 1024px. With 8 nav items the minimum
+   * comfortable desktop width is ~1100px. 1024px is the nearest
+   * industry-standard breakpoint (Tailwind lg, iPad landscape).
+   */
+  @media (max-width: 1100px) {
     .nav { display: none; }
     .nav .lang-dropdown { display: none; }
     .mobile-actions { display: flex; }
@@ -233,16 +274,31 @@ const otherLocales = getOtherLocales(locale);
 
   document.getElementById('mobile-menu-btn')?.addEventListener('click', () => {
     const nav = document.querySelector('.nav') as HTMLElement;
-    if (nav) {
-      nav.style.display = nav.style.display === 'flex' ? 'none' : 'flex';
-      nav.style.flexDirection = 'column';
-      nav.style.position = 'absolute';
-      nav.style.top = '72px';
-      nav.style.left = '0';
-      nav.style.right = '0';
-      nav.style.background = 'rgba(29, 33, 44, 0.95)';
-      nav.style.padding = '24px';
-      nav.style.borderBottom = '1px solid var(--border)';
+    const btn = document.getElementById('mobile-menu-btn');
+    if (!nav) return;
+
+    // Use data attribute for state — nav.style.display is '' on first click
+    // because CSS-applied display:none does not set the inline style property
+    const isOpen = nav.getAttribute('data-mobile-open') === 'true';
+
+    if (isOpen) {
+      nav.removeAttribute('style');
+      nav.removeAttribute('data-mobile-open');
+      btn?.setAttribute('aria-expanded', 'false');
+    } else {
+      Object.assign(nav.style, {
+        display: 'flex',
+        flexDirection: 'column',
+        position: 'absolute',
+        top: '72px',
+        left: '0',
+        right: '0',
+        background: 'rgba(29, 33, 44, 0.95)',
+        padding: '24px',
+        borderBottom: '1px solid var(--border)',
+      });
+      nav.setAttribute('data-mobile-open', 'true');
+      btn?.setAttribute('aria-expanded', 'true');
     }
   });
 </script>
