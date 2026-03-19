@@ -626,22 +626,81 @@ port = 50051</code></pre>
       <h3 id="mostrix">5.2 Mostrix — Tu herramienta de administración</h3>
       <p>Mostrix es un cliente basado en terminal (TUI) para resolución de disputas. Si ejecutas un nodo Mostro, necesitas Mostrix.</p>
 
-      <pre><code># Instalar dependencias
+      <h4>Opción A: Descargar binario pre-compilado (Recomendado)</h4>
+      <p>Descarga la última versión para tu plataforma desde <a href="https://github.com/MostroP2P/mostrix/releases" target="_blank" rel="noopener noreferrer">GitHub Releases</a>:</p>
+
+      <pre><code># Linux (x86_64)
+wget https://github.com/MostroP2P/mostrix/releases/latest/download/mostrix-x86_64-unknown-linux-musl
+chmod +x mostrix-x86_64-unknown-linux-musl
+./mostrix-x86_64-unknown-linux-musl
+
+# Linux (ARM64 / Raspberry Pi 4)
+wget https://github.com/MostroP2P/mostrix/releases/latest/download/mostrix-aarch64-unknown-linux-musl
+chmod +x mostrix-aarch64-unknown-linux-musl
+./mostrix-aarch64-unknown-linux-musl
+
+# Windows
+# Descarga mostrix-x86_64-pc-windows-gnu.exe desde la página de releases</code></pre>
+
+      <div class="callout tip">
+        <div class="callout-title">🔐 Verifica la release</div>
+        <p>Siempre verifica la firma del binario antes de ejecutarlo. Descarga <code>manifest.txt</code> y los archivos de firma desde la release:</p>
+        <pre><code># Importar claves de los desarrolladores (una sola vez)
+curl https://raw.githubusercontent.com/MostroP2P/mostrix/main/keys/negrunch.asc | gpg --import
+curl https://raw.githubusercontent.com/MostroP2P/mostrix/main/keys/arkanoider.asc | gpg --import
+
+# Descargar manifest y firmas
+wget https://github.com/MostroP2P/mostrix/releases/latest/download/manifest.txt
+wget https://github.com/MostroP2P/mostrix/releases/latest/download/manifest.txt.sig.negrunch
+wget https://github.com/MostroP2P/mostrix/releases/latest/download/manifest.txt.sig.arkanoider
+
+# Verificar firmas
+gpg --verify manifest.txt.sig.negrunch manifest.txt
+gpg --verify manifest.txt.sig.arkanoider manifest.txt
+
+# Verificar que el checksum coincida
+shasum -a 256 mostrix-x86_64-unknown-linux-musl
+# Compara la salida con el hash en manifest.txt</code></pre>
+      </div>
+
+      <h4>Opción B: Compilar desde el código fuente</h4>
+      <p>Si prefieres compilar desde el código fuente o necesitas una plataforma que no está en las releases:</p>
+
+      <pre><code># Instalar dependencias (Ubuntu/Debian)
 sudo apt install -y cmake build-essential pkg-config
+
+# Instalar Rust (si no está instalado)
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 
 # Clonar y compilar
 git clone https://github.com/MostroP2P/mostrix.git
 cd mostrix
 cargo build --release
-cargo run</code></pre>
 
-      <p>Configurar Mostrix en modo admin en <code>~/.mostrix/settings.toml</code>:</p>
-      <pre><code>mostro_pubkey = "TU_PUBKEY_MOSTRO_HEX"
-nsec_privkey = "nsec1tu_clave_personal"
-admin_privkey = "nsec1tu_clave_admin"
-relays = ["wss://relay.mostro.network", "wss://nos.lol"]
-currencies = ["USD", "EUR", "ARS"]
-user_mode = "admin"</code></pre>
+# Ejecutar
+./target/release/mostrix</code></pre>
+
+      <h4>Primera ejecución y configuración</h4>
+      <p>En la primera ejecución, Mostrix <strong>genera automáticamente</strong> un archivo <code>~/.mostrix/settings.toml</code> con valores por defecto sensatos, incluyendo un par de claves Nostr nuevo. Tu <code>npub</code> generado se mostrará en la terminal.</p>
+
+      <div class="callout important">
+        <div class="callout-title">⚠️ Importante: Configura tu pubkey de Mostro</div>
+        <p>La configuración auto-generada usa la <strong>pubkey oficial de Mostro</strong> por defecto. Debes cambiarla por la <strong>pubkey de tu propio nodo Mostro</strong>:</p>
+        <pre><code># Editar la configuración
+nano ~/.mostrix/settings.toml
+
+# Cambia esta línea por la pubkey de TU nodo Mostro:
+mostro_pubkey = "TU_PUBKEY_MOSTRO_HEX"</code></pre>
+      </div>
+
+      <p>Para modo admin (resolución de disputas), también configura:</p>
+      <pre><code># ~/.mostrix/settings.toml
+mostro_pubkey = "TU_PUBKEY_MOSTRO_HEX"
+nsec_privkey = "nsec1tu_clave_personal"      # Auto-generada en la primera ejecución
+admin_privkey = "nsec1tu_clave_admin"        # Tu clave admin del config de Mostro
+relays = ["wss://relay.mostro.network"]
+currencies_filter = []                        # Vacío = mostrar todas las monedas
+user_mode = "admin"                           # Habilitar modo admin</code></pre>
 
       <h3 id="watchdog">5.3 mostro-watchdog — Notificaciones de disputas en Telegram</h3>
       <p><code>mostro-watchdog</code> monitorea tu nodo Mostro para disputas y envía alertas instantáneas por Telegram. Esencial para tiempos de respuesta rápidos.</p>
