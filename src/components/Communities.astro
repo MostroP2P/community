@@ -49,6 +49,14 @@ const i = t(locale);
         { type: 'telegram', url: 'https://t.me/nostromostro' },
       ],
     },
+    {
+      pubkey: 'npub1qqqqj79vck2v2p5hd3j4km0vhuk54ujllk4xdq8j49tgkz5ggsdsvgn7vr',
+      region: 'Colombia',
+      social: [
+        { type: 'telegram', url: 'https://t.me/ColombiaP2P' },
+        { type: 'x', url: 'https://x.com/ColombiaP2P' },
+      ],
+    },
   ];
 
   const RELAY = 'wss://relay.mostro.network';
@@ -212,7 +220,8 @@ const i = t(locale);
     const socialHtml = c.social.map(s => {
       const icon = SOCIAL_ICONS[s.type] || '🔗';
       const label = s.type.charAt(0).toUpperCase() + s.type.slice(1);
-      return `<a href="${s.url}" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-sm" title="${label}">${icon} ${label}</a>`;
+      const labelText = label == 'X' ? '' : label; // Avoid "X" label, just show the icon
+      return `<a href="${s.url}" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-sm" title="${label}">${icon} ${labelText}</a>`;
     }).join('');
 
     const websiteHtml = website
