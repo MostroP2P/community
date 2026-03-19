@@ -1,9 +1,24 @@
 ---
 import { type Locale, t, getLocalePath } from '../i18n/translations';
+import { COMMUNITIES, RELAY, SOCIAL_ICONS } from '../config/communities';
 
 interface Props { locale: Locale; }
 const { locale } = Astro.props;
 const i = t(locale);
+
+// Serialize config and translations for client-side use
+const clientConfig = JSON.stringify({
+  communities: COMMUNITIES,
+  relay: RELAY,
+  socialIcons: SOCIAL_ICONS,
+  translations: {
+    allCurrencies: i.communities.allCurrencies,
+    fee: i.communities.fee,
+    web: i.communities.web,
+    pubkeyCopied: i.communities.pubkeyCopied,
+    copyPubkey: i.communities.copyPubkey,
+  },
+});
 ---
 
 <section class="section" id="communities">
@@ -32,45 +47,9 @@ const i = t(locale);
   </div>
 </section>
 
-<script>
-  const COMMUNITIES = [
-    {
-      pubkey: '00000235a3e904cfe1213a8a54d6f1ec1bef7cc6bfaabd6193e82931ccf1366a',
-      region: '🇨🇺 Cuba',
-      social: [
-        { type: 'telegram', url: 'https://t.me/Cuba_Bitcoin' },
-      ],
-      website: 'https://cubabitcoin.org/kmbalache/',
-    },
-    {
-      pubkey: 'npub1qqqvcqssrmpfa65uuc3jtp6jh8ta5ekz0pz76f5ydhgtplrnddqqrqe7xr',
-      region: 'España',
-      social: [
-        { type: 'telegram', url: 'https://t.me/nostromostro' },
-      ],
-    },
-    {
-      pubkey: 'npub1qqqqj79vck2v2p5hd3j4km0vhuk54ujllk4xdq8j49tgkz5ggsdsvgn7vr',
-      region: 'Colombia',
-      social: [
-        { type: 'telegram', url: 'https://t.me/ColombiaP2P' },
-        { type: 'x', url: 'https://x.com/ColombiaP2P' },
-      ],
-    },
-  ];
-
-  const RELAY = 'wss://relay.mostro.network';
-
-  const SOCIAL_ICONS: Record<string, string> = {
-    telegram: '💬',
-    signal: '📡',
-    x: '𝕏',
-    instagram: '📸',
-    nostr: '🟣',
-    discord: '🎮',
-    whatsapp: '📱',
-    matrix: '🔗',
-  };
+<script define:vars={{ clientConfig }}>
+  const CONFIG = JSON.parse(clientConfig);
+  const { communities: COMMUNITIES, relay: RELAY, socialIcons: SOCIAL_ICONS, translations: T } = CONFIG;
 
   interface NostrEvent {
     id: string;
@@ -215,23 +194,23 @@ const i = t(locale);
 
     const currenciesHtml = currencies.length > 0
       ? currencies.map(cur => `<span class="currency-tag">${escapeHtml(cur)}</span>`).join('')
-      : hasRelayData ? '<span class="currency-tag currency-all">🌍 All currencies</span>' : '';
+      : hasRelayData ? `<span class="currency-tag currency-all">${T.allCurrencies}</span>` : '';
 
     const socialHtml = c.social.map(s => {
       const icon = SOCIAL_ICONS[s.type] || '🔗';
       const label = s.type.charAt(0).toUpperCase() + s.type.slice(1);
-      const labelText = label == 'X' ? '' : label; // Avoid "X" label, just show the icon
+      const labelText = label == 'X' ? '' : label;
       return `<a href="${s.url}" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-sm" title="${label}">${icon} ${labelText}</a>`;
     }).join('');
 
     const websiteHtml = website
-      ? `<a href="${escapeHtml(website)}" target="_blank" rel="noopener noreferrer" class="btn btn-outline btn-sm" title="Website">🌐 Web</a>`
+      ? `<a href="${escapeHtml(website)}" target="_blank" rel="noopener noreferrer" class="btn btn-outline btn-sm" title="Website">${T.web}</a>`
       : '';
 
     const statsHtml = (minMax || fee)
       ? `<div class="card-stats">
           ${minMax ? `<span class="stat-item">📊 ${minMax}</span>` : ''}
-          ${fee ? `<span class="stat-item">💰 Fee: ${fee}</span>` : ''}
+          ${fee ? `<span class="stat-item">💰 ${T.fee}: ${fee}</span>` : ''}
         </div>`
       : '';
 
@@ -247,7 +226,7 @@ const i = t(locale);
               <span class="card-region">${c.region}</span>
             </div>
           </div>
-          <button class="copy-pubkey" data-pubkey="${c.pubkey}" title="Copy node pubkey: ${pubkeyShort}">
+          <button class="copy-pubkey" data-pubkey="${c.pubkey}" title="${T.copyPubkey}: ${pubkeyShort}">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
           </button>
         </div>
@@ -268,7 +247,7 @@ const i = t(locale);
       toast = document.createElement('div');
       toast.id = 'copy-toast';
       toast.className = 'copy-toast';
-      toast.textContent = '✅ Pubkey copied!';
+      toast.textContent = T.pubkeyCopied;
       document.body.appendChild(toast);
     }
     toast.classList.add('show');
