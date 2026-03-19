@@ -27,34 +27,14 @@ export const translations = {
     communities: {
       title: "Find your community",
       subtitle: "Join a local community or the global group. Trade in your local currency with people near you.",
-      join: "Join on Telegram",
-      website: "Web Site",
-      anyCurrency: "Other currencies",
       startTitle: "🤝 Want to start a community in your country?",
       startCta: "Start a community →",
-      growing: "Growing",
-    },
-    communityList: {
-      argentina: {
-        name: "Mostro 🇦🇷 Argentina",
-        desc: "P2P Bitcoin trading community in Argentina. ARS/BTC trades via Lightning.",
-      },
-      venezuela: {
-        name: "Mostro 🇻🇪 Venezuela",
-        desc: "Venezuelan P2P Bitcoin exchange community. Trades in bolívares.",
-      },
-      brasil: {
-        name: "Mostro 🇧🇷 Brasil",
-        desc: "Brazilian P2P Bitcoin trading community via Lightning.",
-      },
-      cuba: {
-        name: "Kmbalache",
-        desc: "Cuban P2P Bitcoin exchange community. Bitcoin as a tool for financial freedom.",
-      },
-      global: {
-        name: "Mostro 🌎 Global",
-        desc: "The main Mostro community. All currencies, all regions. Join if your country isn't listed yet!",
-      },
+      // Card UI strings
+      allCurrencies: "🌍 All currencies",
+      fee: "Fee",
+      web: "🌐 Web",
+      pubkeyCopied: "✅ Pubkey copied!",
+      copyPubkey: "Copy node pubkey",
     },
     howItWorks: {
       title: "How does Mostro work?",
@@ -161,34 +141,14 @@ export const translations = {
     communities: {
       title: "Encuentra tu comunidad",
       subtitle: "Únete a una comunidad local o al grupo global. Opera en tu moneda local con personas cercanas.",
-      join: "Unirse en Telegram",
-      website: "Sitio Web",
-      anyCurrency: "Otras monedas",
       startTitle: "🤝 ¿Quieres iniciar una comunidad en tu país?",
       startCta: "Inicia una comunidad →",
-      growing: "Creciendo",
-    },
-    communityList: {
-      argentina: {
-        name: "Mostro 🇦🇷 Argentina",
-        desc: "Comunidad argentina de intercambio P2P de Bitcoin. Operaciones ARS/BTC vía Lightning.",
-      },
-      venezuela: {
-        name: "Mostro 🇻🇪 Venezuela",
-        desc: "Comunidad venezolana de intercambio P2P de Bitcoin. Operaciones en bolívares.",
-      },
-      brasil: {
-        name: "Mostro 🇧🇷 Brasil",
-        desc: "Comunidad brasileña de trading P2P de Bitcoin vía Lightning.",
-      },
-      cuba: {
-        name: "Kmbalache",
-        desc: "Comunidad cubana de intercambio P2P de Bitcoin. Bitcoin como herramienta de libertad financiera.",
-      },
-      global: {
-        name: "Mostro 🌎 Global",
-        desc: "La comunidad principal de Mostro. Todas las monedas, todas las regiones. ¡Únete si tu país aún no aparece!",
-      },
+      // Card UI strings
+      allCurrencies: "🌍 Todas las monedas",
+      fee: "Comisión",
+      web: "🌐 Web",
+      pubkeyCopied: "✅ Pubkey copiada!",
+      copyPubkey: "Copiar pubkey del nodo",
     },
     howItWorks: {
       title: "¿Cómo funciona Mostro?",
@@ -295,34 +255,14 @@ export const translations = {
     communities: {
       title: "Trova la tua comunità",
       subtitle: "Unisciti a una comunità locale o al gruppo globale. Fai trading nella tua valuta locale con persone vicine a te.",
-      join: "Unisciti su Telegram",
-      website: "Sito Web",
-      anyCurrency: "Altre valute",
       startTitle: "🤝 Vuoi avviare una comunità nel tuo paese?",
       startCta: "Avvia una comunità →",
-      growing: "In crescita",
-    },
-    communityList: {
-      argentina: {
-        name: "Mostro 🇦🇷 Argentina",
-        desc: "Comunità argentina di trading P2P di Bitcoin. Scambi ARS/BTC via Lightning.",
-      },
-      venezuela: {
-        name: "Mostro 🇻🇪 Venezuela",
-        desc: "Comunità venezuelana di scambio P2P di Bitcoin. Scambi in bolívares.",
-      },
-      brasil: {
-        name: "Mostro 🇧🇷 Brasil",
-        desc: "Comunità brasiliana di trading P2P di Bitcoin via Lightning.",
-      },
-      cuba: {
-        name: "Kmbalache",
-        desc: "Comunità cubana di scambio P2P di Bitcoin. Bitcoin come strumento di libertà finanziaria.",
-      },
-      global: {
-        name: "Mostro 🌎 Globale",
-        desc: "La comunità principale di Mostro. Tutte le valute, tutte le regioni. Unisciti se il tuo paese non è ancora elencato!",
-      },
+      // Card UI strings
+      allCurrencies: "🌍 Tutte le valute",
+      fee: "Commissione",
+      web: "🌐 Web",
+      pubkeyCopied: "✅ Pubkey copiata!",
+      copyPubkey: "Copia pubkey del nodo",
     },
     howItWorks: {
       title: "Come funziona Mostro?",
@@ -429,34 +369,14 @@ export const translations = {
     communities: {
       title: "Encontre sua comunidade",
       subtitle: "Junte-se a uma comunidade local ou ao grupo global. Negocie na sua moeda local com pessoas perto de você.",
-      join: "Entrar no Telegram",
-      website: "Site",
-      anyCurrency: "Outras moedas",
       startTitle: "🤝 Quer iniciar uma comunidade no seu país?",
       startCta: "Inicie uma comunidade →",
-      growing: "Crescendo",
-    },
-    communityList: {
-      argentina: {
-        name: "Mostro 🇦🇷 Argentina",
-        desc: "Comunidade argentina de trading P2P de Bitcoin. Negociações ARS/BTC via Lightning.",
-      },
-      venezuela: {
-        name: "Mostro 🇻🇪 Venezuela",
-        desc: "Comunidade venezuelana de troca P2P de Bitcoin. Negociações em bolívares.",
-      },
-      brasil: {
-        name: "Mostro 🇧🇷 Brasil",
-        desc: "Comunidade brasileira de trading P2P de Bitcoin via Lightning.",
-      },
-      cuba: {
-        name: "Kmbalache",
-        desc: "Comunidade cubana de troca P2P de Bitcoin. Bitcoin como ferramenta de liberdade financeira.",
-      },
-      global: {
-        name: "Mostro 🌎 Global",
-        desc: "A comunidade principal do Mostro. Todas as moedas, todas as regiões. Junte-se se o seu país ainda não está listado!",
-      },
+      // Card UI strings
+      allCurrencies: "🌍 Todas as moedas",
+      fee: "Taxa",
+      web: "🌐 Web",
+      pubkeyCopied: "✅ Pubkey copiada!",
+      copyPubkey: "Copiar pubkey do nó",
     },
     howItWorks: {
       title: "Como funciona o Mostro?",
@@ -563,34 +483,14 @@ export const translations = {
     communities: {
       title: "Trouvez votre communauté",
       subtitle: "Rejoignez une communauté locale ou le groupe mondial. Échangez dans votre monnaie locale avec des personnes proches de vous.",
-      join: "Rejoindre sur Telegram",
-      website: "Site Web",
-      anyCurrency: "Autres devises",
       startTitle: "🤝 Vous voulez créer une communauté dans votre pays ?",
       startCta: "Créer une communauté →",
-      growing: "En croissance",
-    },
-    communityList: {
-      argentina: {
-        name: "Mostro 🇦🇷 Argentina",
-        desc: "Communauté argentine d'échange P2P de Bitcoin. Transactions ARS/BTC via Lightning.",
-      },
-      venezuela: {
-        name: "Mostro 🇻🇪 Venezuela",
-        desc: "Communauté vénézuélienne d'échange P2P de Bitcoin. Transactions en bolívares.",
-      },
-      brasil: {
-        name: "Mostro 🇧🇷 Brasil",
-        desc: "Communauté brésilienne d'échange P2P de Bitcoin via Lightning.",
-      },
-      cuba: {
-        name: "Kmbalache",
-        desc: "Communauté cubaine d'échange P2P de Bitcoin. Le Bitcoin comme outil de liberté financière.",
-      },
-      global: {
-        name: "Mostro 🌎 Global",
-        desc: "La communauté principale de Mostro. Toutes les devises, toutes les régions. Rejoignez-nous si votre pays n'est pas encore listé !",
-      },
+      // Card UI strings
+      allCurrencies: "🌍 Toutes les devises",
+      fee: "Frais",
+      web: "🌐 Web",
+      pubkeyCopied: "✅ Pubkey copiée !",
+      copyPubkey: "Copier la pubkey du nœud",
     },
     howItWorks: {
       title: "Comment fonctionne Mostro ?",
