@@ -51,48 +51,20 @@ const clientConfig = JSON.stringify({
   const CONFIG = JSON.parse(clientConfig);
   const { communities: COMMUNITIES, relay: RELAY, socialIcons: SOCIAL_ICONS, translations: T } = CONFIG;
 
-  interface NostrEvent {
-    id: string;
-    pubkey: string;
-    kind: number;
-    tags: string[][];
-    content: string;
-    sig: string;
-    created_at: number;
-  }
-
-  interface CommunityData {
-    pubkey: string;
-    relayPubkey?: string;
-    region: string;
-    social: { type: string; url: string }[];
-    website?: string;
-    // From kind 0
-    name?: string;
-    about?: string;
-    picture?: string;
-    metaWebsite?: string;
-    // From kind 38385
-    currencies?: string[];
-    minAmount?: string;
-    maxAmount?: string;
-    fee?: string;
-  }
-
-  function escapeHtml(str: string): string {
+  function escapeHtml(str) {
     const div = document.createElement('div');
     div.appendChild(document.createTextNode(str));
     return div.innerHTML;
   }
 
-  function isValidUrl(str: string): boolean {
+  function isValidUrl(str) {
     try {
       const url = new URL(str);
       return url.protocol === 'https:' || url.protocol === 'http:';
     } catch { return false; }
   }
 
-  function formatSats(sats: string): string {
+  function formatSats(sats) {
     const num = parseInt(sats, 10);
     if (isNaN(num)) return '';
     if (num >= 1_000_000) return (num / 1_000_000).toFixed(1).replace(/\.0$/, '') + 'M';
@@ -100,27 +72,18 @@ const clientConfig = JSON.stringify({
     return num.toLocaleString();
   }
 
-  function isHexPubkey(value: string): boolean {
+  function isHexPubkey(value) {
     return /^[0-9a-f]{64}$/i.test(value);
   }
 
-  function hexToBytes(hex: string): Uint8Array {
-    const normalized = hex.toLowerCase();
-    const bytes = new Uint8Array(normalized.length / 2);
-    for (let i = 0; i < normalized.length; i += 2) {
-      bytes[i / 2] = parseInt(normalized.slice(i, i + 2), 16);
-    }
-    return bytes;
-  }
-
-  function bytesToHex(bytes: Uint8Array): string {
+  function bytesToHex(bytes) {
     return Array.from(bytes, byte => byte.toString(16).padStart(2, '0')).join('');
   }
 
-  function convertBits(data: number[], fromBits: number, toBits: number, pad: boolean): number[] | null {
+  function convertBits(data, fromBits, toBits, pad) {
     let acc = 0;
     let bits = 0;
-    const result: number[] = [];
+    const result = [];
     const maxV = (1 << toBits) - 1;
     const maxAcc = (1 << (fromBits + toBits - 1)) - 1;
 
@@ -143,7 +106,7 @@ const clientConfig = JSON.stringify({
     return result;
   }
 
-  function decodeNpub(value: string): string | null {
+  function decodeNpub(value) {
     const normalized = value.trim().toLowerCase();
     if (!normalized.startsWith('npub1')) return null;
 
@@ -170,13 +133,13 @@ const clientConfig = JSON.stringify({
     return isHexPubkey(hex) ? hex : null;
   }
 
-  function normalizePubkey(value: string): string | null {
+  function normalizePubkey(value) {
     const normalized = value.trim();
     if (isHexPubkey(normalized)) return normalized.toLowerCase();
     return decodeNpub(normalized);
   }
 
-  function renderCard(c: CommunityData): string {
+  function renderCard(c) {
     const name = escapeHtml(c.name || c.region);
     const desc = c.about ? escapeHtml(c.about) : '';
     const picture = c.picture && isValidUrl(c.picture) ? c.picture : '';
@@ -241,7 +204,7 @@ const clientConfig = JSON.stringify({
     `;
   }
 
-  function renderCopyToast(): void {
+  function renderCopyToast() {
     let toast = document.getElementById('copy-toast');
     if (!toast) {
       toast = document.createElement('div');
@@ -251,11 +214,13 @@ const clientConfig = JSON.stringify({
       document.body.appendChild(toast);
     }
     toast.classList.add('show');
-    setTimeout(() => toast!.classList.remove('show'), 2000);
+    setTimeout(() => {
+      if (toast) toast.classList.remove('show');
+    }, 2000);
   }
 
-  async function fetchFromRelay(pubkeys: string[]): Promise<Map<string, { kind0?: NostrEvent; kind38385?: NostrEvent }>> {
-    const results = new Map<string, { kind0?: NostrEvent; kind38385?: NostrEvent }>();
+  async function fetchFromRelay(pubkeys) {
+    const results = new Map();
     pubkeys.forEach(pk => results.set(pk, {}));
 
     return new Promise((resolve) => {
@@ -264,7 +229,7 @@ const clientConfig = JSON.stringify({
         resolve(results);
       }, 10000);
 
-      let ws: WebSocket;
+      let ws;
       try {
         ws = new WebSocket(RELAY);
       } catch {
@@ -289,7 +254,7 @@ const clientConfig = JSON.stringify({
         try {
           const data = JSON.parse(msg.data);
           if (data[0] === 'EVENT' && data[1] === subId) {
-            const event: NostrEvent = data[2];
+            const event = data[2];
             const entry = results.get(event.pubkey);
             if (!entry) return;
 
@@ -318,7 +283,7 @@ const clientConfig = JSON.stringify({
     });
   }
 
-  function getTag(event: NostrEvent, name: string): string | undefined {
+  function getTag(event, name) {
     const tag = event.tags.find(t => t[0] === name);
     return tag ? tag[1] : undefined;
   }
@@ -332,14 +297,14 @@ const clientConfig = JSON.stringify({
         const relayPubkey = normalizePubkey(c.pubkey);
         return relayPubkey ? { ...c, relayPubkey } : null;
       })
-      .filter((community): community is CommunityData => community !== null);
+      .filter(community => community !== null);
 
-    const pubkeys = [...new Set(normalizedCommunities.map(c => c.relayPubkey!))];
+    const pubkeys = [...new Set(normalizedCommunities.map(c => c.relayPubkey))];
     const nostrData = await fetchFromRelay(pubkeys);
 
-    const cards: CommunityData[] = normalizedCommunities.map(c => {
-      const data = nostrData.get(c.relayPubkey!);
-      const result: CommunityData = { ...c };
+    const cards = normalizedCommunities.map(c => {
+      const data = nostrData.get(c.relayPubkey);
+      const result = { ...c };
 
       if (data?.kind0) {
         try {
@@ -369,7 +334,7 @@ const clientConfig = JSON.stringify({
     // Attach copy handlers
     grid.querySelectorAll('.copy-pubkey').forEach(btn => {
       btn.addEventListener('click', async () => {
-        const pubkey = (btn as HTMLElement).dataset.pubkey;
+        const pubkey = btn.dataset.pubkey;
         if (!pubkey) return;
         try {
           await navigator.clipboard.writeText(pubkey);
