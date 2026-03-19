@@ -42,6 +42,13 @@ const i = t(locale);
       ],
       website: 'https://cubabitcoin.org/kmbalache/',
     },
+    {
+      pubkey: 'npub1qqqvcqssrmpfa65uuc3jtp6jh8ta5ekz0pz76f5ydhgtplrnddqqrqe7xr',
+      region: 'España',
+      social: [
+        { type: 'telegram', url: 'https://t.me/nostromostro' },
+      ],
+    },
   ];
 
   const RELAY = 'wss://relay.mostro.network';
@@ -50,7 +57,6 @@ const i = t(locale);
     telegram: '💬',
     signal: '📡',
     x: '𝕏',
-    twitter: '𝕏',
     instagram: '📸',
     nostr: '🟣',
     discord: '🎮',
@@ -70,6 +76,7 @@ const i = t(locale);
 
   interface CommunityData {
     pubkey: string;
+    relayPubkey?: string;
     region: string;
     social: { type: string; url: string }[];
     website?: string;
@@ -104,6 +111,82 @@ const i = t(locale);
     if (num >= 1_000_000) return (num / 1_000_000).toFixed(1).replace(/\.0$/, '') + 'M';
     if (num >= 1_000) return (num / 1_000).toFixed(0) + 'K';
     return num.toLocaleString();
+  }
+
+  function isHexPubkey(value: string): boolean {
+    return /^[0-9a-f]{64}$/i.test(value);
+  }
+
+  function hexToBytes(hex: string): Uint8Array {
+    const normalized = hex.toLowerCase();
+    const bytes = new Uint8Array(normalized.length / 2);
+    for (let i = 0; i < normalized.length; i += 2) {
+      bytes[i / 2] = parseInt(normalized.slice(i, i + 2), 16);
+    }
+    return bytes;
+  }
+
+  function bytesToHex(bytes: Uint8Array): string {
+    return Array.from(bytes, byte => byte.toString(16).padStart(2, '0')).join('');
+  }
+
+  function convertBits(data: number[], fromBits: number, toBits: number, pad: boolean): number[] | null {
+    let acc = 0;
+    let bits = 0;
+    const result: number[] = [];
+    const maxV = (1 << toBits) - 1;
+    const maxAcc = (1 << (fromBits + toBits - 1)) - 1;
+
+    for (const value of data) {
+      if (value < 0 || value >> fromBits !== 0) return null;
+      acc = ((acc << fromBits) | value) & maxAcc;
+      bits += fromBits;
+      while (bits >= toBits) {
+        bits -= toBits;
+        result.push((acc >> bits) & maxV);
+      }
+    }
+
+    if (pad) {
+      if (bits > 0) result.push((acc << (toBits - bits)) & maxV);
+    } else if (bits >= fromBits || ((acc << (toBits - bits)) & maxV) !== 0) {
+      return null;
+    }
+
+    return result;
+  }
+
+  function decodeNpub(value: string): string | null {
+    const normalized = value.trim().toLowerCase();
+    if (!normalized.startsWith('npub1')) return null;
+
+    const alphabet = 'qpzry9x8gf2tvdw0s3jn54khce6mua7l';
+    const separatorIndex = normalized.lastIndexOf('1');
+    if (separatorIndex <= 0 || separatorIndex + 7 > normalized.length) return null;
+
+    const prefix = normalized.slice(0, separatorIndex);
+    if (prefix !== 'npub') return null;
+
+    const words = normalized
+      .slice(separatorIndex + 1)
+      .split('')
+      .map(char => alphabet.indexOf(char));
+
+    if (words.some(word => word < 0)) return null;
+    if (words.length < 7) return null;
+
+    const payload = words.slice(0, -6);
+    const bytes = convertBits(payload, 5, 8, false);
+    if (!bytes) return null;
+
+    const hex = bytesToHex(new Uint8Array(bytes));
+    return isHexPubkey(hex) ? hex : null;
+  }
+
+  function normalizePubkey(value: string): string | null {
+    const normalized = value.trim();
+    if (isHexPubkey(normalized)) return normalized.toLowerCase();
+    return decodeNpub(normalized);
   }
 
   function renderCard(c: CommunityData): string {
@@ -256,11 +339,18 @@ const i = t(locale);
     const grid = document.getElementById('communities-grid');
     if (!grid) return;
 
-    const pubkeys = COMMUNITIES.map(c => c.pubkey);
+    const normalizedCommunities = COMMUNITIES
+      .map(c => {
+        const relayPubkey = normalizePubkey(c.pubkey);
+        return relayPubkey ? { ...c, relayPubkey } : null;
+      })
+      .filter((community): community is CommunityData => community !== null);
+
+    const pubkeys = [...new Set(normalizedCommunities.map(c => c.relayPubkey!))];
     const nostrData = await fetchFromRelay(pubkeys);
 
-    const cards: CommunityData[] = COMMUNITIES.map(c => {
-      const data = nostrData.get(c.pubkey);
+    const cards: CommunityData[] = normalizedCommunities.map(c => {
+      const data = nostrData.get(c.relayPubkey!);
       const result: CommunityData = { ...c };
 
       if (data?.kind0) {
