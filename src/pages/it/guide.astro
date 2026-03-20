@@ -408,11 +408,7 @@ LND_CERT_FILE=/root/.lnd/tls.cert \
 LND_MACAROON_FILE=/root/.lnd/data/chain/bitcoin/mainnet/admin.macaroon \
 make docker-build</code></pre>
 
-      <h4>Passo 9: Configurare la password del database (Opzionale)</h4>
-      <pre><code># Creare il file docker/.env
-echo "MOSTRO_DB_PASSWORD='LaTuaPasswordForte'" > docker/.env</code></pre>
-
-      <h4>Passo 10: Avviare Mostro</h4>
+      <h4>Passo 9: Avviare Mostro</h4>
       <pre><code>make docker-up
 
 # Verificare
