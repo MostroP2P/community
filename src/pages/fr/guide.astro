@@ -408,11 +408,7 @@ LND_CERT_FILE=/root/.lnd/tls.cert \
 LND_MACAROON_FILE=/root/.lnd/data/chain/bitcoin/mainnet/admin.macaroon \
 make docker-build</code></pre>
 
-      <h4>Étape 9 : Configurer le mot de passe de la base de données (Optionnel)</h4>
-      <pre><code># Créer le fichier docker/.env
-echo "MOSTRO_DB_PASSWORD='VotreMotDePasseFort'" > docker/.env</code></pre>
-
-      <h4>Étape 10 : Démarrer Mostro</h4>
+      <h4>Étape 9 : Démarrer Mostro</h4>
       <pre><code>make docker-up
 
 # Vérifier
