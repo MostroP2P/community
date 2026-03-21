@@ -701,10 +701,29 @@ user_mode = "admin"                             # Abilita modalità admin</code>
       <h3 id="watchdog">5.3 mostro-watchdog — Notifiche dispute su Telegram</h3>
       <p><code>mostro-watchdog</code> monitora il tuo nodo Mostro per le dispute e invia avvisi istantanei tramite Telegram. Essenziale per tempi di risposta rapidi.</p>
 
+      <p><strong>Opzione A: Installazione automatica (Raccomandata)</strong></p>
+      <pre><code># Scarica ed esegui lo script di installazione
+curl -fsSL https://raw.githubusercontent.com/MostroP2P/mostro-watchdog/main/install.sh | bash</code></pre>
+
+      <p><strong>Opzione B: Download manuale del binario</strong></p>
+      <pre><code># Linux x86_64 (Intel/AMD)
+curl -LO https://github.com/MostroP2P/mostro-watchdog/releases/latest/download/mostro-watchdog-linux-x86_64
+chmod +x mostro-watchdog-linux-x86_64
+sudo mv mostro-watchdog-linux-x86_64 /usr/local/bin/mostro-watchdog
+
+# Linux ARM64 (Raspberry Pi, server ARM)
+curl -LO https://github.com/MostroP2P/mostro-watchdog/releases/latest/download/mostro-watchdog-linux-aarch64
+chmod +x mostro-watchdog-linux-aarch64
+sudo mv mostro-watchdog-linux-aarch64 /usr/local/bin/mostro-watchdog</code></pre>
+
+      <p><strong>Opzione C: Compilare dal codice sorgente</strong></p>
       <pre><code>git clone https://github.com/MostroP2P/mostro-watchdog.git
 cd mostro-watchdog
 cargo build --release
-cp config.example.toml config.toml
+sudo cp target/release/mostro-watchdog /usr/local/bin/</code></pre>
+
+      <p><strong>Configurazione:</strong></p>
+      <pre><code>cp config.example.toml config.toml
 nano config.toml</code></pre>
 
       <pre><code>[mostro]
