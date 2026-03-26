@@ -41,6 +41,16 @@ export const COMMUNITIES: CommunityConfig[] = [
       { type: 'x', url: 'https://x.com/ColombiaP2P' },
     ],
   },
+  {
+    pubkey: 'npub1qqq8evest7uh9awvs0ur4rau58nyay7f6ymf3q9fl43wl9wj87gsrk6xv3',
+    region: 'Bolivia',
+    social: [
+      { type: 'telegram', url: 'https://t.me/btcxbolivia' },
+      { type: 'x', url: 'https://x.com/btcxbolivia' },
+      { type: 'instagram', url: 'https://www.instagram.com/btcxbolivia' },
+      { type: 'tiktok', url: 'https://www.tiktok.com/@btcxbolivia' },
+    ],
+  },
 ];
 
 /** Default Mostro relay for fetching community metadata */
@@ -56,4 +66,5 @@ export const SOCIAL_ICONS: Record<string, string> = {
   discord: '🎮',
   whatsapp: '📱',
   matrix: '🔗',
+  tiktok: '📺',
 };
