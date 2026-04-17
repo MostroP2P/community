@@ -552,11 +552,13 @@ dev_fee_percentage = 0.30</code></pre>
       <pre><code>[mostro]
 max_order_amount = 1000000
 min_payment_amount = 100
+max_orders_per_response = 10
 fiat_currencies_accepted = ['USD', 'EUR', 'ARS', 'CUP']</code></pre>
 
       <ul>
         <li><strong><code>max_order_amount</code>:</strong> Largest trade in satoshis. Set based on your Lightning channel capacity.</li>
         <li><strong><code>min_payment_amount</code>:</strong> Minimum trade in satoshis. 1,000 or 10,000 is more practical than 100.</li>
+        <li><strong><code>max_orders_per_response</code>:</strong> Maximum number of orders Mostro returns in a single query. If a user has more orders than this limit (e.g. when restoring their session from the mobile client), they will receive a <code>cant-do: too_many_requests</code> error and won't be able to recover their orders. If your users trade frequently, increase this value (e.g. 50 or 100). The default of 10 may not be enough.</li>
         <li><strong><code>fiat_currencies_accepted</code>:</strong> Use <a href="https://en.wikipedia.org/wiki/ISO_4217" target="_blank" rel="noopener noreferrer">ISO 4217 codes</a>. Empty array <code>[]</code> accepts all currencies.</li>
       </ul>
 
@@ -983,6 +985,12 @@ sqlite3 /path/to/mostro.db "SELECT SUM(fee) as node_fees, SUM(dev_fee) as dev_fe
       </ul>
 
       <h3>Trade problems</h3>
+
+      <h4>A user gets "cant-do: too_many_requests" when restoring session</h4>
+      <p>This happens when the user has more orders (historical + active) than the <code>max_orders_per_response</code> value in your configuration. The client tries to query all their orders at once and Mostro rejects it. <strong>This is not a ban or a temporary block</strong> — it will keep happening until you adjust the value.</p>
+      <pre><code># In settings.toml, increase the limit:
+max_orders_per_response = 50  # default is 10
+</code></pre>
 
       <h4>Orders don't appear in clients</h4>
       <ul>

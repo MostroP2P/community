@@ -552,11 +552,13 @@ dev_fee_percentage = 0.30</code></pre>
       <pre><code>[mostro]
 max_order_amount = 1000000
 min_payment_amount = 100
+max_orders_per_response = 10
 fiat_currencies_accepted = ['USD', 'BRL', 'ARS', 'CUP']</code></pre>
 
       <ul>
         <li><strong><code>max_order_amount</code>:</strong> Maior operação em satoshis. Configure baseado na capacidade dos seus canais Lightning.</li>
         <li><strong><code>min_payment_amount</code>:</strong> Operação mínima em satoshis. 1.000 ou 10.000 é mais prático que 100.</li>
+        <li><strong><code>max_orders_per_response</code>:</strong> Quantidade máxima de ordens que o Mostro retorna em uma única consulta. Se um usuário acumula mais ordens que esse limite (por exemplo ao restaurar sua sessão no cliente móvel), receberá um erro <code>cant-do: too_many_requests</code> e não conseguirá recuperar suas ordens. Se seus usuários operam com frequência, aumente esse valor (por exemplo 50 ou 100). O valor padrão de 10 pode ser insuficiente.</li>
         <li><strong><code>fiat_currencies_accepted</code>:</strong> Use <a href="https://en.wikipedia.org/wiki/ISO_4217" target="_blank" rel="noopener noreferrer">códigos ISO 4217</a>. Array vazio <code>[]</code> aceita todas as moedas.</li>
       </ul>
 
@@ -983,6 +985,12 @@ sqlite3 /caminho/para/mostro.db "SELECT SUM(fee) as node_fees, SUM(dev_fee) as d
       </ul>
 
       <h3>Problemas com operações</h3>
+
+      <h4>Um usuário recebe "cant-do: too_many_requests" ao restaurar sessão</h4>
+      <p>Isso acontece quando o usuário tem mais ordens (históricas + ativas) que o valor de <code>max_orders_per_response</code> na sua configuração. O cliente tenta consultar todas as ordens de uma vez e o Mostro rejeita. <strong>Não é um ban nem um bloqueio temporário</strong> — continuará acontecendo até que você ajuste o valor.</p>
+      <pre><code># Em settings.toml, aumente o limite:
+max_orders_per_response = 50  # padrão é 10
+</code></pre>
 
       <h4>Ordens não aparecem nos clientes</h4>
       <ul>

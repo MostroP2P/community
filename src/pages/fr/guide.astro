@@ -552,11 +552,13 @@ dev_fee_percentage = 0.30</code></pre>
       <pre><code>[mostro]
 max_order_amount = 1000000
 min_payment_amount = 100
+max_orders_per_response = 10
 fiat_currencies_accepted = ['USD', 'EUR', 'ARS', 'CUP']</code></pre>
 
       <ul>
         <li><strong><code>max_order_amount</code> :</strong> Transaction maximale en satoshis. Configurez-la en fonction de la capacité de vos canaux Lightning.</li>
         <li><strong><code>min_payment_amount</code> :</strong> Transaction minimale en satoshis. 1 000 ou 10 000 est plus pratique que 100.</li>
+        <li><strong><code>max_orders_per_response</code> :</strong> Nombre maximum d'ordres que Mostro renvoie en une seule requête. Si un utilisateur accumule plus d'ordres que cette limite (par exemple lors de la restauration de sa session depuis le client mobile), il recevra une erreur <code>cant-do: too_many_requests</code> et ne pourra pas récupérer ses ordres. Si vos utilisateurs tradent fréquemment, augmentez cette valeur (par exemple 50 ou 100). La valeur par défaut de 10 peut être insuffisante.</li>
         <li><strong><code>fiat_currencies_accepted</code> :</strong> Utilisez les <a href="https://en.wikipedia.org/wiki/ISO_4217" target="_blank" rel="noopener noreferrer">codes ISO 4217</a>. Un tableau vide <code>[]</code> accepte toutes les devises.</li>
       </ul>
 
@@ -983,6 +985,12 @@ sqlite3 /chemin/vers/mostro.db "SELECT SUM(fee) as node_fees, SUM(dev_fee) as de
       </ul>
 
       <h3>Problèmes de transactions</h3>
+
+      <h4>Un utilisateur reçoit "cant-do: too_many_requests" lors de la restauration de session</h4>
+      <p>Cela se produit lorsque l'utilisateur a plus d'ordres (historiques + actifs) que la valeur de <code>max_orders_per_response</code> dans votre configuration. Le client essaie de récupérer tous ses ordres d'un coup et Mostro le rejette. <strong>Ce n'est pas un bannissement ni un blocage temporaire</strong> — cela continuera tant que vous n'ajustez pas la valeur.</p>
+      <pre><code># Dans settings.toml, augmentez la limite :
+max_orders_per_response = 50  # par défaut : 10
+</code></pre>
 
       <h4>Les ordres n'apparaissent pas dans les clients</h4>
       <ul>
