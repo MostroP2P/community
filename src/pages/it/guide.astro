@@ -552,11 +552,13 @@ dev_fee_percentage = 0.30</code></pre>
       <pre><code>[mostro]
 max_order_amount = 1000000
 min_payment_amount = 100
+max_orders_per_response = 10
 fiat_currencies_accepted = ['USD', 'EUR', 'ARS', 'CUP']</code></pre>
 
       <ul>
         <li><strong><code>max_order_amount</code>:</strong> Operazione più grande in satoshi. Configuralo in base alla capacità dei tuoi canali Lightning.</li>
         <li><strong><code>min_payment_amount</code>:</strong> Operazione minima in satoshi. 1.000 o 10.000 è più pratico di 100.</li>
+        <li><strong><code>max_orders_per_response</code>:</strong> Numero massimo di ordini che Mostro restituisce in una singola query. Se un utente accumula più ordini di questo limite (ad esempio durante il ripristino della sessione dal client mobile), riceverà un errore <code>cant-do: too_many_requests</code> e non potrà recuperare i suoi ordini. Se i tuoi utenti operano frequentemente, aumenta questo valore (ad esempio 50 o 100). Il valore predefinito di 10 potrebbe non essere sufficiente.</li>
         <li><strong><code>fiat_currencies_accepted</code>:</strong> Usa <a href="https://en.wikipedia.org/wiki/ISO_4217" target="_blank" rel="noopener noreferrer">codici ISO 4217</a>. Array vuoto <code>[]</code> accetta tutte le valute.</li>
       </ul>
 
@@ -983,6 +985,12 @@ sqlite3 /percorso/di/mostro.db "SELECT SUM(fee) as node_fees, SUM(dev_fee) as de
       </ul>
 
       <h3>Problemi con le operazioni</h3>
+
+      <h4>Un utente riceve "cant-do: too_many_requests" durante il ripristino della sessione</h4>
+      <p>Questo accade quando l'utente ha più ordini (storici + attivi) del valore di <code>max_orders_per_response</code> nella tua configurazione. Il client prova a recuperare tutti gli ordini in una volta e Mostro lo rifiuta. <strong>Non è un ban né un blocco temporaneo</strong> — continuerà a succedere finché non aggiusti il valore.</p>
+      <pre><code># In settings.toml, aumenta il limite:
+max_orders_per_response = 50  # predefinito: 10
+</code></pre>
 
       <h4>Gli ordini non appaiono nei client</h4>
       <ul>

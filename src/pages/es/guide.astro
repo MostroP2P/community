@@ -552,11 +552,13 @@ dev_fee_percentage = 0.30</code></pre>
       <pre><code>[mostro]
 max_order_amount = 1000000
 min_payment_amount = 100
+max_orders_per_response = 10
 fiat_currencies_accepted = ['USD', 'EUR', 'ARS', 'CUP']</code></pre>
 
       <ul>
         <li><strong><code>max_order_amount</code>:</strong> Operación más grande en satoshis. Configúralo basándote en tu capacidad de canales Lightning.</li>
         <li><strong><code>min_payment_amount</code>:</strong> Operación mínima en satoshis. 1,000 o 10,000 es más práctico que 100.</li>
+        <li><strong><code>max_orders_per_response</code>:</strong> Cantidad máxima de órdenes que Mostro devuelve en una sola consulta. Si un usuario acumula más órdenes que este límite (por ejemplo al restaurar su sesión desde el cliente móvil), recibirá un error <code>cant-do: too_many_requests</code> y no podrá recuperar sus órdenes. Si tus usuarios operan frecuentemente, sube este valor (por ejemplo 50 o 100). El valor por defecto de 10 puede ser insuficiente.</li>
         <li><strong><code>fiat_currencies_accepted</code>:</strong> Usa <a href="https://en.wikipedia.org/wiki/ISO_4217" target="_blank" rel="noopener noreferrer">códigos ISO 4217</a>. Array vacío <code>[]</code> acepta todas las monedas.</li>
       </ul>
 
@@ -983,6 +985,12 @@ sqlite3 /ruta/a/mostro.db "SELECT SUM(fee) as node_fees, SUM(dev_fee) as dev_fee
       </ul>
 
       <h3>Problemas con operaciones</h3>
+
+      <h4>Un usuario recibe "cant-do: too_many_requests" al restaurar sesión</h4>
+      <p>Esto ocurre cuando el usuario tiene más órdenes (históricas + activas) que el valor de <code>max_orders_per_response</code> en tu configuración. El cliente intenta consultar todas sus órdenes de golpe y Mostro lo rechaza. <strong>No es un ban ni un bloqueo temporal</strong> — le seguirá pasando hasta que ajustes el valor.</p>
+      <pre><code># En settings.toml, sube el límite:
+max_orders_per_response = 50  # por defecto es 10
+</code></pre>
 
       <h4>Las órdenes no aparecen en los clientes</h4>
       <ul>
