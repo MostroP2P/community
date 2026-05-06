@@ -51,6 +51,11 @@ export const COMMUNITIES: CommunityConfig[] = [
       { type: 'tiktok', url: 'https://www.tiktok.com/@btcxbolivia' },
     ],
   },
+  {
+    pubkey: 'npub1qqqqnms7fvwu0tw3n2esunhc2ntm2chzpzmzdphajqpt2zeym2asr7ata2',
+    region: 'Venezuela',
+    social: [],
+  },
 ];
 
 /** Default Mostro relay for fetching community metadata */
