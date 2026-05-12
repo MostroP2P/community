@@ -54,7 +54,9 @@ export const COMMUNITIES: CommunityConfig[] = [
   {
     pubkey: 'npub1qqqqnms7fvwu0tw3n2esunhc2ntm2chzpzmzdphajqpt2zeym2asr7ata2',
     region: 'Venezuela',
-    social: [],
+    social: [
+      { type: 'telegram', url: 'https://t.me/MostroVzla' },
+    ],
   },
 ];
 
