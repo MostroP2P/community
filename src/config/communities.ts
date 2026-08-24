@@ -58,6 +58,23 @@ export const COMMUNITIES: CommunityConfig[] = [
       { type: 'telegram', url: 'https://t.me/MostroVzla' },
     ],
   },
+  {
+    pubkey: '00037abd44e7a846689e230d5446abcd0d56a344fa81fff85c09d1929feda486',
+    region: 'Brasil',
+    social: [
+      { type: 'telegram', url: 'https://t.me/+GyVD_uH9-Gw0OGRh' },
+    ],
+  },
+  {
+    pubkey: 'b3626fe91b602bdbca3673bec0855221f41dc8f6d0e4027e51eaa525d68d87f2',
+    region: 'Argentina',
+    social: [
+      { type: 'telegram', url: 'https://t.me/lacryptaok' },
+      { type: 'x', url: 'https://x.com/LaCryptaOk' },
+      { type: 'discord', url: 'https://discord.lacrypta.ar' },
+    ],
+    website: 'https://lacrypta.ar/',
+  },
 ];
 
 /** Default Mostro relay for fetching community metadata */
