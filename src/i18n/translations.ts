@@ -592,6 +592,24 @@ export function getLocalePath(locale: Locale, path: string = '/') {
   return `/${locale}${path === '/' ? '' : path}`;
 }
 
+/**
+ * Link to a section of the locale's home page.
+ *
+ * The site nav points at home-page sections, so a bare `#id` only works while
+ * the reader is already on the home page. Anywhere else the browser looks for
+ * that id in the current document: on the guide it either finds nothing or,
+ * worse, finds an unrelated section that happens to share the id.
+ *
+ * Pass `currentPath` (`Astro.url.pathname`) so the home page itself keeps a
+ * bare fragment and scrolls in place instead of reloading.
+ */
+export function getLocaleAnchor(locale: Locale, id: string, currentPath?: string) {
+  const home = getLocalePath(locale);
+  const strip = (path: string) => path.replace(/\/+$/, '');
+  if (currentPath !== undefined && strip(currentPath) === strip(home)) return `#${id}`;
+  return `${home === '/' ? '/' : `${home}/`}#${id}`;
+}
+
 export function getOtherLocales(locale: Locale): Locale[] {
   return locales.filter(l => l !== locale);
 }
