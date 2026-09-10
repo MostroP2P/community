@@ -181,11 +181,14 @@ const updated = formatReleaseMonth(publishedAt, locale);
         <li>L'indirizzo gRPC (tipicamente <code>https://127.0.0.1:10009</code> se sulla stessa macchina)</li>
       </ul>
 
-      <p><strong>Genera un macaroon dedicato per Mostro.</strong> Non dare a Mostro il tuo <code>admin.macaroon</code>: concede il controllo totale sul tuo nodo e sui suoi fondi. Crea un macaroon che contenga solo i permessi che Mostro usa davvero (leggere le info del nodo, creare/regolare/annullare hold invoice, inviare e tracciare pagamenti):</p>
-      <pre><code>lncli bakemacaroon --root_key_id 1 \
+      <p><strong>Genera un macaroon dedicato per Mostro.</strong> Non dare a Mostro il tuo <code>admin.macaroon</code>: concede il controllo totale sul tuo nodo e sui suoi fondi. Crea un macaroon che contenga solo i permessi che Mostro usa davvero (leggere le info del nodo, creare/regolare/annullare hold invoice, inviare e tracciare pagamenti).</p>
+      <p>Scegli prima un root key ID non ancora in uso. Revocare un macaroon revoca tutti i macaroon che condividono il suo ID, quindi riutilizzarne uno porterebbe via credenziali estranee. L'ID 0 appartiene ai macaroon di LND, quindi scegli un numero libero diverso da zero e annotalo:</p>
+      <pre><code>lncli listmacaroonids</code></pre>
+      <p>Poi crea il macaroon con l'ID che hai scelto (<code>7</code> in questo esempio, sostituisci con il tuo):</p>
+      <pre><code>lncli bakemacaroon --root_key_id 7 \
   --save_to /root/.lnd/data/chain/bitcoin/mainnet/mostro.macaroon \
   info:read invoices:read invoices:write offchain:read offchain:write</code></pre>
-      <p>Questo macaroon non può aprire o chiudere canali, spostare fondi on-chain né modificare la configurazione del tuo nodo. Se dovesse trapelare, revocalo con <code>lncli deletemacaroonid 1</code> e generane uno nuovo.</p>
+      <p>Questo macaroon non può aprire o chiudere canali, spostare fondi on-chain né modificare la configurazione del tuo nodo. Se dovesse trapelare, revocalo con <code>lncli deletemacaroonid 7</code>, usando lo stesso ID con cui l'hai creato, e generane uno nuovo.</p>
 
       <h3 id="liquidity">2.3 Liquidità Lightning</h3>
 
@@ -944,7 +947,7 @@ sqlite3 /percorso/di/mostro.db "SELECT id, fiat_code, fiat_amount, amount, fee, 
 sqlite3 /percorso/di/mostro.db "SELECT id, fiat_code, fiat_amount, status, created_at FROM orders WHERE status = 'pending';"
 
 # Ricavi da commissioni: orders.fee memorizza la metà di ciascuna parte, quindi la commissione lorda del nodo è fee*2 e la dev fee viene sottratta da essa
-sqlite3 /percorso/di/mostro.db "SELECT SUM(fee*2) AS gross_fees, SUM(dev_fee) AS dev_fees, SUM(fee*2 - dev_fee) AS net_fees FROM orders WHERE status = 'success';"</code></pre>
+sqlite3 /percorso/di/mostro.db "SELECT SUM(fee*2) AS gross_fees, SUM(dev_fee) AS dev_fees, SUM(fee*2 - COALESCE(dev_fee, 0)) AS net_fees FROM orders WHERE status = 'success';"</code></pre>
 
 
       <h3 id="ln-migration">5.8 Modalità Manutenzione e Cambio di Nodo Lightning</h3>
@@ -1204,7 +1207,7 @@ journalctl -u mostro -f        # Vedere i log
 # Database
 sqlite3 mostro.db "SELECT COUNT(*) FROM orders;"                           # Totale ordini
 sqlite3 mostro.db "SELECT COUNT(*) FROM orders WHERE status='success';"    # Operazioni riuscite
-sqlite3 mostro.db "SELECT SUM(fee*2 - dev_fee) FROM orders WHERE status='success';"  # Commissioni nette trattenute dal nodo
+sqlite3 mostro.db "SELECT SUM(fee*2 - COALESCE(dev_fee, 0)) FROM orders WHERE status='success';"  # Commissioni nette trattenute dal nodo
 
       <h3>Configurazione raccomandata per nodi nuovi</h3>
       <pre><code>[mostro]

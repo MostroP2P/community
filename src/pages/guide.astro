@@ -181,11 +181,14 @@ const updated = formatReleaseMonth(publishedAt, locale);
         <li>The gRPC address (typically <code>https://127.0.0.1:10009</code> if on the same machine)</li>
       </ul>
 
-      <p><strong>Generate a dedicated macaroon for Mostro.</strong> Do not give Mostro your <code>admin.macaroon</code>: it grants full control over your node and its funds. Bake a macaroon that carries only the permissions Mostro actually uses (read node info, create/settle/cancel hold invoices, send and track payments):</p>
-      <pre><code>lncli bakemacaroon --root_key_id 1 \
+      <p><strong>Generate a dedicated macaroon for Mostro.</strong> Do not give Mostro your <code>admin.macaroon</code>: it grants full control over your node and its funds. Bake a macaroon that carries only the permissions Mostro actually uses (read node info, create/settle/cancel hold invoices, send and track payments).</p>
+      <p>First pick a root key ID that is not already in use. Revoking a macaroon revokes every macaroon sharing its ID, so reusing one would take out unrelated credentials. ID 0 belongs to LND's own macaroons, so choose a free non-zero number and write it down:</p>
+      <pre><code>lncli listmacaroonids</code></pre>
+      <p>Then bake the macaroon with the ID you chose (<code>7</code> in this example — substitute yours):</p>
+      <pre><code>lncli bakemacaroon --root_key_id 7 \
   --save_to /root/.lnd/data/chain/bitcoin/mainnet/mostro.macaroon \
   info:read invoices:read invoices:write offchain:read offchain:write</code></pre>
-      <p>This macaroon cannot open or close channels, move on-chain funds, or change your node's configuration. If it ever leaks, revoke it with <code>lncli deletemacaroonid 1</code> and bake a new one.</p>
+      <p>This macaroon cannot open or close channels, move on-chain funds, or change your node's configuration. If it ever leaks, revoke it with <code>lncli deletemacaroonid 7</code> — using the same ID you baked it with — and bake a new one.</p>
 
       <h3 id="liquidity">2.3 Lightning Liquidity</h3>
 
@@ -944,7 +947,7 @@ sqlite3 /path/to/mostro.db "SELECT id, fiat_code, fiat_amount, amount, fee, stat
 sqlite3 /path/to/mostro.db "SELECT id, fiat_code, fiat_amount, status, created_at FROM orders WHERE status = 'pending';"
 
 # Fee revenue: orders.fee stores each party's half, so the node's gross fee is fee*2 and the dev fee is deducted from it
-sqlite3 /path/to/mostro.db "SELECT SUM(fee*2) AS gross_fees, SUM(dev_fee) AS dev_fees, SUM(fee*2 - dev_fee) AS net_fees FROM orders WHERE status = 'success';"</code></pre>
+sqlite3 /path/to/mostro.db "SELECT SUM(fee*2) AS gross_fees, SUM(dev_fee) AS dev_fees, SUM(fee*2 - COALESCE(dev_fee, 0)) AS net_fees FROM orders WHERE status = 'success';"</code></pre>
 
 
       <h3 id="ln-migration">5.8 Maintenance Mode and Changing Your Lightning Node</h3>
@@ -1204,7 +1207,7 @@ journalctl -u mostro -f        # View logs
 # Database
 sqlite3 mostro.db "SELECT COUNT(*) FROM orders;"                           # Total orders
 sqlite3 mostro.db "SELECT COUNT(*) FROM orders WHERE status='success';"    # Successful trades
-sqlite3 mostro.db "SELECT SUM(fee*2 - dev_fee) FROM orders WHERE status='success';"  # Net fees kept by the node
+sqlite3 mostro.db "SELECT SUM(fee*2 - COALESCE(dev_fee, 0)) FROM orders WHERE status='success';"  # Net fees kept by the node
 
       <h3>Recommended Configuration for New Nodes</h3>
       <pre><code>[mostro]

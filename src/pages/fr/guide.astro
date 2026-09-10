@@ -181,11 +181,14 @@ const updated = formatReleaseMonth(publishedAt, locale);
         <li>L'adresse gRPC (typiquement <code>https://127.0.0.1:10009</code> si sur la même machine)</li>
       </ul>
 
-      <p><strong>Générez un macaroon dédié pour Mostro.</strong> Ne donnez pas votre <code>admin.macaroon</code> à Mostro : il accorde un contrôle total sur votre nœud et ses fonds. Créez un macaroon ne contenant que les permissions que Mostro utilise réellement (lire les infos du nœud, créer/régler/annuler des hold invoices, envoyer et suivre des paiements) :</p>
-      <pre><code>lncli bakemacaroon --root_key_id 1 \
+      <p><strong>Générez un macaroon dédié pour Mostro.</strong> Ne donnez pas votre <code>admin.macaroon</code> à Mostro : il accorde un contrôle total sur votre nœud et ses fonds. Créez un macaroon ne contenant que les permissions que Mostro utilise réellement (lire les infos du nœud, créer/régler/annuler des hold invoices, envoyer et suivre des paiements).</p>
+      <p>Choisissez d'abord un root key ID qui n'est pas déjà utilisé. Révoquer un macaroon révoque tous les macaroons partageant son ID : en réutiliser un emporterait des identifiants sans rapport. L'ID 0 appartient aux macaroons de LND, choisissez donc un nombre libre non nul et notez-le :</p>
+      <pre><code>lncli listmacaroonids</code></pre>
+      <p>Créez ensuite le macaroon avec l'ID choisi (<code>7</code> dans cet exemple, remplacez par le vôtre) :</p>
+      <pre><code>lncli bakemacaroon --root_key_id 7 \
   --save_to /root/.lnd/data/chain/bitcoin/mainnet/mostro.macaroon \
   info:read invoices:read invoices:write offchain:read offchain:write</code></pre>
-      <p>Ce macaroon ne peut ni ouvrir ou fermer des canaux, ni déplacer des fonds on-chain, ni modifier la configuration de votre nœud. En cas de fuite, révoquez-le avec <code>lncli deletemacaroonid 1</code> et créez-en un nouveau.</p>
+      <p>Ce macaroon ne peut ni ouvrir ou fermer des canaux, ni déplacer des fonds on-chain, ni modifier la configuration de votre nœud. En cas de fuite, révoquez-le avec <code>lncli deletemacaroonid 7</code>, en utilisant le même ID que celui de sa création, et créez-en un nouveau.</p>
 
       <h3 id="liquidity">2.3 Liquidité Lightning</h3>
 
@@ -944,7 +947,7 @@ sqlite3 /chemin/vers/mostro.db "SELECT id, fiat_code, fiat_amount, amount, fee, 
 sqlite3 /chemin/vers/mostro.db "SELECT id, fiat_code, fiat_amount, status, created_at FROM orders WHERE status = 'pending';"
 
 # Revenus des frais : orders.fee stocke la moitié de chaque partie, donc les frais bruts du nœud sont fee*2 et le dev fee en est déduit
-sqlite3 /chemin/vers/mostro.db "SELECT SUM(fee*2) AS gross_fees, SUM(dev_fee) AS dev_fees, SUM(fee*2 - dev_fee) AS net_fees FROM orders WHERE status = 'success';"</code></pre>
+sqlite3 /chemin/vers/mostro.db "SELECT SUM(fee*2) AS gross_fees, SUM(dev_fee) AS dev_fees, SUM(fee*2 - COALESCE(dev_fee, 0)) AS net_fees FROM orders WHERE status = 'success';"</code></pre>
 
 
       <h3 id="ln-migration">5.8 Mode Maintenance et Changement de Nœud Lightning</h3>
@@ -1204,7 +1207,7 @@ journalctl -u mostro -f        # Voir les logs
 # Base de données
 sqlite3 mostro.db "SELECT COUNT(*) FROM orders;"                           # Total des ordres
 sqlite3 mostro.db "SELECT COUNT(*) FROM orders WHERE status='success';"    # Transactions réussies
-sqlite3 mostro.db "SELECT SUM(fee*2 - dev_fee) FROM orders WHERE status='success';"  # Frais nets conservés par le nœud
+sqlite3 mostro.db "SELECT SUM(fee*2 - COALESCE(dev_fee, 0)) FROM orders WHERE status='success';"  # Frais nets conservés par le nœud
 
       <h3>Configuration recommandée pour les nouveaux nœuds</h3>
       <pre><code>[mostro]
