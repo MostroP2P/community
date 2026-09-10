@@ -299,3 +299,47 @@
   .guide-table { font-size: 0.8rem; }
   .guide-table td, .guide-table thead th { padding: 8px 10px; }
 }
+
+/* Elements used inside guide section content. These must stay in this
+   global stylesheet: section bodies are injected with set:html, so they
+   never receive a component-scoped attribute. */
+.flow-diagram {
+  background: rgba(140, 198, 63, 0.05);
+  border: 1px solid rgba(140, 198, 63, 0.2);
+  border-radius: 12px;
+  padding: 24px;
+  margin: 20px 0;
+  font-family: monospace;
+}
+.flow-step {
+  padding: 8px 0;
+  line-height: 1.6;
+}
+.step-num {
+  color: var(--accent);
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+.arrow {
+  color: var(--accent);
+  font-weight: 700;
+}
+.badge {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+.badge-easy {
+  background: rgba(76, 175, 80, 0.15);
+  color: #2E7D32;
+}
+.badge-medium {
+  background: rgba(255, 193, 7, 0.15);
+  color: #7B5800;
+}
+.badge-hard {
+  background: rgba(244, 67, 54, 0.15);
+  color: #B71C1C;
+}
