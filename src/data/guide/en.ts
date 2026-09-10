@@ -794,16 +794,14 @@ dm_days = 30           # protocol-v2 direct messages (kind 14)</code></pre>
 
       <pre><code># Linux (x86_64)
 wget https://github.com/MostroP2P/mostrix/releases/latest/download/mostrix-x86_64-unknown-linux-musl
-chmod +x mostrix-x86_64-unknown-linux-musl
-./mostrix-x86_64-unknown-linux-musl
 
 # Linux (ARM64 / Raspberry Pi 4)
 wget https://github.com/MostroP2P/mostrix/releases/latest/download/mostrix-aarch64-unknown-linux-musl
-chmod +x mostrix-aarch64-unknown-linux-musl
-./mostrix-aarch64-unknown-linux-musl
 
 # Windows
 # Download mostrix-x86_64-pc-windows-gnu.exe from the releases page</code></pre>
+
+      <p>Verify the download before running it, as described just below.</p>
 
       <div class="callout tip">
         <div class="callout-title">🔐 Verify the Release</div>
@@ -822,6 +820,10 @@ shasum -a 256 mostrix-x86_64-unknown-linux-musl
 grep mostrix-x86_64-unknown-linux-musl manifest.txt</code></pre>
         <p>One valid signature from a maintainer key you trust is enough. If a <code>wget</code> returns 404, that signature simply was not published for this release — do not treat a missing file as a verified one.</p>
       </div>
+
+      <p>Only once a signature and the hash check out, make the binary executable and start it:</p>
+      <pre><code>chmod +x mostrix-x86_64-unknown-linux-musl
+./mostrix-x86_64-unknown-linux-musl</code></pre>
 
       <h4>Option B: Build from Source</h4>
       <p>If you prefer to compile from source or need a platform not in the releases:</p>
@@ -1002,6 +1004,10 @@ sqlite3 ~/mostro-config/mostro.db ".backup '/root/mostro-backups/mostro.db.$(dat
 cp ~/mostro-config/settings.toml /root/mostro-backups/settings.toml.$(date +%Y%m%d)
 cp ~/mostro-config/.env /root/mostro-backups/env.$(date +%Y%m%d) 2>/dev/null
 
+# Manual backup — Docker Build (Option B):
+sqlite3 /opt/mostro/docker/config/mostro.db ".backup '/root/mostro-backups/mostro.db.$(date +%Y%m%d)'"
+cp /opt/mostro/docker/config/settings.toml /root/mostro-backups/settings.toml.$(date +%Y%m%d)
+
 # Manual backup — Native:
 sqlite3 /opt/mostro/mostro.db ".backup '/root/mostro-backups/mostro.db.$(date +%Y%m%d)'"
 cp /opt/mostro/settings.toml /root/mostro-backups/settings.toml.$(date +%Y%m%d)</code></pre>
@@ -1010,7 +1016,10 @@ cp /opt/mostro/settings.toml /root/mostro-backups/settings.toml.$(date +%Y%m%d)<
       <pre><code># Docker Hub (Option A):
 0 3 * * * mkdir -p /root/mostro-backups && sqlite3 /root/mostro-config/mostro.db ".backup '/root/mostro-backups/mostro.db.$(date +\\%Y\\%m\\%d)'" && cp /root/mostro-config/settings.toml /root/mostro-backups/settings.toml.$(date +\\%Y\\%m\\%d)
 
-# Native (Option C) / Docker Build (Option B):
+# Docker Build (Option B):
+0 3 * * * mkdir -p /root/mostro-backups && sqlite3 /opt/mostro/docker/config/mostro.db ".backup '/root/mostro-backups/mostro.db.$(date +\\%Y\\%m\\%d)'" && cp /opt/mostro/docker/config/settings.toml /root/mostro-backups/settings.toml.$(date +\\%Y\\%m\\%d)
+
+# Native (Option C):
 0 3 * * * mkdir -p /root/mostro-backups && sqlite3 /opt/mostro/mostro.db ".backup '/root/mostro-backups/mostro.db.$(date +\\%Y\\%m\\%d)'" && cp /opt/mostro/settings.toml /root/mostro-backups/settings.toml.$(date +\\%Y\\%m\\%d)</code></pre>
 
       <div class="callout important">
