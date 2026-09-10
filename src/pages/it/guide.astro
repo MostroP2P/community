@@ -174,9 +174,18 @@ const updated = formatReleaseMonth(publishedAt, locale);
       <p><strong>Cosa ti serve dal tuo nodo LND:</strong></p>
       <ul>
         <li>Il file <code>tls.cert</code> (un certificato di sicurezza)</li>
-        <li>Il file <code>admin.macaroon</code> (un token di autenticazione)</li>
+        <li>Un file <code>mostro.macaroon</code> dedicato (un token di autenticazione con solo i permessi di cui Mostro ha bisogno, vedi sotto)</li>
         <li>L'indirizzo gRPC (tipicamente <code>https://127.0.0.1:10009</code> se sulla stessa macchina)</li>
       </ul>
+
+      <p><strong>Genera un macaroon dedicato per Mostro.</strong> Non dare a Mostro il tuo <code>admin.macaroon</code>: concede il controllo totale sul tuo nodo e sui suoi fondi. Crea un macaroon che contenga solo i permessi che Mostro usa davvero (leggere le info del nodo, creare/regolare/annullare hold invoice, inviare e tracciare pagamenti).</p>
+      <p>Scegli prima un root key ID non ancora in uso. Revocare un macaroon revoca tutti i macaroon che condividono il suo ID, quindi riutilizzarne uno porterebbe via credenziali estranee. L'ID 0 appartiene ai macaroon di LND, quindi scegli un numero libero diverso da zero e annotalo:</p>
+      <pre><code>lncli listmacaroonids</code></pre>
+      <p>Poi crea il macaroon con l'ID che hai scelto (<code>7</code> in questo esempio, sostituisci con il tuo):</p>
+      <pre><code>lncli bakemacaroon --root_key_id 7 \
+  --save_to /root/.lnd/data/chain/bitcoin/mainnet/mostro.macaroon \
+  info:read invoices:read invoices:write offchain:read offchain:write</code></pre>
+      <p>Questo macaroon non può aprire o chiudere canali, spostare fondi on-chain né modificare la configurazione del tuo nodo. Se dovesse trapelare, revocalo con <code>lncli deletemacaroonid 7</code>, usando lo stesso ID con cui l'hai creato, e generane uno nuovo.</p>
 
       <h3 id="liquidity">2.3 Liquidità Lightning</h3>
 
@@ -300,12 +309,12 @@ docker compose version</code></pre>
 
       <h4>Passo 7: Copiare le credenziali LND</h4>
       <pre><code>cp /percorso/del/tuo/tls.cert ~/mostro-config/lnd/tls.cert
-cp /percorso/del/tuo/admin.macaroon ~/mostro-config/lnd/admin.macaroon</code></pre>
+cp /percorso/del/tuo/mostro.macaroon ~/mostro-config/lnd/mostro.macaroon</code></pre>
 
       <p>Se LND è sulla <strong>stessa macchina</strong>, i percorsi tipici sono:</p>
       <ul>
         <li><code>/root/.lnd/tls.cert</code></li>
-        <li><code>/root/.lnd/data/chain/bitcoin/mainnet/admin.macaroon</code></li>
+        <li><code>/root/.lnd/data/chain/bitcoin/mainnet/mostro.macaroon</code></li>
       </ul>
 
       <h4>Passo 8: Modificare la configurazione</h4>
@@ -314,7 +323,7 @@ cp /percorso/del/tuo/admin.macaroon ~/mostro-config/lnd/admin.macaroon</code></p
       <p><strong>Modifiche necessarie:</strong></p>
       <pre><code>[lightning]
 lnd_cert_file = '/config/lnd/tls.cert'
-lnd_macaroon_file = '/config/lnd/admin.macaroon'
+lnd_macaroon_file = '/config/lnd/mostro.macaroon'
 lnd_grpc_host = 'https://host.docker.internal:10009'  # Se LND sullo stesso VPS
 # O usare 'https://IL_TUO_IP_LND:10009' se LND su server diverso
 
@@ -341,7 +350,7 @@ fiat_currencies_accepted = ['USD', 'EUR']  # Le tue valute</code></pre>
       <pre><code>sudo chown -R 1000:1000 ~/mostro-config
 chmod 700 ~/mostro-config
 chmod 600 ~/mostro-config/settings.toml
-chmod 600 ~/mostro-config/lnd/admin.macaroon</code></pre>
+chmod 600 ~/mostro-config/lnd/mostro.macaroon</code></pre>
 
       <h4>Passo 10: Eseguire il container</h4>
       <p><strong>Se LND è sullo stesso VPS:</strong></p>
@@ -409,7 +418,7 @@ cp ../settings.tpl.toml config/settings.toml</code></pre>
       <h4>Passo 8: Costruire l'immagine Docker</h4>
       <pre><code>cd ..
 LND_CERT_FILE=/root/.lnd/tls.cert \
-LND_MACAROON_FILE=/root/.lnd/data/chain/bitcoin/mainnet/admin.macaroon \
+LND_MACAROON_FILE=/root/.lnd/data/chain/bitcoin/mainnet/mostro.macaroon \
 make docker-build</code></pre>
 
       <h4>Passo 9: Avviare Mostro</h4>
@@ -457,8 +466,6 @@ swapon /swapfile</code></pre>
 
       <h4>Passi 8–10: Installare, inizializzare e pulire</h4>
       <pre><code>install target/release/mostrod /usr/local/bin
-cargo install sqlx-cli --version 0.6.3
-./init_db.sh
 cargo clean  # Risparmia 2+ GB di spazio</code></pre>
 
       <h4>Passi 11–12: Creare utente e configurare</h4>
@@ -740,7 +747,7 @@ relays = ["wss://relay.mostro.network", "wss://nos.lol"]
 
 [telegram]
 bot_token = "IL_TUO_BOT_TOKEN"
-chat_id = "IL_TUO_CHAT_ID"</code></pre>
+chat_id = -1001234567890</code></pre>
 
       <div class="callout tip">
         <div class="callout-title">💡 Consiglio</div>
@@ -784,19 +791,19 @@ docker run -d --name mostro \
 
       <p><strong>Docker Build:</strong></p>
       <pre><code>cd /opt/mostro
-git pull origin main
+git fetch --tags
+git checkout {version}
 make docker-build
 make docker-down
 make docker-up</code></pre>
 
       <p><strong>Nativo:</strong></p>
       <pre><code>cd /opt/mostro
-git pull origin main
+git fetch --tags
+git checkout {version}
 cargo build --release
 install target/release/mostrod /usr/local/bin
 cargo clean
-cargo install sqlx-cli --version 0.6.3
-sqlx migrate run
 systemctl restart mostro.service</code></pre>
 
       <div class="callout tip">
@@ -840,8 +847,8 @@ sqlite3 /percorso/di/mostro.db "SELECT id, fiat_code, fiat_amount, amount, fee, 
 # Ordini in attesa
 sqlite3 /percorso/di/mostro.db "SELECT id, fiat_code, fiat_amount, status, created_at FROM orders WHERE status = 'pending';"
 
-# Entrate totali da commissioni (fee del nodo + dev_fee)
-sqlite3 /percorso/di/mostro.db "SELECT SUM(fee) as node_fees, SUM(dev_fee) as dev_fees, SUM(fee + dev_fee) as total_fees_sats FROM orders WHERE status = 'success';"</code></pre>
+# Ricavi da commissioni: orders.fee memorizza la metà di ciascuna parte, quindi la commissione lorda del nodo è fee*2 e la dev fee viene sottratta da essa
+sqlite3 /percorso/di/mostro.db "SELECT SUM(fee*2) AS gross_fees, SUM(dev_fee) AS dev_fees, SUM(fee*2 - COALESCE(dev_fee, 0)) AS net_fees FROM orders WHERE status = 'success';"</code></pre>
 
       <!-- ===== SECTION 6 ===== -->
       <h2 id="costs">6. Analisi dei Costi</h2>
@@ -975,7 +982,7 @@ sqlite3 /percorso/di/mostro.db "SELECT SUM(fee) as node_fees, SUM(dev_fee) as de
       <ul>
         <li>Verifica che LND sia in esecuzione: <code>lncli getinfo</code></li>
         <li>Controlla che <code>lnd_grpc_host</code> corrisponda all'indirizzo del tuo LND</li>
-        <li>Verifica che i percorsi di <code>tls.cert</code> e <code>admin.macaroon</code> siano corretti</li>
+        <li>Verifica che i percorsi di <code>tls.cert</code> e <code>mostro.macaroon</code> siano corretti</li>
         <li>Docker + LND sull'host: usa <code>host.docker.internal</code></li>
       </ul>
 
@@ -1038,7 +1045,7 @@ kill &lt;PID&gt;</code></pre>
           <tr><td>Configurazione</td><td><code>~/mostro-config/settings.toml</code></td><td><code>/opt/mostro/settings.toml</code></td></tr>
           <tr><td>Database</td><td><code>~/mostro-config/mostro.db</code></td><td><code>/opt/mostro/mostro.db</code></td></tr>
           <tr><td>Cert LND</td><td><code>~/mostro-config/lnd/tls.cert</code></td><td>Varia (controlla config LND)</td></tr>
-          <tr><td>Macaroon LND</td><td><code>~/mostro-config/lnd/admin.macaroon</code></td><td>Varia (controlla config LND)</td></tr>
+          <tr><td>Macaroon LND</td><td><code>~/mostro-config/lnd/mostro.macaroon</code></td><td>Varia (controlla config LND)</td></tr>
           <tr><td>Servizio</td><td>N/A</td><td><code>/etc/systemd/system/mostro.service</code></td></tr>
           <tr><td>Log</td><td><code>docker logs -f mostro</code></td><td><code>journalctl -u mostro</code></td></tr>
         </tbody>
@@ -1060,7 +1067,7 @@ journalctl -u mostro -f        # Vedere i log
 # Database
 sqlite3 mostro.db "SELECT COUNT(*) FROM orders;"                           # Totale ordini
 sqlite3 mostro.db "SELECT COUNT(*) FROM orders WHERE status='success';"    # Operazioni riuscite
-sqlite3 mostro.db "SELECT SUM(fee + dev_fee) FROM orders WHERE status='success';"  # Totale commissioni</code></pre>
+sqlite3 mostro.db "SELECT SUM(fee*2 - COALESCE(dev_fee, 0)) FROM orders WHERE status='success';"  # Commissioni nette trattenute dal nodo
 
       <h3>Configurazione raccomandata per nodi nuovi</h3>
       <pre><code>[mostro]

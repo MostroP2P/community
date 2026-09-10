@@ -174,9 +174,18 @@ const updated = formatReleaseMonth(publishedAt, locale);
       <p><strong>What you need from your LND node:</strong></p>
       <ul>
         <li>The <code>tls.cert</code> file (a security certificate)</li>
-        <li>The <code>admin.macaroon</code> file (an authentication token)</li>
+        <li>A dedicated <code>mostro.macaroon</code> file (an authentication token with only the permissions Mostro needs, see below)</li>
         <li>The gRPC address (typically <code>https://127.0.0.1:10009</code> if on the same machine)</li>
       </ul>
+
+      <p><strong>Generate a dedicated macaroon for Mostro.</strong> Do not give Mostro your <code>admin.macaroon</code>: it grants full control over your node and its funds. Bake a macaroon that carries only the permissions Mostro actually uses (read node info, create/settle/cancel hold invoices, send and track payments).</p>
+      <p>First pick a root key ID that is not already in use. Revoking a macaroon revokes every macaroon sharing its ID, so reusing one would take out unrelated credentials. ID 0 belongs to LND's own macaroons, so choose a free non-zero number and write it down:</p>
+      <pre><code>lncli listmacaroonids</code></pre>
+      <p>Then bake the macaroon with the ID you chose (<code>7</code> in this example — substitute yours):</p>
+      <pre><code>lncli bakemacaroon --root_key_id 7 \
+  --save_to /root/.lnd/data/chain/bitcoin/mainnet/mostro.macaroon \
+  info:read invoices:read invoices:write offchain:read offchain:write</code></pre>
+      <p>This macaroon cannot open or close channels, move on-chain funds, or change your node's configuration. If it ever leaks, revoke it with <code>lncli deletemacaroonid 7</code> — using the same ID you baked it with — and bake a new one.</p>
 
       <h3 id="liquidity">2.3 Lightning Liquidity</h3>
 
@@ -300,12 +309,12 @@ docker compose version</code></pre>
 
       <h4>Step 7: Copy LND credentials</h4>
       <pre><code>cp /path/to/your/tls.cert ~/mostro-config/lnd/tls.cert
-cp /path/to/your/admin.macaroon ~/mostro-config/lnd/admin.macaroon</code></pre>
+cp /path/to/your/mostro.macaroon ~/mostro-config/lnd/mostro.macaroon</code></pre>
 
       <p>If LND is on the <strong>same machine</strong>, typical paths are:</p>
       <ul>
         <li><code>/root/.lnd/tls.cert</code></li>
-        <li><code>/root/.lnd/data/chain/bitcoin/mainnet/admin.macaroon</code></li>
+        <li><code>/root/.lnd/data/chain/bitcoin/mainnet/mostro.macaroon</code></li>
       </ul>
 
       <h4>Step 8: Edit the configuration</h4>
@@ -314,7 +323,7 @@ cp /path/to/your/admin.macaroon ~/mostro-config/lnd/admin.macaroon</code></pre>
       <p><strong>Required changes:</strong></p>
       <pre><code>[lightning]
 lnd_cert_file = '/config/lnd/tls.cert'
-lnd_macaroon_file = '/config/lnd/admin.macaroon'
+lnd_macaroon_file = '/config/lnd/mostro.macaroon'
 lnd_grpc_host = 'https://host.docker.internal:10009'  # If LND on same VPS
 # Or use 'https://YOUR_LND_IP:10009' if LND on different server
 
@@ -341,7 +350,7 @@ fiat_currencies_accepted = ['USD', 'EUR']  # Your currencies</code></pre>
       <pre><code>sudo chown -R 1000:1000 ~/mostro-config
 chmod 700 ~/mostro-config
 chmod 600 ~/mostro-config/settings.toml
-chmod 600 ~/mostro-config/lnd/admin.macaroon</code></pre>
+chmod 600 ~/mostro-config/lnd/mostro.macaroon</code></pre>
 
       <h4>Step 10: Run the container</h4>
       <p><strong>If LND is on the same VPS:</strong></p>
@@ -409,7 +418,7 @@ cp ../settings.tpl.toml config/settings.toml</code></pre>
       <h4>Step 8: Build the Docker image</h4>
       <pre><code>cd ..
 LND_CERT_FILE=/root/.lnd/tls.cert \
-LND_MACAROON_FILE=/root/.lnd/data/chain/bitcoin/mainnet/admin.macaroon \
+LND_MACAROON_FILE=/root/.lnd/data/chain/bitcoin/mainnet/mostro.macaroon \
 make docker-build</code></pre>
 
       <h4>Step 9: Start Mostro</h4>
@@ -457,8 +466,6 @@ swapon /swapfile</code></pre>
 
       <h4>Steps 8–10: Install, initialize, and clean</h4>
       <pre><code>install target/release/mostrod /usr/local/bin
-cargo install sqlx-cli --version 0.6.3
-./init_db.sh
 cargo clean  # Saves 2+ GB of space</code></pre>
 
       <h4>Steps 11–12: Create user and configure</h4>
@@ -740,7 +747,7 @@ relays = ["wss://relay.mostro.network", "wss://nos.lol"]
 
 [telegram]
 bot_token = "YOUR_BOT_TOKEN"
-chat_id = "YOUR_CHAT_ID"</code></pre>
+chat_id = -1001234567890</code></pre>
 
       <div class="callout tip">
         <div class="callout-title">💡 Tip</div>
@@ -784,19 +791,19 @@ docker run -d --name mostro \
 
       <p><strong>Docker Build:</strong></p>
       <pre><code>cd /opt/mostro
-git pull origin main
+git fetch --tags
+git checkout {version}
 make docker-build
 make docker-down
 make docker-up</code></pre>
 
       <p><strong>Native:</strong></p>
       <pre><code>cd /opt/mostro
-git pull origin main
+git fetch --tags
+git checkout {version}
 cargo build --release
 install target/release/mostrod /usr/local/bin
 cargo clean
-cargo install sqlx-cli --version 0.6.3
-sqlx migrate run
 systemctl restart mostro.service</code></pre>
 
       <div class="callout tip">
@@ -840,8 +847,8 @@ sqlite3 /path/to/mostro.db "SELECT id, fiat_code, fiat_amount, amount, fee, stat
 # Pending orders
 sqlite3 /path/to/mostro.db "SELECT id, fiat_code, fiat_amount, status, created_at FROM orders WHERE status = 'pending';"
 
-# Total fee revenue (node fee + dev_fee)
-sqlite3 /path/to/mostro.db "SELECT SUM(fee) as node_fees, SUM(dev_fee) as dev_fees, SUM(fee + dev_fee) as total_fees_sats FROM orders WHERE status = 'success';"</code></pre>
+# Fee revenue: orders.fee stores each party's half, so the node's gross fee is fee*2 and the dev fee is deducted from it
+sqlite3 /path/to/mostro.db "SELECT SUM(fee*2) AS gross_fees, SUM(dev_fee) AS dev_fees, SUM(fee*2 - COALESCE(dev_fee, 0)) AS net_fees FROM orders WHERE status = 'success';"</code></pre>
 
       <!-- ===== SECTION 6 ===== -->
       <h2 id="costs">6. Cost Breakdown</h2>
@@ -975,7 +982,7 @@ sqlite3 /path/to/mostro.db "SELECT SUM(fee) as node_fees, SUM(dev_fee) as dev_fe
       <ul>
         <li>Verify LND is running: <code>lncli getinfo</code></li>
         <li>Check that <code>lnd_grpc_host</code> matches your LND address</li>
-        <li>Verify <code>tls.cert</code> and <code>admin.macaroon</code> paths are correct</li>
+        <li>Verify <code>tls.cert</code> and <code>mostro.macaroon</code> paths are correct</li>
         <li>Docker + LND on host: use <code>host.docker.internal</code></li>
       </ul>
 
@@ -1038,7 +1045,7 @@ kill &lt;PID&gt;</code></pre>
           <tr><td>Configuration</td><td><code>~/mostro-config/settings.toml</code></td><td><code>/opt/mostro/settings.toml</code></td></tr>
           <tr><td>Database</td><td><code>~/mostro-config/mostro.db</code></td><td><code>/opt/mostro/mostro.db</code></td></tr>
           <tr><td>LND Cert</td><td><code>~/mostro-config/lnd/tls.cert</code></td><td>Varies (check LND config)</td></tr>
-          <tr><td>LND Macaroon</td><td><code>~/mostro-config/lnd/admin.macaroon</code></td><td>Varies (check LND config)</td></tr>
+          <tr><td>LND Macaroon</td><td><code>~/mostro-config/lnd/mostro.macaroon</code></td><td>Varies (check LND config)</td></tr>
           <tr><td>Service</td><td>N/A</td><td><code>/etc/systemd/system/mostro.service</code></td></tr>
           <tr><td>Logs</td><td><code>docker logs -f mostro</code></td><td><code>journalctl -u mostro</code></td></tr>
         </tbody>
@@ -1060,7 +1067,7 @@ journalctl -u mostro -f        # View logs
 # Database
 sqlite3 mostro.db "SELECT COUNT(*) FROM orders;"                           # Total orders
 sqlite3 mostro.db "SELECT COUNT(*) FROM orders WHERE status='success';"    # Successful trades
-sqlite3 mostro.db "SELECT SUM(fee + dev_fee) FROM orders WHERE status='success';"  # Total fees</code></pre>
+sqlite3 mostro.db "SELECT SUM(fee*2 - COALESCE(dev_fee, 0)) FROM orders WHERE status='success';"  # Net fees kept by the node
 
       <h3>Recommended Configuration for New Nodes</h3>
       <pre><code>[mostro]
