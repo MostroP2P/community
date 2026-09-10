@@ -7,6 +7,7 @@
 const RELEASES_URL = 'https://api.github.com/repos/MostroP2P/mostro/releases/latest';
 const FALLBACK_VERSION = 'v0.18.7';
 const FALLBACK_DATE = '2026-09-01';
+const FETCH_TIMEOUT_MS = 10_000;
 
 export interface MostroRelease {
   version: string;
@@ -26,19 +27,28 @@ async function fetchLatestRelease(): Promise<MostroRelease> {
   const token = process.env.GITHUB_TOKEN;
   if (token) headers.Authorization = `Bearer ${token}`;
 
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+
   try {
-    const res = await fetch(RELEASES_URL, { headers });
+    const res = await fetch(RELEASES_URL, { headers, signal: controller.signal });
     if (!res.ok) throw new Error(`GitHub API responded ${res.status}`);
     const data = (await res.json()) as { tag_name?: string; published_at?: string };
     if (!data.tag_name) throw new Error('Release response has no tag_name');
-    return {
-      version: data.tag_name,
-      publishedAt: data.published_at ? new Date(data.published_at) : new Date(FALLBACK_DATE),
-    };
+    return { version: data.tag_name, publishedAt: parsePublishedAt(data.published_at) };
   } catch (err) {
     console.warn(`[mostroVersion] Falling back to ${FALLBACK_VERSION}:`, (err as Error).message);
     return { version: FALLBACK_VERSION, publishedAt: new Date(FALLBACK_DATE) };
+  } finally {
+    clearTimeout(timer);
   }
+}
+
+/** Returns a valid Date, using FALLBACK_DATE when the value is missing or unparseable. */
+function parsePublishedAt(value: string | undefined): Date {
+  if (!value) return new Date(FALLBACK_DATE);
+  const ms = Date.parse(value);
+  return Number.isNaN(ms) ? new Date(FALLBACK_DATE) : new Date(ms);
 }
 
 // Fetch once per build and share across all locale pages.
