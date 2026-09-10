@@ -1,0 +1,127 @@
+---
+/**
+ * The node guide, rendered from shared structure plus one locale's text.
+ *
+ * Structure (which sections exist, their order and heading level) comes from
+ * `src/data/guide/sections.ts`; the words come from `src/data/guide/<locale>.ts`.
+ * Headings and the table of contents are generated here from the same source,
+ * so they cannot drift apart across the five translations.
+ */
+import Layout from '../layouts/Layout.astro';
+import Header from './Header.astro';
+import Footer from './Footer.astro';
+import '../styles/guide.css';
+import { getMostroRelease, formatReleaseMonth } from '../lib/mostroVersion';
+import { GUIDE, type GuideLocale } from '../data/guide';
+import { resolveSections, mobileNav, fillRelease } from '../lib/guide';
+
+interface Props {
+  locale: GuideLocale;
+}
+
+const { locale } = Astro.props;
+const translation = GUIDE[locale];
+const sections = resolveSections(locale, translation);
+const mobile = mobileNav(sections);
+
+const { version, publishedAt } = await getMostroRelease();
+const updated = formatReleaseMonth(publishedAt, locale);
+const fill = (text: string) => fillRelease(text, version, updated);
+
+const { meta } = translation;
+---
+
+<Layout title={meta.title} description={meta.description} locale={locale}>
+  <Header locale={locale} />
+
+  <div class="container guide-layout">
+    <nav class="toc">
+      <div class="toc-title">{meta.tocTitle}</div>
+      <ul class="toc-list">
+        {sections.map((section) => (
+          <li class={section.level === 3 ? 'toc-h3' : undefined}>
+            <a href={`#${section.id}`} set:html={section.nav} />
+          </li>
+        ))}
+      </ul>
+    </nav>
+
+    <div class="toc-mobile">
+      <button class="toc-toggle" id="toc-toggle">{meta.tocButton}</button>
+      <div class="toc-mobile-list" id="toc-mobile-list">
+        <ul class="toc-list">
+          {mobile.map((section) => (
+            <li><a href={`#${section.id}`} set:html={section.navShort ?? section.nav} /></li>
+          ))}
+        </ul>
+      </div>
+    </div>
+
+    <article class="guide-content">
+      <h1 set:html={meta.h1} />
+      <p class="guide-version" set:html={fill(meta.versionLine)} />
+
+      {sections.map((section) => (
+        <Fragment>
+          {section.level === 2
+            ? <h2 id={section.id} set:html={fill(section.title)} />
+            : <h3 id={section.id} set:html={fill(section.title)} />}
+          <Fragment set:html={fill(section.html)} />
+        </Fragment>
+      ))}
+
+      <Fragment set:html={fill(meta.credit)} />
+    </article>
+  </div>
+
+  <Footer locale={locale} />
+</Layout>
+
+<style>
+  .flow-diagram {
+    background: rgba(140, 198, 63, 0.05);
+    border: 1px solid rgba(140, 198, 63, 0.2);
+    border-radius: 12px;
+    padding: 24px;
+    margin: 20px 0;
+    font-family: monospace;
+  }
+  .flow-step {
+    padding: 8px 0;
+    line-height: 1.6;
+  }
+  .step-num {
+    color: var(--accent);
+    font-weight: 700;
+    font-size: 1.1rem;
+  }
+  .arrow {
+    color: var(--accent);
+    font-weight: 700;
+  }
+  .badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 600;
+  }
+  .badge-easy {
+    background: rgba(76, 175, 80, 0.15);
+    color: #2E7D32;
+  }
+  .badge-medium {
+    background: rgba(255, 193, 7, 0.15);
+    color: #7B5800;
+  }
+  .badge-hard {
+    background: rgba(244, 67, 54, 0.15);
+    color: #B71C1C;
+  }
+</style>
+
+<script>
+  document.getElementById('toc-toggle')?.addEventListener('click', () => {
+    document.getElementById('toc-mobile-list')?.classList.toggle('open');
+  });
+</script>

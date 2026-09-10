@@ -1,0 +1,1352 @@
+import type { GuideTranslation } from './types';
+
+/**
+ * es translation of the node guide.
+ *
+ * `{{version}}` and `{{updated}}` are replaced at render time with the
+ * current Mostro release tag and its month. Section order and heading levels
+ * live in `./sections.ts`, not here.
+ */
+const es: GuideTranslation = {
+  meta: {
+    title: `Guía de Configuración de Nodo — Mostro Community`,
+    description: `Guía completa para ejecutar tu propio nodo Mostro P2P de intercambio de Bitcoin.`,
+    h1: `Ejecutando Tu Propio Nodo Mostro`,
+    versionLine: `Mostro {{version}} — Guía de la Comunidad · {{updated}}`,
+    tocTitle: `En esta página`,
+    tocButton: `📑 Índice`,
+    credit: `      <div style="text-align:center; margin-top:48px; padding:24px; border-top:1px solid var(--border);">
+        <p>Esta guía es mantenida por la comunidad Mostro. ¿Encontraste un error o quieres mejorarla?<br>
+        Las contribuciones son bienvenidas en <a href="https://github.com/MostroP2P/community" target="_blank" rel="noopener noreferrer">github.com/MostroP2P/community</a></p>
+        <p style="color:var(--text-secondary); margin-top:12px;">Última actualización: {{updated}} · Mostro {{version}}</p>
+      </div>`,
+  },
+
+  sections: {
+    'what-is-mostro': {
+      title: `1. ¿Qué es Mostro y por qué tu comunidad debería ejecutar uno?`,
+      nav: `1. ¿Qué es Mostro?`,
+      navShort: `1. ¿Qué es Mostro?`,
+      html: `      <p>Mostro es un <strong>exchange peer-to-peer de Bitcoin</strong> que permite a las personas comprar y vender Bitcoin usando monedas locales (dólares, euros, pesos — cualquier moneda) sin necesidad de proporcionar documentos de identidad (KYC). Piensa en él como un mercado descentralizado donde compradores y vendedores pueden comerciar directamente.</p>
+
+      <p>Funciona usando dos tecnologías:</p>
+      <ul>
+        <li><strong>Lightning Network</strong> — una capa de pagos rápidos y de bajo costo para Bitcoin (piensa en ella como la vía rápida de Bitcoin para pagos pequeños y ágiles)</li>
+        <li><strong>Nostr</strong> — un protocolo de comunicación resistente a la censura (piensa en él como un sistema de mensajería que nadie puede apagar)</li>
+      </ul>
+
+      <p>Mostro actúa como un <strong>coordinador de custodia</strong> — retiene los Bitcoin del vendedor en una "caja fuerte" temporal (llamada hold invoice) hasta que el comprador confirma que ha enviado el pago en moneda local. Mostro nunca controla realmente los fondos de nadie; solo los retiene brevemente durante la operación.</p>`,
+    },
+    'why-run': {
+      title: `¿Por qué tu comunidad querría ejecutar un nodo Mostro?`,
+      nav: `¿Por qué un nodo?`,
+      html: `      <ol>
+        <li><strong>Ingresos por comisiones</strong> — Cada operación te genera una comisión (0.6% por defecto). Si tu comunidad hace $10,000 en operaciones mensuales, son ~$60/mes en comisiones.</li>
+        <li><strong>Trading P2P sin KYC</strong> — Los miembros de tu comunidad pueden comprar y vender Bitcoin sin proporcionar documentos de identidad. Especialmente importante en regiones con monedas inestables o regulaciones restrictivas.</li>
+        <li><strong>Disputas en tu idioma</strong> — Cuando una operación sale mal, <em>tu</em> comunidad la resuelve, en <em>tu</em> idioma, entendiendo <em>tus</em> métodos de pago locales.</li>
+        <li><strong>Independencia</strong> — Ninguna empresa puede cerrar tu exchange. Ningún gobierno puede presionar a un único operador para cerrarlo.</li>
+        <li><strong>Personalización</strong> — Tú eliges qué monedas soportar, qué métodos de pago permitir y qué comisiones cobrar.</li>
+      </ol>`,
+    },
+    'how-it-works': {
+      title: `Cómo funciona Mostro (Simplificado)`,
+      nav: `Cómo funciona`,
+      html: `      <div class="flow-diagram">
+        <div class="flow-step"><span class="step-num">1.</span> Alice quiere VENDER Bitcoin por $50 USD <span class="arrow">→</span> Crea una orden en Mostro</div>
+        <div class="flow-step"><span class="step-num">2.</span> Bob quiere COMPRAR Bitcoin con $50 USD <span class="arrow">→</span> Ve la orden de Alice y la toma</div>
+        <div class="flow-step"><span class="step-num">3.</span> Mostro crea una "caja fuerte" (hold invoice) <span class="arrow">→</span> Alice envía sus Bitcoin a la caja fuerte</div>
+        <div class="flow-step"><span class="step-num">4.</span> Bob envía $50 a Alice por transferencia bancaria, Zelle, efectivo, etc. <span class="arrow">→</span> Bob presiona "Fiat Enviado" en su app</div>
+        <div class="flow-step"><span class="step-num">5.</span> Alice confirma que recibió los $50 <span class="arrow">→</span> Presiona "Liberar"</div>
+        <div class="flow-step"><span class="step-num">6.</span> Mostro libera los Bitcoin de la caja fuerte a Bob <span class="arrow">→</span> ¡Operación completada! ✓</div>
+      </div>
+
+      <p>Si algo sale mal (ej: Bob dice que pagó pero Alice no lo recibió), cualquiera de las partes puede abrir una <strong>disputa</strong>, y los árbitros asignados de tu comunidad investigan y resuelven.</p>`,
+    },
+    'prerequisites': {
+      title: `2. Prerequisitos — Lo que necesitas antes de empezar`,
+      nav: `2. Prerequisitos`,
+      navShort: `2. Prerequisitos`,
+      html: ``,
+    },
+    'vps': {
+      title: `2.1 Un Servidor (VPS)`,
+      nav: `Servidor (VPS)`,
+      html: `      <p>Un <strong>VPS</strong> (Servidor Virtual Privado) es una computadora en un centro de datos que funciona 24/7. Alquilarás uno para alojar tu nodo Mostro.</p>
+
+      <p><strong>Especificaciones mínimas:</strong></p>
+      <table class="guide-table">
+        <thead><tr><th>Recurso</th><th>Mínimo</th><th>Recomendado</th></tr></thead>
+        <tbody>
+          <tr><td>CPU</td><td>2 vCPUs (compartidos)</td><td>2+ vCPUs</td></tr>
+          <tr><td>RAM</td><td>2 GB</td><td>4 GB</td></tr>
+          <tr><td>Almacenamiento</td><td>60 GB SSD</td><td>100 GB SSD</td></tr>
+          <tr><td>Ancho de banda</td><td>3 TB/mes</td><td>3+ TB/mes</td></tr>
+          <tr><td>SO</td><td>Ubuntu 22.04+ LTS</td><td>Ubuntu 24.04 LTS</td></tr>
+        </tbody>
+      </table>
+
+      <p><strong>Costo mensual estimado:</strong> $10–$24/mes.</p>
+
+      <p><strong>Proveedores populares de VPS:</strong></p>
+      <ul>
+        <li><a href="https://www.hostinger.com/" target="_blank" rel="noopener noreferrer">Hostinger</a> — desde ~$7/mes (precio promocional; la renovación puede ser mayor) (KVM 2: 2 vCPU, 8GB RAM, 100GB NVMe, 8TB bandwidth) · Acepta Bitcoin</li>
+        <li><a href="https://www.hetzner.com/" target="_blank" rel="noopener noreferrer">Hetzner</a> — €3.49-8/mes (CX23 desde €3.49, buena relación calidad-precio, con base en la UE)</li>
+        <li><a href="https://www.digitalocean.com/" target="_blank" rel="noopener noreferrer">Digital Ocean</a> — $24/mes (4GB RAM, 2 CPUs, 80GB SSD) o $32/mes (4GB RAM, 2 Intel CPUs, 120GB NVMe)</li>
+        <li><a href="https://www.ovhcloud.com/" target="_blank" rel="noopener noreferrer">OVH</a> — ~$6-12/mes</li>
+        <li><a href="https://www.linode.com/" target="_blank" rel="noopener noreferrer">Linode/Akamai</a> — $12/mes</li>
+        <li><a href="https://www.lunanode.com/" target="_blank" rel="noopener noreferrer">Lunanode</a> — Acepta pagos en Bitcoin</li>
+      </ul>
+
+      <div class="callout tip">
+        <div class="callout-title">💡 Consejo</div>
+        <p>Muchos proveedores de VPS aceptan pagos en Bitcoin. Busca esa opción si quieres mantener coherencia con la filosofía de Bitcoin.</p>
+      </div>
+
+      <p>Necesitas sentirte cómodo conectándote a un servidor por SSH. Si nunca lo has hecho, busca un tutorial sobre "Conectarse por SSH a un VPS" — es más simple de lo que parece.</p>`,
+    },
+    'lnd': {
+      title: `2.2 Un Nodo Lightning Network (LND)`,
+      nav: `Nodo Lightning (LND)`,
+      html: `      <p>Lightning Network es un sistema "capa 2" construido sobre Bitcoin que permite pagos rápidos y baratos. Para ejecutar Mostro, necesitas un <strong>nodo LND</strong> (Lightning Network Daemon) — el software Lightning específico con el que Mostro trabaja.</p>
+
+      <p><strong>Tus opciones:</strong></p>
+      <table class="guide-table">
+        <thead><tr><th>Opción</th><th>Dificultad</th><th>Costo</th><th>Notas</th></tr></thead>
+        <tbody>
+          <tr><td>Usar un nodo LND existente</td><td><span class="badge badge-easy">Fácil</span></td><td>Gratis (si tienes uno)</td><td>Mejor si alguien ya tiene uno</td></tr>
+          <tr><td>Ejecutar LND en el mismo VPS</td><td><span class="badge badge-hard">Difícil</span></td><td>Mismo VPS + liquidez</td><td>Requiere VPS con 4GB+ RAM</td></tr>
+          <tr><td>Solución nodo-en-caja</td><td><span class="badge badge-medium">Medio</span></td><td>$200-600 + liquidez</td><td><a href="https://start9.com/" target="_blank" rel="noopener noreferrer">Start9</a>, <a href="https://umbrel.com/" target="_blank" rel="noopener noreferrer">Umbrel</a>, <a href="https://raspiblitz.org/" target="_blank" rel="noopener noreferrer">RaspiBlitz</a></td></tr>
+          <tr><td>StartOS con paquete Mostro</td><td><span class="badge badge-easy">Más fácil</span></td><td>$300-600 + liquidez</td><td>Start9 tiene un paquete Mostro de un clic</td></tr>
+          <tr><td>Usar Voltage.cloud</td><td><span class="badge badge-easy">Fácil</span></td><td>Desde ~$20/mes + liquidez</td><td><a href="https://voltage.cloud/" target="_blank" rel="noopener noreferrer">Voltage</a> — LND alojado con infraestructura administrada</td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout important">
+        <div class="callout-title">⚠️ Importante</div>
+        <p>Mostro requiere específicamente <strong>LND</strong> (no CLN/Core Lightning, no Eclair, no LDK). Asegúrate de que tu nodo Lightning ejecute LND.</p>
+      </div>
+
+      <p><strong>Lo que necesitas de tu nodo LND:</strong></p>
+      <ul>
+        <li>El archivo <code>tls.cert</code> (un certificado de seguridad)</li>
+        <li>Un archivo <code>mostro.macaroon</code> dedicado (un token de autenticación con solo los permisos que Mostro necesita, ver abajo)</li>
+        <li>La dirección gRPC (típicamente <code>https://127.0.0.1:10009</code> si está en la misma máquina)</li>
+      </ul>
+
+      <p><strong>Genera un macaroon dedicado para Mostro.</strong> No le des a Mostro tu <code>admin.macaroon</code>: otorga control total sobre tu nodo y sus fondos. Crea un macaroon que tenga únicamente los permisos que Mostro usa (leer info del nodo, crear/liquidar/cancelar hold invoices, enviar y rastrear pagos).</p>
+      <p>Primero elige un root key ID que no esté en uso. Revocar un macaroon revoca todos los macaroons que comparten su ID, así que reutilizar uno se llevaría credenciales ajenas. El ID 0 pertenece a los macaroons propios de LND, así que elige un número libre distinto de cero y anótalo:</p>
+      <pre><code>lncli listmacaroonids</code></pre>
+      <p>Luego crea el macaroon con el ID que elegiste (<code>7</code> en este ejemplo, sustituye por el tuyo):</p>
+      <pre><code>lncli bakemacaroon --root_key_id 7 \\
+  --save_to /root/.lnd/data/chain/bitcoin/mainnet/mostro.macaroon \\
+  info:read invoices:read invoices:write offchain:read offchain:write</code></pre>
+      <p>Este macaroon no puede abrir ni cerrar canales, mover fondos on-chain ni cambiar la configuración de tu nodo. Si alguna vez se filtra, revócalo con <code>lncli deletemacaroonid 7</code>, usando el mismo ID con el que lo creaste, y genera uno nuevo.</p>`,
+    },
+    'liquidity': {
+      title: `2.3 Liquidez Lightning`,
+      nav: `Liquidez`,
+      html: `      <p>Para facilitar operaciones, tu nodo Lightning necesita <strong>canales</strong> con Bitcoin en ellos. Piensa en los canales Lightning como túneles de pago pre-financiados. El Bitcoin dentro de estos canales es tu "liquidez".</p>
+
+      <p><strong>¿Cuánta necesitas?</strong></p>
+      <table class="guide-table">
+        <thead><tr><th>Volumen de trading objetivo</th><th>Liquidez sugerida</th><th>BTC aproximado</th></tr></thead>
+        <tbody>
+          <tr><td>Comunidad pequeña (pocas operaciones/día)</td><td>1–5 millones de sats</td><td>0.01–0.05 BTC</td></tr>
+          <tr><td>Comunidad mediana</td><td>5–20 millones de sats</td><td>0.05–0.20 BTC</td></tr>
+          <tr><td>Comunidad activa</td><td>20–100 millones de sats</td><td>0.20–1.0 BTC</td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout tip">
+        <div class="callout-title">💡 Nota sobre Liquidez Lightning</div>
+        <p>El Bitcoin en tus canales Lightning está bloqueado <strong>onchain</strong> pero sigue siendo altamente gastable vía Lightning Network. Muchos servicios aceptan pagos Lightning — desde cafeterías hasta proveedores VPS — haciendo tu liquidez bastante flexible para uso cotidiano.</p>
+      </div>
+
+      <p><strong>Empieza pequeño, crece incrementalmente.</strong> Comienza con lo suficiente para las necesidades iniciales de tu comunidad y monitorea el feedback. Cuando los traders reporten que las órdenes fallan por capacidad insuficiente, esa es tu señal para agregar más. Escucha a tu comunidad.</p>
+
+      <p><strong>Obteniendo liquidez:</strong></p>
+      <ul>
+        <li>Abre canales a nodos bien conectados (usa <a href="https://lightningnetwork.plus/" target="_blank" rel="noopener noreferrer">Lightning Network+</a> o <a href="https://amboss.space/" target="_blank" rel="noopener noreferrer">Amboss</a> para encontrar buenos pares)</li>
+        <li>Necesitas capacidad <strong>saliente</strong> (para pagar a compradores) y capacidad <strong>entrante</strong> (para recibir de vendedores)</li>
+        <li>Obtener liquidez entrante suele ser más difícil — considera <a href="https://lightning.engineering/loop/" target="_blank" rel="noopener noreferrer">Lightning Loop</a>, <a href="https://amboss.space/magma" target="_blank" rel="noopener noreferrer">Magma</a>, o servicios de intercambio de canales</li>
+      </ul>`,
+    },
+    'nostr-keys': {
+      title: `2.4 Claves Nostr`,
+      nav: `Claves Nostr`,
+      html: `      <p>Tu nodo Mostro necesita su propia identidad en la red Nostr — un par de claves criptográficas con una clave pública (la dirección de tu nodo) y una clave privada (tu secreto).</p>
+
+      <div class="callout important">
+        <div class="callout-title">⚠️ Importante</div>
+        <p>Nunca reutilices claves Nostr entre instancias de Mostro. Cada nodo necesita su propia identidad única.</p>
+      </div>
+
+      <p><strong>Generando claves Nostr seguras localmente con rana:</strong></p>
+      <pre><code># Instalar Rust (si no está instalado)
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+source ~/.cargo/env
+
+# Instalar rana - generador local de claves Nostr
+cargo install rana
+
+# Generar un nuevo par de claves (con frase semilla de 12 palabras)
+rana --generate 12</code></pre>
+
+      <p>Rana generará tu clave privada (nsec), tu clave pública (npub) y una frase semilla de respaldo. <strong>¡Guarda todo de forma segura!</strong> Nota: ejecutar <code>rana</code> sin argumentos inicia minería PoW (dificultad 10) que puede tardar minutos — usa <code>--generate</code> para generación instantánea. Nunca generes claves importantes usando servicios online.</p>`,
+    },
+    'skill-level': {
+      title: `2.5 Nivel de conocimiento técnico`,
+      nav: `Nivel técnico`,
+      html: `      <table class="guide-table">
+        <thead><tr><th>Tarea</th><th>Dificultad</th><th>Conocimientos necesarios</th></tr></thead>
+        <tbody>
+          <tr><td>Alquilar un VPS</td><td><span class="badge badge-easy">Fácil</span></td><td>Tarjeta de crédito, navegación web básica</td></tr>
+          <tr><td>Conectarse por SSH</td><td><span class="badge badge-easy">Fácil</span></td><td>Seguir instrucciones, escribir comandos</td></tr>
+          <tr><td>Instalar Docker</td><td><span class="badge badge-medium">Medio</span></td><td>Copiar y pegar comandos, solución básica de problemas</td></tr>
+          <tr><td>Ejecutar Mostro (Docker)</td><td><span class="badge badge-medium">Medio</span></td><td>Editar archivos de configuración, entender rutas</td></tr>
+          <tr><td>Ejecutar Mostro (nativo)</td><td><span class="badge badge-hard">Difícil</span></td><td>Administración Linux, compilación de software, systemd</td></tr>
+          <tr><td>Configurar LND desde cero</td><td><span class="badge badge-hard">Difícil</span></td><td>Conocimiento significativo de Linux y redes</td></tr>
+          <tr><td>Gestionar liquidez Lightning</td><td><span class="badge badge-hard">Difícil</span></td><td>Entender la economía de canales Lightning</td></tr>
+        </tbody>
+      </table>
+
+      <p><strong>💡 Nuestra recomendación:</strong> Si tu comunidad tiene a alguien cómodo con la línea de comandos de Linux, puede manejar la instalación con Docker. La compilación nativa requiere experiencia en administración de sistemas. La configuración del nodo Lightning es la parte más compleja — considera pedir ayuda a alguien experimentado, o usar una solución nodo-en-caja.</p>`,
+    },
+    'setup': {
+      title: `3. Instalación Paso a Paso`,
+      nav: `3. Instalación paso a paso`,
+      navShort: `3. Instalación`,
+      html: `      <p>Todas las opciones de instalación comparten los mismos primeros pasos. Luego elige la opción que prefieras:</p>
+      <ul>
+        <li><strong>Opción A (Docker Hub):</strong> La más rápida. Sin compilar, sin clonar. <strong>Recomendada para la mayoría.</strong></li>
+        <li><strong>Opción B (Docker Build):</strong> Construyes la imagen localmente desde el repositorio.</li>
+        <li><strong>Opción C (Compilación nativa):</strong> Más control, mejor para sysadmins experimentados.</li>
+      </ul>
+
+      <p>Todas asumen que ya tienes: ✅ Un VPS con Ubuntu · ✅ Acceso SSH · ✅ Un nodo LND funcionando.</p>`,
+    },
+    'common-steps': {
+      title: `Pasos Comunes (para las 3 opciones)`,
+      nav: `Pasos comunes`,
+      html: `      <h4>Paso 1: Conéctate a tu VPS</h4>
+      <pre><code>ssh root@TU_DIRECCION_IP_DEL_VPS</code></pre>
+
+      <h4>Paso 2: Actualiza el sistema</h4>
+      <pre><code># Descargar la información más reciente de paquetes
+apt update
+
+# Instalar todas las actualizaciones disponibles
+apt upgrade -y</code></pre>
+
+      <h4>Paso 3: Instalar Docker y Docker Compose</h4>
+      <div class="callout tip">
+        <div class="callout-title">💡 Nota</div>
+        <p>Docker es necesario para las opciones A y B. Si vas a compilar manualmente (Opción C), puedes saltar este paso.</p>
+      </div>
+      <pre><code># Instalar Docker con el script oficial
+curl -fsSL https://get.docker.com | sh
+
+# Verificar que Docker está instalado
+docker --version
+
+# Verificar Docker Compose
+docker compose version</code></pre>
+
+      <h4>Paso 4: Instalar herramientas adicionales</h4>
+      <pre><code>apt install -y git make</code></pre>
+
+      <p>✅ <strong>Pasos comunes completados.</strong> Ahora elige tu opción de instalación:</p>`,
+    },
+    'option-a': {
+      title: `Opción A: Docker Hub (La más rápida — Recomendada)`,
+      nav: `Opción A: Docker Hub`,
+      html: `      <p>Ejecuta Mostro directamente desde Docker Hub sin clonar el repositorio ni compilar. Perfecto para deployments en VPS.</p>
+
+      <h4>Paso 5: Crear directorio de configuración</h4>
+      <pre><code>mkdir -p ~/mostro-config/lnd</code></pre>
+
+      <h4>Paso 6: Obtener el template de configuración</h4>
+      <pre><code>curl -sL https://raw.githubusercontent.com/MostroP2P/mostro/{{version}}/settings.tpl.toml \\
+  -o ~/mostro-config/settings.toml</code></pre>
+
+      <h4>Paso 7: Copiar credenciales LND</h4>
+      <pre><code>cp /ruta/a/tu/tls.cert ~/mostro-config/lnd/tls.cert
+cp /ruta/a/tu/mostro.macaroon ~/mostro-config/lnd/mostro.macaroon</code></pre>
+
+      <p>Si LND está en la <strong>misma máquina</strong>, las rutas típicas son:</p>
+      <ul>
+        <li><code>/root/.lnd/tls.cert</code></li>
+        <li><code>/root/.lnd/data/chain/bitcoin/mainnet/mostro.macaroon</code></li>
+      </ul>
+
+      <h4>Paso 8: Editar la configuración</h4>
+      <pre><code>nano ~/mostro-config/settings.toml</code></pre>
+
+      <p><strong>Cambios requeridos:</strong></p>
+      <pre><code>[lightning]
+lnd_cert_file = '/config/lnd/tls.cert'
+lnd_macaroon_file = '/config/lnd/mostro.macaroon'
+lnd_grpc_host = 'https://host.docker.internal:10009'  # Si LND en el mismo VPS
+# O usar 'https://TU_IP_LND:10009' si LND en servidor diferente
+
+[database]
+url = "sqlite:///config/mostro.db"  # mostrod siempre usa &lt;directorio-de-config&gt;/mostro.db
+
+[nostr]
+nsec_privkey = 'TU_CLAVE_NSEC_AQUI'
+relays = ['wss://relay.mostro.network', 'wss://nos.lol']
+
+[mostro]
+fee = 0.006                    # 0.6% comisión por operación
+max_order_amount = 1000000     # Orden máxima en sats
+min_payment_amount = 100       # Orden mínima en sats
+fiat_currencies_accepted = ['USD', 'EUR']  # Tus monedas</code></pre>
+
+      <p>Guardar: <code>Ctrl+X</code>, luego <code>Y</code>, luego <code>Enter</code>.</p>
+
+      <h4>Paso 9: Ajustar permisos</h4>
+      <div class="callout important">
+        <div class="callout-title">⚠️ Importante</div>
+        <p>Evita <code>chmod 777</code>. Usa permisos mínimos.</p>
+      </div>
+      <pre><code>sudo chown -R 1000:1000 ~/mostro-config
+chmod 700 ~/mostro-config
+chmod 600 ~/mostro-config/settings.toml
+chmod 600 ~/mostro-config/lnd/mostro.macaroon</code></pre>
+
+      <h4>Paso 10: Ejecutar el contenedor</h4>
+      <p><strong>Si LND está en el mismo VPS:</strong></p>
+      <pre><code>docker run -d --name mostro \\
+  --restart unless-stopped \\
+  --add-host=host.docker.internal:host-gateway \\
+  -v ~/mostro-config:/config \\
+  mostrop2p/mostro:{{version}}</code></pre>
+
+      <p><strong>Si LND está en un servidor diferente:</strong></p>
+      <pre><code>docker run -d --name mostro \\
+  --restart unless-stopped \\
+  -v ~/mostro-config:/config \\
+  mostrop2p/mostro:{{version}}</code></pre>
+
+      <h4>Paso 11: Revisar los logs</h4>
+      <pre><code>docker logs -f mostro</code></pre>
+
+      <p>Busca estos mensajes:</p>
+      <ul>
+        <li><code>Settings correctly loaded!</code> — La configuración es válida</li>
+        <li><code>Transport: nip44 (protocol v2, event kind 14)</code> — Protocolo en uso (ver 4.8)</li>
+        <li><code>Connected to 'wss://...'</code> — Relay Nostr establecido</li>
+        <li><code>Recorded Lightning node identity &lt;pubkey&gt;</code> — LND alcanzado (solo el primer arranque)</li>
+      </ul>
+
+      <div class="callout tip">
+        <div class="callout-title">💡 Nota</div>
+        <p>No existe un mensaje de "conectado a LND". Mostro contacta a LND durante el arranque, así que un daemon que sigue corriendo ya tiene la conexión funcionando. El fallo, en cambio, es ruidoso: registra <code>Ln node error</code> y termina.</p>
+      </div>
+
+      <div class="callout tip">
+        <div class="callout-title">💡 Solución de problemas</div>
+        <p>Si ves <code>Permission denied (os error 13)</code>, vuelve a ajustar permisos: <code>chown -R 1000:1000 ~/mostro-config</code> y reinicia: <code>docker restart mostro</code>.</p>
+      </div>
+
+      <p>🎉 <strong>¡Felicitaciones!</strong> Si ves conexiones exitosas en los logs, ¡tu nodo Mostro está funcionando!</p>
+
+      <h4>Actualización (Docker Hub)</h4>
+      <pre><code>export MOSTRO_TAG={{version}}
+docker pull mostrop2p/mostro:$MOSTRO_TAG
+docker stop mostro
+docker rm mostro
+docker run -d --name mostro \\
+  --restart unless-stopped \\
+  --add-host=host.docker.internal:host-gateway \\
+  -v ~/mostro-config:/config \\
+  mostrop2p/mostro:$MOSTRO_TAG</code></pre>
+
+      <div class="callout security">
+        <div class="callout-title">🔒 Nota de Seguridad</div>
+        <p>Usa siempre un tag de versión específica (ej. <code>mostrop2p/mostro:{{version}}</code>) en lugar de <code>:latest</code> para controlar despliegues.</p>
+      </div>`,
+    },
+    'option-b': {
+      title: `Opción B: Docker Build (Construir imagen localmente)`,
+      nav: `Opción B: Docker Build`,
+      html: `      <h4>Paso 5: Descargar Mostro</h4>
+      <pre><code>cd /opt
+git clone https://github.com/MostroP2P/mostro.git
+cd mostro</code></pre>
+
+      <h4>Paso 6: Configurar archivos</h4>
+      <pre><code>cd docker
+mkdir -p config
+cp ../settings.tpl.toml config/settings.toml</code></pre>
+
+      <h4>Paso 7: Editar el archivo de configuración</h4>
+      <pre><code>nano config/settings.toml</code></pre>
+      <p>Edita los mismos ajustes que en la Opción A, Paso 8.</p>
+
+      <div class="callout important">
+        <div class="callout-title">⚠️ Si LND corre en la misma VPS</div>
+        <p>A diferencia de la Opción A, el <code>docker/compose.yml</code> del repositorio no mapea <code>host.docker.internal</code>, así que en Linux ese nombre no resuelve dentro del contenedor. Agrega el mapeo al servicio <code>mostro</code> antes de construir:</p>
+        <pre><code>    extra_hosts:
+      - "host.docker.internal:host-gateway"</code></pre>
+        <p>O apunta <code>lnd_grpc_host</code> a la IP local del host. Ten en cuenta que <code>make docker-build</code> también construye la imagen StartOS, que una VPS no necesita: solo cuesta tiempo de compilación.</p>
+      </div>
+
+      <h4>Paso 8: Construir la imagen Docker</h4>
+      <pre><code>cd ..
+LND_CERT_FILE=/root/.lnd/tls.cert \\
+LND_MACAROON_FILE=/root/.lnd/data/chain/bitcoin/mainnet/mostro.macaroon \\
+make docker-build</code></pre>
+
+      <h4>Paso 9: Iniciar Mostro</h4>
+      <pre><code># Inicia Mostro y el relay incluido. \`make docker-up\` a secas también
+# inicia la imagen StartOS, que no necesitas en una VPS.
+docker compose -f docker/compose.yml up -d mostro nostr-relay
+
+# Ver estado
+docker compose -f docker/compose.yml ps
+
+# Ver logs
+docker compose -f docker/compose.yml logs -f mostro</code></pre>
+
+      <p>🎉 <strong>¡Felicitaciones!</strong> Si ves conexiones exitosas, ¡tu nodo Mostro está funcionando!</p>`,
+    },
+    'option-c': {
+      title: `Opción C: Compilación Nativa (Para operadores técnicos)`,
+      nav: `Opción C: Nativo`,
+      html: `      <h4>Paso 5: Instalar Rust</h4>
+      <pre><code>curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+source /root/.cargo/env
+rustc --version
+cargo --version</code></pre>
+
+      <div class="callout important">
+        <div class="callout-title">⚠️ Importante</div>
+        <p>NO instales Rust via <code>apt install rustc</code>. Siempre usa <code>rustup</code>. El paquete del sistema suele estar desactualizado.</p>
+      </div>
+
+      <h4>Paso 6: Instalar dependencias de compilación</h4>
+      <pre><code>apt install -y cmake build-essential libsqlite3-dev libssl-dev \\
+  pkg-config git sqlite3 protobuf-compiler</code></pre>
+
+      <h4>Paso 7: Descargar y compilar Mostro</h4>
+      <pre><code>cd /opt
+git clone https://github.com/MostroP2P/mostro.git
+cd mostro
+cargo build --release</code></pre>
+
+      <div class="callout tip">
+        <div class="callout-title">💡 Consejo</div>
+        <p>Si la compilación falla por falta de RAM, agrega espacio swap:</p>
+      </div>
+      <pre><code>fallocate -l 2G /swapfile
+chmod 600 /swapfile
+mkswap /swapfile
+swapon /swapfile</code></pre>
+
+      <h4>Paso 8–10: Instalar, inicializar y limpiar</h4>
+      <pre><code>install target/release/mostrod /usr/local/bin
+cargo clean  # Ahorra 2+ GB de espacio</code></pre>
+
+      <h4>Paso 11–12: Crear usuario y configurar</h4>
+      <pre><code>adduser --disabled-login mostro
+mkdir -p /opt/mostro
+cp settings.tpl.toml /opt/mostro/settings.toml
+nano /opt/mostro/settings.toml</code></pre>
+      <p>Edita los mismos ajustes que en la Opción A, Paso 8.</p>
+
+      <h4>Paso 13–15: Prueba, permisos y servicio systemd</h4>
+      <pre><code># Prueba de ejecución
+/usr/local/bin/mostrod -d /opt/mostro
+
+# Establecer permisos
+chown -R mostro:mostro /opt/mostro</code></pre>
+
+      <div class="callout tip">
+        <div class="callout-title">💡 El asistente interactivo de configuración</div>
+        <p>Si ejecutas <code>mostrod</code> sin un <code>settings.toml</code> en el directorio indicado y estás en una terminal, te ofrece un menú de configuración que puede armarte el archivo y escribir el nsec en un <code>.env</code>. Sin terminal (Docker, systemd, CI) copia la plantilla, imprime dónde la dejó y termina para que la edites.</p>
+      </div>
+
+      <p>Crear el servicio systemd:</p>
+      <pre><code># /etc/systemd/system/mostro.service
+[Unit]
+Description=Mostro daemon
+After=network.target
+
+[Service]
+Type=simple
+User=mostro
+WorkingDirectory=/home/mostro
+Environment=RUST_LOG=info
+ExecStart=/usr/local/bin/mostrod -d /opt/mostro
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target</code></pre>
+
+      <pre><code>systemctl daemon-reload
+systemctl enable mostro.service
+systemctl start mostro.service
+systemctl status mostro.service</code></pre>
+
+      <p>🎉 <strong>¡Felicitaciones!</strong> Tu nodo Mostro está funcionando como servicio del sistema.</p>`,
+    },
+    'configuration': {
+      title: `4. Configuración en Detalle`,
+      nav: `4. Configuración`,
+      navShort: `4. Configuración`,
+      html: `      <p>El archivo <code>settings.toml</code> controla todo sobre tu nodo Mostro.</p>`,
+    },
+    'cfg-nostr': {
+      title: `4.1 Claves Nostr — La identidad de tu nodo`,
+      nav: `Claves Nostr`,
+      html: `      <pre><code>[nostr]
+nsec_privkey = 'TU_CLAVE_NSEC'
+relays = [
+  'wss://relay.mostro.network',
+  'wss://nos.lol',
+  'wss://relay.nostr.band'
+]</code></pre>
+
+      <p><strong>¿Qué relays usar?</strong></p>
+      <ul>
+        <li><code>wss://relay.mostro.network</code> — Relay propio de Mostro, recomendado</li>
+        <li><code>wss://nos.lol</code> — Relay confiable y bien conectado</li>
+        <li>Agrega 3–5 relays para fiabilidad. Más relays = mejor disponibilidad pero más ancho de banda.</li>
+      </ul>
+
+      <div class="callout tip">
+        <div class="callout-title">💡 Consejo</div>
+        <p>También puedes correr tu propio relay Nostr junto a Mostro. La vía Docker Build (Opción B) incluye uno en su <code>compose.yml</code>; la Opción A y la compilación nativa no.</p>
+      </div>
+
+
+      <h4>Mantener la clave fuera de settings.toml</h4>
+      <p>Mostro también lee la clave desde la variable de entorno <code>MOSTRO_NSEC_PRIVKEY</code>. La precedencia es: variable de entorno, luego <code>&lt;directorio-de-config&gt;/.env</code>, luego <code>settings.toml</code>.</p>
+      <pre><code># ~/mostro-config/.env  (chmod 600) — se carga automáticamente al arrancar
+MOSTRO_NSEC_PRIVKEY=nsec1...
+
+# Docker
+docker run -e MOSTRO_NSEC_PRIVKEY=nsec1... ...
+
+# Unidad systemd
+Environment="MOSTRO_NSEC_PRIVKEY=nsec1..."</code></pre>
+      <p>Dejar <code>nsec_privkey</code> en <code>settings.toml</code> sigue funcionando. Si usas el archivo <code>.env</code>, respáldalo con el mismo cuidado que la configuración.</p>`,
+    },
+    'fees': {
+      title: `4.2 Comisiones — Cómo generas ingresos`,
+      nav: `Comisiones`,
+      html: `      <pre><code>[mostro]
+fee = 0.006
+dev_fee_percentage = 0.30</code></pre>
+
+      <p><strong>Comisión de trading</strong> (<code>fee</code>): Porcentaje cobrado por operación, dividido entre comprador y vendedor.</p>
+      <ul>
+        <li><code>0.006</code> = 0.6% (cada parte paga 0.3%)</li>
+        <li><code>0.01</code> = 1.0% (cada parte paga 0.5%)</li>
+        <li><code>0</code> = gratis (bueno para hacer crecer tu base de usuarios)</li>
+      </ul>
+
+      <p><strong>Ejemplo:</strong> En una operación de 100,000 sats con <code>fee = 0.006</code>: El comprador paga 300 sats, el vendedor paga 300 sats, tu nodo gana 600 sats en total.</p>
+
+      <p><strong>Comisión de desarrollo</strong> (<code>dev_fee_percentage</code>): Un porcentaje de <em>tus</em> ganancias por comisiones que va al desarrollo de Mostro.</p>
+      <ul>
+        <li><code>0.30</code> = 30% (por defecto) — de 600 sats, 180 van al fondo de desarrollo</li>
+        <li>Mínimo: 10% (<code>0.10</code>), Máximo: 100% (<code>1.0</code>)</li>
+        <li>Lo paga tu nodo de sus ganancias, no se cobra a los usuarios</li>
+        <li>Todos los pagos son auditables públicamente a través de eventos Nostr (kind 8383)</li>
+      </ul>
+
+      <div class="callout important">
+        <div class="callout-title">📝 Nota</div>
+        <p>Establecer <code>dev_fee_percentage</code> por debajo de <code>0.10</code> impedirá que Mostro arranque. Este mínimo asegura financiamiento sostenible del desarrollo.</p>
+      </div>`,
+    },
+    'limits': {
+      title: `4.3 Límites de órdenes y monedas`,
+      nav: `Límites`,
+      html: `      <pre><code>[mostro]
+max_order_amount = 1000000
+min_payment_amount = 100
+max_orders_per_response = 10
+fiat_currencies_accepted = ['USD', 'EUR', 'ARS', 'CUP']</code></pre>
+
+      <ul>
+        <li><strong><code>max_order_amount</code>:</strong> Operación más grande en satoshis. Configúralo basándote en tu capacidad de canales Lightning.</li>
+        <li><strong><code>min_payment_amount</code>:</strong> Operación mínima en satoshis. 1,000 o 10,000 es más práctico que 100.</li>
+        <li><strong><code>max_orders_per_response</code>:</strong> Cantidad máxima de órdenes que Mostro devuelve en una sola consulta. Si un usuario acumula más órdenes que este límite (por ejemplo al restaurar su sesión desde el cliente móvil), recibirá un error <code>cant-do: too_many_requests</code> y no podrá recuperar sus órdenes. Si tus usuarios operan frecuentemente, sube este valor (por ejemplo 50 o 100). El valor por defecto de 10 puede ser insuficiente.</li>
+        <li><strong><code>fiat_currencies_accepted</code>:</strong> Usa <a href="https://en.wikipedia.org/wiki/ISO_4217" target="_blank" rel="noopener noreferrer">códigos ISO 4217</a>. Array vacío <code>[]</code> acepta todas las monedas.</li>
+      </ul>`,
+    },
+    'profile': {
+      title: `4.4 Perfil del nodo (Opcional pero recomendado)`,
+      nav: `Perfil del nodo`,
+      html: `      <pre><code>[mostro]
+name = "LatAm Mostro"
+about = "Exchange P2P de Bitcoin para Latinoamérica. Soporte en español."
+picture = "https://ejemplo.com/tu-logo.png"
+website = "https://sitio-de-tu-comunidad.com"</code></pre>
+
+      <p>Estos configuran el perfil de tu Mostro en Nostr (NIP-01 kind 0 metadata). Los clientes muestran esta información para que los usuarios sepan en qué Mostro están operando.</p>`,
+    },
+    'timeouts': {
+      title: `4.5 Tiempos y expiración`,
+      nav: `Tiempos`,
+      html: `      <pre><code>[mostro]
+expiration_hours = 24        # Cuánto tiempo una orden queda abierta
+expiration_seconds = 900     # Tiempo para completar (15 min)
+hold_invoice_expiration_window = 300  # Tiempo que tiene el tomador para pagar la factura o agregar una de cobro (5 min)</code></pre>`,
+    },
+    'antispam': {
+      title: `4.6 Anti-Spam`,
+      nav: `Anti-Spam`,
+      html: `      <pre><code>[mostro]
+pow = 0  # 0 = deshabilitado; 10-20 = moderado. Empieza con 0.</code></pre>`,
+    },
+    'rpc': {
+      title: `4.7 Interfaz RPC de Administración (Opcional)`,
+      nav: `RPC Admin`,
+      html: `      <pre><code>[rpc]
+enabled = false
+listen_address = "127.0.0.1"
+port = 50051
+# auth_token = "una-cadena-larga-y-aleatoria"</code></pre>
+
+      <p>Esta interfaz gRPC es para herramientas del operador: <code>grpcurl</code>, y <code>mostro-cli</code> para el modo mantenimiento (<code>admsetmaintenance</code>, <code>admmaintenancestatus</code>, <code>admcancelpending</code>). Mostrix <strong>no</strong> la usa: trabaja sobre Nostr, así que no necesitas RPC para resolver disputas.</p>
+
+      <div class="callout important">
+        <div class="callout-title">⚠️ Seguridad</div>
+        <p>Mantén <code>listen_address</code> en <code>"127.0.0.1"</code> y nunca expongas el puerto a internet. Configura <code>auth_token</code> siempre que el puerto sea alcanzable por algo distinto de la máquina local, como un túnel SSH o un contenedor sidecar: una conexión reenviada llega como loopback, así que la dirección de escucha por sí sola no es autorización. Con un token configurado, cada llamada que modifica estado debe llevar el header <code>authorization: Bearer &lt;token&gt;</code>.</p>
+      </div>`,
+    },
+    'transport': {
+      title: `4.8 Protocolo de Transporte`,
+      nav: `Transporte`,
+      html: `      <p>Un nodo Mostro habla <strong>un solo</strong> protocolo, y se elige aquí:</p>
+      <pre><code>[mostro]
+transport = "nip44"</code></pre>
+
+      <table class="guide-table">
+        <thead><tr><th>Valor</th><th>Protocolo</th><th>Kind visible en el relay</th><th>Estado</th></tr></thead>
+        <tbody>
+          <tr><td><code>"nip44"</code></td><td>v2 — eventos kind 14 firmados con contenido cifrado NIP-44</td><td><code>14</code></td><td>Por defecto, incluso en una config sin línea <code>transport</code></td></tr>
+          <tr><td><code>"gift-wrap"</code></td><td>v1 — gift wraps NIP-59</td><td><code>1059</code></td><td>Deprecado, solo opt-in, se elimina en v0.19.0</td></tr>
+        </tbody>
+      </table>
+
+      <p>Tu nodo anuncia qué protocolo habla en su evento de info kind 38385, así que los clientes compatibles eligen el formato por su cuenta. Mostro Mobile, Mostrix y mostro-cli soportan v2.</p>
+
+      <div class="callout important">
+        <div class="callout-title">⚠️ Solo si debes atender clientes viejos</div>
+        <p>Escribe <code>transport = "gift-wrap"</code> únicamente para seguir atendiendo clientes que solo hablan protocolo v1 durante la transición. Nunca se selecciona automáticamente y desaparece en v0.19.0, tras lo cual tu nodo corre solo v2. Deja el valor por defecto salvo que tengas una razón concreta.</p>
+      </div>
+
+      <p>El transporte v2 también permite un filtro anti-spam más fino que el de 4.6. <code>pow</code> aplica a todos los mensajes, mientras que <code>pow_first_contact</code> aplica solo a remitentes que no forman parte de una operación activa y se verifica antes de descifrar. Así las operaciones en curso siguen siendo baratas y a los desconocidos les cuesta trabajo real:</p>
+      <pre><code>[mostro]
+pow = 0                  # operaciones en curso
+pow_first_contact = 16   # órdenes y tomas nuevas de claves desconocidas</code></pre>`,
+    },
+    'ln-safety': {
+      title: `4.9 Límites de Seguridad Lightning`,
+      nav: `Límites Lightning`,
+      html: `      <p>Estos ajustes de <code>[lightning]</code> limitan cuánto tiempo pueden quedar bloqueados tus canales y cuántos pagos pueden estar sin resolver a la vez. Todos tienen valor por defecto, así que un archivo de configuración de una versión anterior sigue arrancando, pero una plantilla nueva los incluye y vale la pena conocerlos.</p>
+
+      <pre><code>[lightning]
+max_final_cltv_expiry_delta = 144
+escrow_deadline_margin_blocks = 24
+max_inflight_payouts = 100
+max_inflight_payouts_per_destination = 10
+payment_cltv_limit = 1008
+allow_node_change = false</code></pre>
+
+      <table class="guide-table">
+        <thead><tr><th>Ajuste</th><th>Qué protege</th></tr></thead>
+        <tbody>
+          <tr><td><code>max_final_cltv_expiry_delta</code></td><td>Rechaza una factura de cobro cuyo CLTV final permitiría al beneficiario retener tus sats demasiado tiempo. 144 bloques (alrededor de un día) es el máximo que piden las wallets reales. Nunca lo pongas en 0: eso rechaza todas las facturas.</td></tr>
+          <tr><td><code>escrow_deadline_margin_blocks</code></td><td>Margen de seguridad antes de que LND cancele automáticamente un hold invoice aceptado. Debe superar cómodamente el <code>invoices.holdexpirydelta</code> de tu nodo, que por defecto es 12.</td></tr>
+          <tr><td><code>max_inflight_payouts</code></td><td>Tope de pagos sin resolver en todo el nodo, para que un beneficiario que nunca liquida no agote tus slots de HTLC. Un pago frenado se retrasa, nunca se descarta.</td></tr>
+          <tr><td><code>max_inflight_payouts_per_destination</code></td><td>El mismo tope por pubkey de destino, y el más eficaz de los dos.</td></tr>
+          <tr><td><code>payment_cltv_limit</code></td><td>Tope del timelock total de una ruta de pago. No debe superar el <code>--max-cltv-expiry</code> de tu LND y debe estar al menos 576 bloques por encima de <code>max_final_cltv_expiry_delta</code>, o los pagos legítimos fallan con "no route".</td></tr>
+          <tr><td><code>allow_node_change</code></td><td>Guardia de arranque ante un cambio de nodo Lightning. Déjalo en <code>false</code> y mira 5.8.</td></tr>
+        </tbody>
+      </table>
+
+      <p>Nota también que <code>max_routing_fee</code>, en el bloque <code>[mostro]</code>, ahora es <code>0.002</code> (0.2%) por defecto.</p>`,
+    },
+    'price': {
+      title: `4.10 Fuentes de Precio de Bitcoin`,
+      nav: `Fuentes de precio`,
+      html: `      <p>Mostro necesita una tasa BTC/fiat para cotizar las órdenes. Sin un bloque <code>[price]</code> usa una sola fuente, Yadio, a través del ya deprecado <code>bitcoin_price_api_url</code>. Agregar el bloque te da varias fuentes, combinadas por mediana y con descarte de valores atípicos, así que una API caída o que devuelve un número malo no mueve tus precios.</p>
+
+      <pre><code>[price]
+update_interval_seconds = 300
+max_price_staleness_seconds = 1800
+outlier_threshold_pct = 5.0        # descarta una fuente así de lejos de la mediana (requiere 3+ fuentes)
+provider_timeout_seconds = 10
+provider_failure_threshold = 3     # fallos antes de dejar una fuente en enfriamiento
+provider_failure_cooldown_seconds = 120
+publish_to_nostr = true            # publica las tasas agregadas como kind 30078
+
+[price.providers.yadio]
+enabled = true
+url = "https://api.yadio.io"
+
+[price.providers.coingecko]
+enabled = true
+url = "https://api.coingecko.com/api/v3"
+# api_key = "CG-xxxx"              # opcional, sube los límites de tasa
+
+[price.providers.currency_api]
+enabled = true
+url = "https://currency-api.pages.dev/v1"
+fallback_urls = ["https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1"]
+except = ["CUP", "MLC"]            # solo tasa oficial, no mezclar con fuentes informales
+
+[price.providers.blockchain]
+enabled = true
+url = "https://blockchain.info"</code></pre>
+
+      <p>Cada fuente acepta <code>only</code> o <code>except</code> para limitar a qué monedas contribuye, y <code>fallback_urls</code> para espejos que se prueban cuando la URL principal falla. Una fuente habilitada a la que le falta un secreto requerido falla al arrancar en lugar de producir silenciosamente ninguna cotización.</p>
+
+      <div class="callout tip">
+        <div class="callout-title">💡 Si las APIs de precio están bloqueadas en tu país</div>
+        <p>Puedes tomar las tasas desde Nostr en lugar de HTTP, publicadas por nodos Mostro en los que confíes. Reutiliza los relays que ya tienes en <code>[nostr]</code>, así que funciona en cualquier lugar donde tu nodo ya alcance un relay. Con varios nodos de confianza gana el evento válido más reciente.</p>
+        <pre><code>[price.providers.nostr]
+enabled = true
+trusted_nodes = [
+    # pubkeys hex de nodos Mostro en los que confías para publicar tasas exactas
+]</code></pre>
+      </div>
+
+      <p>Los operadores que atienden pesos cubanos pueden agregar El Toque para CUP y MLC del mercado informal. Es opt-in, limitado a esas dos monedas, y necesita un token gratuito: un El Toque habilitado sin <code>token</code> se niega a arrancar.</p>`,
+    },
+    'optional-blocks': {
+      title: `4.11 Otros Bloques Opcionales`,
+      nav: `Bloques opcionales`,
+      html: `      <p>Tres bloques más que puedes encontrar en una plantilla nueva. Ninguno es obligatorio.</p>
+
+      <p><strong>Retención de eventos.</strong> Cuánto tiempo conserva Mostro cada tipo de evento antes de que expire. Omite el bloque por completo para aceptar los valores por defecto.</p>
+      <pre><code>[expiration]
+order_days = 30        # eventos de órdenes (kind 38383)
+rating_days = 90       # historial de reputación (kind 38384)
+dispute_days = 90      # disputas, se guardan más tiempo para auditoría (kind 38386)
+fee_audit_days = 365   # transparencia de comisiones (kind 8383)
+dm_days = 30           # mensajes directos de protocolo v2 (kind 14)</code></pre>
+
+      <p><strong>Fianzas anti-abuso</strong> (<code>[anti_abuse_bond]</code>) pueden exigir una fianza por hold invoice a los tomadores, a los creadores o a ambos, de modo que abandonar una operación tenga un costo. Está deshabilitado por defecto y todavía se despliega por fases. Lee el <code>docs/ANTI_ABUSE_BOND.md</code> del proyecto antes de habilitarlo en un nodo en producción.</p>
+
+      <p><strong>Escrow con Cashu</strong> (<code>[cashu]</code>) es un modo experimental que funciona sin LND y mantiene el escrow en tokens Cashu de una sola mint. Todavía no sirve para operar de verdad, las acciones de trade siguen siendo rechazadas, y no se puede combinar con las fianzas anti-abuso. Se menciona aquí para que sepas qué es ese bloque cuando lo veas.</p>`,
+    },
+    'operating': {
+      title: `5. Operando Tu Nodo Mostro`,
+      nav: `5. Operación del nodo`,
+      navShort: `5. Operación`,
+      html: ``,
+    },
+    'disputes': {
+      title: `5.1 Cómo funcionan las disputas`,
+      nav: `Disputas`,
+      html: `      <p>Las disputas son tu responsabilidad operativa más importante.</p>
+
+      <p><strong>¿Cuándo ocurren las disputas?</strong></p>
+      <ul>
+        <li>El comprador dice que pagó, el vendedor dice que no recibió</li>
+        <li>El vendedor se rehúsa a liberar los Bitcoin después de recibir el pago</li>
+        <li>Una de las partes deja de responder</li>
+      </ul>
+
+      <p><strong>El proceso de disputa:</strong></p>
+      <ol>
+        <li><strong>El usuario abre una disputa</strong> — Una de las partes hace clic en "Disputa" en el cliente</li>
+        <li><strong>Mostro marca la orden</strong> — El estado cambia a "Disputa", los fondos permanecen bloqueados</li>
+        <li><strong>El árbitro toma el caso</strong> — Un admin asignado a tu nodo investiga</li>
+        <li><strong>Investigación</strong> — Se comunica con ambas partes, solicita pruebas</li>
+        <li><strong>Resolución</strong> — El árbitro decide: liberar al comprador, o devolver al vendedor</li>
+      </ol>
+
+      <div class="callout important">
+        <div class="callout-title">⚠️ Importante</div>
+        <p>Elige a tus árbitros con cuidado. Tienen el poder de decidir a dónde van los fondos bloqueados. Elige miembros de confianza e imparciales de la comunidad. Se recomiendan 2-3 árbitros.</p>
+      </div>
+
+
+      <h4>Niveles de permiso de los solvers</h4>
+
+      <p>Un solver se puede registrar como solo lectura o con poderes completos. Los dos niveles pueden tomar una disputa y hablar con las partes, pero solo un solver read-write puede decidir a dónde va el dinero.</p>
+
+      <table class="guide-table">
+        <thead><tr><th>Registrado como</th><th>Puede</th><th>No puede</th></tr></thead>
+        <tbody>
+          <tr><td><code>npub1...:read</code></td><td>Tomar una disputa, leerla, escribir a ambas partes</td><td>Liquidar o cancelar la orden</td></tr>
+          <tr><td><code>npub1...:read-write</code></td><td>Todo, incluido liquidar y cancelar</td><td>—</td></tr>
+        </tbody>
+      </table>
+
+      <p>Un <code>npub1...</code> pelado sin sufijo queda como read-write por defecto, y lo mismo pasa al registrar por la interfaz RPC. Empieza a un árbitro nuevo en <code>:read</code> mientras aprende el proceso, y vuelve a registrarlo como read-write cuando confíes en su criterio.</p>`,
+    },
+    'mostrix': {
+      title: `5.2 Mostrix — Tu herramienta de administración`,
+      nav: `Mostrix`,
+      html: `      <p>Mostrix es un cliente basado en terminal (TUI) para resolución de disputas. Si ejecutas un nodo Mostro, necesitas Mostrix.</p>
+
+      <h4>Opción A: Descargar binario pre-compilado (Recomendado)</h4>
+      <p>Descarga la última versión para tu plataforma desde <a href="https://github.com/MostroP2P/mostrix/releases" target="_blank" rel="noopener noreferrer">GitHub Releases</a>:</p>
+
+      <pre><code># Linux (x86_64)
+wget https://github.com/MostroP2P/mostrix/releases/latest/download/mostrix-x86_64-unknown-linux-musl
+chmod +x mostrix-x86_64-unknown-linux-musl
+./mostrix-x86_64-unknown-linux-musl
+
+# Linux (ARM64 / Raspberry Pi 4)
+wget https://github.com/MostroP2P/mostrix/releases/latest/download/mostrix-aarch64-unknown-linux-musl
+chmod +x mostrix-aarch64-unknown-linux-musl
+./mostrix-aarch64-unknown-linux-musl
+
+# Windows
+# Descarga mostrix-x86_64-pc-windows-gnu.exe desde la página de releases</code></pre>
+
+      <div class="callout tip">
+        <div class="callout-title">🔐 Verifica la Release</div>
+        <p>Verifica siempre el binario antes de ejecutarlo. Importa las claves de los mantenedores una sola vez:</p>
+        <pre><code>curl https://raw.githubusercontent.com/MostroP2P/mostrix/main/keys/negrunch.asc | gpg --import
+curl https://raw.githubusercontent.com/MostroP2P/mostrix/main/keys/arkanoider.asc | gpg --import</code></pre>
+        <p>Las firmas son archivos separados llamados <code>manifest.txt.sig.&lt;mantenedor&gt;</code>. No todas las releases traen las dos, así que revisa la página de la release y descarga las que realmente estén listadas:</p>
+        <pre><code>wget https://github.com/MostroP2P/mostrix/releases/latest/download/manifest.txt
+wget https://github.com/MostroP2P/mostrix/releases/latest/download/manifest.txt.sig.arkanoider
+
+# Verifica cada firma que descargaste
+gpg --verify manifest.txt.sig.arkanoider manifest.txt
+
+# Luego compara el hash del binario con el manifest
+shasum -a 256 mostrix-x86_64-unknown-linux-musl
+grep mostrix-x86_64-unknown-linux-musl manifest.txt</code></pre>
+        <p>Una firma válida de una clave de mantenedor en la que confíes es suficiente. Si un <code>wget</code> devuelve 404, esa firma simplemente no se publicó para esa release: no tomes un archivo ausente como uno verificado.</p>
+      </div>
+
+      <h4>Opción B: Compilar desde el código fuente</h4>
+      <p>Si prefieres compilar desde el código fuente o necesitas una plataforma que no está en las releases:</p>
+
+      <pre><code># Instalar dependencias (Ubuntu/Debian)
+sudo apt install -y cmake build-essential pkg-config
+
+# Instalar Rust (si no está instalado)
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+
+# Clonar y compilar
+git clone https://github.com/MostroP2P/mostrix.git
+cd mostrix
+cargo build --release
+
+# Ejecutar
+./target/release/mostrix</code></pre>
+
+      <h4>Primera ejecución y configuración</h4>
+      <p>En la primera ejecución, Mostrix <strong>genera automáticamente</strong> un archivo <code>~/.mostrix/settings.toml</code> con valores por defecto sensatos, incluyendo un par de claves Nostr nuevo. Tu <code>npub</code> generado se mostrará en la terminal.</p>
+
+      <div class="callout important">
+        <div class="callout-title">⚠️ Importante: Configura tu pubkey de Mostro</div>
+        <p>La configuración auto-generada usa la <strong>pubkey oficial de Mostro</strong> por defecto. Debes cambiarla por la <strong>pubkey de tu propio nodo Mostro</strong>:</p>
+        <pre><code># Editar la configuración
+nano ~/.mostrix/settings.toml
+
+# Cambia esta línea por la pubkey de TU nodo Mostro:
+mostro_pubkey = "TU_PUBKEY_MOSTRO_HEX"</code></pre>
+      </div>
+
+      <p>Para modo admin (resolución de disputas), también configura:</p>
+      <pre><code># ~/.mostrix/settings.toml
+mostro_pubkey = "TU_PUBKEY_MOSTRO_HEX"
+nsec_privkey = "nsec1tu_clave_personal"      # Auto-generada en la primera ejecución
+admin_privkey = "nsec1tu_clave_admin"        # El nsec del propio daemon — ver abajo
+relays = ["wss://relay.mostro.network"]
+currencies_filter = []                        # Vacío = mostrar todas las monedas
+user_mode = "admin"                           # Habilitar modo admin</code></pre>
+
+      <div class="callout important">
+        <div class="callout-title">⚠️ ¿Qué clave va en admin_privkey?</div>
+        <p>Mostro reconoce al operador por su <strong>propia</strong> clave, así que <code>admin_privkey</code> tiene que ser el <code>nsec_privkey</code> del daemon, el mismo cuya pubkey pusiste en <code>mostro_pubkey</code>. Una clave personal es rechazada.</p>
+        <p>Esa clave es la identidad de tu nodo, así que evita andar con ella en una laptop. Registra una clave de solver aparte y usa esa para las disputas. Solo la clave del operador puede agregar solvers:</p>
+        <pre><code>ADMIN_NSEC=nsec1... mostro-cli admaddsolver -n npub1solver...</code></pre>
+        <p>La opción <strong>Settings → Add Dispute Solver</strong> de Mostrix hace lo mismo.</p>
+      </div>`,
+    },
+    'watchdog': {
+      title: `5.3 mostro-watchdog — Notificaciones de disputas en Telegram`,
+      nav: `mostro-watchdog`,
+      html: `      <p><code>mostro-watchdog</code> monitorea tu nodo Mostro para disputas y envía alertas instantáneas por Telegram. Esencial para tiempos de respuesta rápidos.</p>
+
+      <p><strong>Opción A: Instalación automática (Recomendada)</strong></p>
+      <pre><code># Descarga y ejecuta el script de instalación
+curl -fsSL https://raw.githubusercontent.com/MostroP2P/mostro-watchdog/main/install.sh | bash</code></pre>
+
+      <p><strong>Opción B: Descarga manual del binario</strong></p>
+      <pre><code># Linux x86_64 (Intel/AMD)
+curl -LO https://github.com/MostroP2P/mostro-watchdog/releases/latest/download/mostro-watchdog-linux-x86_64
+chmod +x mostro-watchdog-linux-x86_64
+sudo mv mostro-watchdog-linux-x86_64 /usr/local/bin/mostro-watchdog
+
+# Linux ARM64 (Raspberry Pi, servidores ARM)
+curl -LO https://github.com/MostroP2P/mostro-watchdog/releases/latest/download/mostro-watchdog-linux-aarch64
+chmod +x mostro-watchdog-linux-aarch64
+sudo mv mostro-watchdog-linux-aarch64 /usr/local/bin/mostro-watchdog</code></pre>
+
+      <p><strong>Opción C: Compilar desde código fuente</strong></p>
+      <pre><code>git clone https://github.com/MostroP2P/mostro-watchdog.git
+cd mostro-watchdog
+cargo build --release
+sudo cp target/release/mostro-watchdog /usr/local/bin/</code></pre>
+
+      <p><strong>Configuración:</strong></p>
+      <pre><code>cp config.example.toml config.toml
+nano config.toml</code></pre>
+
+      <pre><code>[mostro]
+pubkey = "TU_PUBKEY_MOSTRO"
+
+[nostr]
+relays = ["wss://relay.mostro.network", "wss://nos.lol"]
+
+[telegram]
+bot_token = "TU_BOT_TOKEN"
+chat_id = -1001234567890</code></pre>
+
+      <div class="callout tip">
+        <div class="callout-title">💡 Consejo</div>
+        <p>Ejecuta <code>mostro-watchdog</code> como servicio systemd junto a tu nodo Mostro para monitoreo 24/7.</p>
+      </div>`,
+    },
+    'monitoring': {
+      title: `5.4 Monitoreo de uptime`,
+      nav: `Monitoreo`,
+      html: `      <p>Tu nodo necesita estar funcionando 24/7.</p>
+
+      <pre><code># Nativo
+systemctl status mostro.service
+journalctl -u mostro -f
+journalctl -u mostro | grep -E "(error|warn|connected)" --ignore-case
+
+# Docker Hub (Opción A)
+docker ps --filter name=mostro
+docker logs -f mostro
+
+# Docker Build (Opción B)
+docker compose -f /opt/mostro/docker/compose.yml ps
+docker compose -f /opt/mostro/docker/compose.yml logs -f mostro</code></pre>
+
+      <div class="callout tip">
+        <div class="callout-title">💡 Consejo pro</div>
+        <p>Configura un monitor de uptime simple usando <a href="https://uptimerobot.com/" target="_blank" rel="noopener noreferrer">UptimeRobot</a> (nivel gratuito) o un cron job que te alerte si Mostro se cae.</p>
+      </div>
+
+
+      <h4>Revisar tu nodo desde afuera</h4>
+      <p>Tu nodo republica un evento de info (kind 38385) que se describe a sí mismo: comisiones, monedas, versión de protocolo, bandera de mantenimiento. Leerlo desde un relay es la forma más rápida de confirmar que el mundo exterior ve lo que crees que ve.</p>
+      <pre><code>cargo install nostreq nostcat
+nostreq --kinds 38385 --limit 1 --authors TU_MOSTRO_PUBKEY_HEX \\
+  | nostcat --stream wss://relay.mostro.network | jq</code></pre>`,
+    },
+    'updating': {
+      title: `5.5 Actualizando Mostro`,
+      nav: `Actualización`,
+      html: `      <p><strong>Docker Hub:</strong></p>
+      <pre><code>export MOSTRO_TAG={{version}}
+docker stop mostro
+docker rm mostro
+docker pull mostrop2p/mostro:$MOSTRO_TAG
+docker run -d --name mostro \\
+  --restart unless-stopped \\
+  --add-host=host.docker.internal:host-gateway \\
+  -v ~/mostro-config:/config \\
+  mostrop2p/mostro:$MOSTRO_TAG</code></pre>
+
+      <p><strong>Docker Build:</strong></p>
+      <pre><code>cd /opt/mostro
+git fetch --tags
+git checkout {{version}}
+make docker-build
+make docker-down
+make docker-up</code></pre>
+
+      <p><strong>Nativo:</strong></p>
+      <pre><code>cd /opt/mostro
+git fetch --tags
+git checkout {{version}}
+cargo build --release
+install target/release/mostrod /usr/local/bin
+cargo clean
+systemctl restart mostro.service</code></pre>
+
+      <div class="callout tip">
+        <div class="callout-title">💡 Consejo</div>
+        <p>Siempre respalda tu base de datos antes de actualizar.</p>
+      </div>
+
+      <div class="callout important">
+        <div class="callout-title">⚠️ No cambies de nodo Lightning al mismo tiempo</div>
+        <p>Actualizar Mostro es seguro en cualquier momento. Apuntarlo a un nodo Lightning <strong>distinto</strong> no lo es: drena el escrow primero, mira 5.8.</p>
+      </div>`,
+    },
+    'backups': {
+      title: `5.6 Respaldos`,
+      nav: `Respaldos`,
+      html: `      <p>Archivos críticos para respaldar: <code>settings.toml</code>, el archivo <code>.env</code> si guardas ahí tu nsec (ver 4.1), y <code>mostro.db</code> (historial de órdenes, reputación).</p>
+
+      <div class="callout important">
+        <div class="callout-title">⚠️ No copies una base de datos en uso con cp</div>
+        <p>SQLite funciona en modo WAL, así que las escrituras recientes viven en <code>mostro.db-wal</code> hasta que se consolidan. Copiar solo <code>mostro.db</code> mientras Mostro está corriendo puede producir un respaldo al que le falten las operaciones más nuevas. Usa el comando de respaldo propio de SQLite, que es seguro sobre una base en uso y escribe un único archivo consistente.</p>
+      </div>
+
+      <pre><code># Respaldo manual — Docker Hub:
+mkdir -p /root/mostro-backups
+sqlite3 ~/mostro-config/mostro.db ".backup '/root/mostro-backups/mostro.db.$(date +%Y%m%d)'"
+cp ~/mostro-config/settings.toml /root/mostro-backups/settings.toml.$(date +%Y%m%d)
+cp ~/mostro-config/.env /root/mostro-backups/env.$(date +%Y%m%d) 2>/dev/null
+
+# Respaldo manual — Nativo:
+sqlite3 /opt/mostro/mostro.db ".backup '/root/mostro-backups/mostro.db.$(date +%Y%m%d)'"
+cp /opt/mostro/settings.toml /root/mostro-backups/settings.toml.$(date +%Y%m%d)</code></pre>
+
+      <p><strong>Respaldo diario automático</strong> (agregar al crontab con <code>crontab -e</code>):</p>
+      <pre><code># Docker Hub (Opción A):
+0 3 * * * mkdir -p /root/mostro-backups && sqlite3 /root/mostro-config/mostro.db ".backup '/root/mostro-backups/mostro.db.$(date +\\%Y\\%m\\%d)'" && cp /root/mostro-config/settings.toml /root/mostro-backups/settings.toml.$(date +\\%Y\\%m\\%d)
+
+# Nativo (Opción C) / Docker Build (Opción B):
+0 3 * * * mkdir -p /root/mostro-backups && sqlite3 /opt/mostro/mostro.db ".backup '/root/mostro-backups/mostro.db.$(date +\\%Y\\%m\\%d)'" && cp /opt/mostro/settings.toml /root/mostro-backups/settings.toml.$(date +\\%Y\\%m\\%d)</code></pre>
+
+      <div class="callout important">
+        <div class="callout-title">⚠️ Crítico</div>
+        <p>Tu <code>nsec_privkey</code> en <code>settings.toml</code> ES la identidad de tu nodo. Si la pierdes, pierdes tu reputación y todos los usuarios deben reconectarse a una nueva identidad. <strong>Guarda una copia offline.</strong></p>
+      </div>`,
+    },
+    'activity': {
+      title: `5.7 Revisando la actividad de operaciones`,
+      nav: `Actividad`,
+      html: `      <pre><code># Contar todas las órdenes
+sqlite3 /ruta/a/mostro.db "SELECT COUNT(*) FROM orders;"
+
+# Operaciones exitosas recientes
+sqlite3 /ruta/a/mostro.db "SELECT id, fiat_code, fiat_amount, amount, fee, status, created_at FROM orders WHERE status = 'success' ORDER BY created_at DESC LIMIT 10;"
+
+# Órdenes pendientes
+sqlite3 /ruta/a/mostro.db "SELECT id, fiat_code, fiat_amount, status, created_at FROM orders WHERE status = 'pending';"
+
+# Ingresos por comisiones: orders.fee guarda la mitad de cada parte, así que la comisión bruta del nodo es fee*2 y el dev fee se descuenta de ella
+sqlite3 /ruta/a/mostro.db "SELECT SUM(fee*2) AS gross_fees, SUM(dev_fee) AS dev_fees, SUM(fee*2 - COALESCE(dev_fee, 0)) AS net_fees FROM orders WHERE status = 'success';"</code></pre>`,
+    },
+    'ln-migration': {
+      title: `5.8 Modo Mantenimiento y Cambio de Nodo Lightning`,
+      nav: `Cambiar nodo LN`,
+      html: `      <p>Los hold invoices, las fianzas y los pagos en vuelo pertenecen al nodo Lightning que los creó. Apuntar Mostro a otro nodo mientras algo de eso está abierto dejaría esas operaciones colgadas, así que el daemon <strong>se niega a arrancar</strong> cuando ve una identidad LND nueva con escrow todavía ligado a la anterior:</p>
+      <pre><code>REFUSING TO START: Lightning node changed from ... but escrow is still bound to the old node</code></pre>
+
+      <p>El modo mantenimiento es la forma de drenar primero. Mientras está activo se rechazan órdenes y tomas nuevas, y las operaciones abiertas siguen funcionando para que el escrow pueda liquidarse. Requiere la interfaz RPC habilitada (ver 4.7).</p>
+
+      <ol>
+        <li>Anuncia la ventana a tus usuarios con bastante antelación.</li>
+        <li>Activa el modo mantenimiento: <code>mostro-cli admsetmaintenance -e true -r "LN node migration"</code>.</li>
+        <li>Consulta <code>mostro-cli admmaintenancestatus</code> hasta que reporte <code>drained = true</code>. Las órdenes pendientes expiran solas; para acortar el drenaje puedes cancelar una con <code>mostro-cli admcancelpending -o &lt;order-id&gt;</code>, que libera la fianza del creador de inmediato. Avísalo antes, es la orden del usuario. Cierra las disputas de larga duración como siempre.</li>
+        <li>Mantén el nodo <strong>viejo</strong> en línea todo el tiempo. Todavía tiene que terminar los pagos en vuelo.</li>
+        <li>Detén Mostro y respalda <code>mostro.db</code>.</li>
+        <li>Apunta <code>[lightning]</code> al nodo nuevo y deja <code>allow_node_change = false</code>.</li>
+        <li>Arranca Mostro. Registra la pubkey nueva. Desactiva el modo mantenimiento y prueba con una orden.</li>
+        <li>Solo entonces da de baja el nodo viejo.</li>
+      </ol>
+
+      <div class="callout important">
+        <div class="callout-title">⚠️ allow_node_change</div>
+        <p>Ponlo en <code>true</code> solo para recuperación de desastres, cuando el nodo viejo se perdió definitivamente. Deja a sabiendas las operaciones afectadas sin resolver. Mover el mismo nodo a otro host no es un cambio de nodo y no necesita nada de esto.</p>
+      </div>`,
+    },
+    'operator-cli': {
+      title: `5.9 Comandos de Operador con mostro-cli`,
+      nav: `CLI de operador`,
+      html: `      <p>Mostrix es la forma cómoda de trabajar las disputas, pero <code>mostro-cli</code> cubre lo mismo desde una terminal y tiene algunos comandos que Mostrix no. Los comandos de disputa se firman con una clave Nostr que pasas como <code>ADMIN_NSEC</code>, y esa clave debe ser la del propio daemon o la de un solver registrado.</p>
+
+      <pre><code># Trabajo de disputas (por Nostr, necesita ADMIN_NSEC)
+export ADMIN_NSEC=nsec1...
+mostro-cli listdisputes
+mostro-cli admtakedispute -d &lt;dispute-id&gt;
+mostro-cli admsenddm -p &lt;npub&gt; -m "mensaje a una parte"
+mostro-cli admsettle -o &lt;order-id&gt;      # liberar al comprador
+mostro-cli admcancel -o &lt;order-id&gt;      # reembolsar al vendedor
+
+# Registrar un árbitro, opcionalmente de solo lectura
+mostro-cli admaddsolver -n npub1...:read</code></pre>
+
+      <p>Otro grupo de comandos va por el gRPC de administración en lugar de Nostr, así que necesitan <code>MOSTRO_RPC_URL</code> y <code>MOSTRO_RPC_TOKEN</code> en vez de <code>ADMIN_NSEC</code>, y la interfaz RPC habilitada (ver 4.7).</p>
+
+      <pre><code>export MOSTRO_RPC_URL=http://127.0.0.1:50051
+export MOSTRO_RPC_TOKEN=tu-token-de-auth
+
+mostro-cli admsetmaintenance -e true -r "motivo"
+mostro-cli admmaintenancestatus
+mostro-cli admcancelpending -o &lt;order-id&gt;</code></pre>
+
+      <p><code>admcancelpending</code> vale la pena conocerlo fuera de una migración. Cancela una orden que sigue pendiente o esperando la fianza de un tomador, avisa al creador y libera todas las fianzas de una vez. Úsalo con una orden claramente abandonada o mal cotizada, y avísale al creador antes: es su orden, y esto no es una resolución de disputa.</p>`,
+    },
+    'costs': {
+      title: `6. Desglose de Costos`,
+      nav: `6. Desglose de costos`,
+      navShort: `6. Costos`,
+      html: `      <h3>Costos operativos mensuales</h3>
+      <table class="guide-table">
+        <thead><tr><th>Concepto</th><th>Costo mensual</th><th>Notas</th></tr></thead>
+        <tbody>
+          <tr><td>VPS (servidor)</td><td>$10–24</td><td>Depende del proveedor y las especificaciones</td></tr>
+          <tr><td>Nombre de dominio (opcional)</td><td>$1–2</td><td>Para un sitio web/identidad</td></tr>
+          <tr><td>Comisiones on-chain de canales Lightning</td><td>Variable</td><td>Apertura/cierre de canales</td></tr>
+          <tr><td><strong>Total mensual</strong></td><td><strong>$11–26</strong></td><td>Excluyendo liquidez Lightning</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Costos únicos / de capital</h3>
+      <table class="guide-table">
+        <thead><tr><th>Concepto</th><th>Costo</th><th>Notas</th></tr></thead>
+        <tbody>
+          <tr><td>Liquidez Lightning</td><td>0.01–1.0+ BTC</td><td>Bloqueado en canales; se recupera al cerrar</td></tr>
+          <tr><td>Hardware del nodo (si se auto-aloja)</td><td>$0–600</td><td>Gratis si usas VPS; $300-600 para Start9/Umbrel</td></tr>
+          <tr><td>Tiempo de configuración</td><td>4–16 horas</td><td>Dependiendo del nivel de experiencia</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Potencial de ingresos</h3>
+      <table class="guide-table">
+        <thead><tr><th>Volumen mensual</th><th>Comisión (0.6%)</th><th>Comisión dev (30%)</th><th>Tu ingreso neto</th></tr></thead>
+        <tbody>
+          <tr><td>$1,000</td><td>~$6</td><td>~$1.80</td><td>~$4.20</td></tr>
+          <tr><td>$10,000</td><td>~$60</td><td>~$18</td><td>~$42</td></tr>
+          <tr><td>$50,000</td><td>~$300</td><td>~$90</td><td>~$210</td></tr>
+          <tr><td>$100,000</td><td>~$600</td><td>~$180</td><td>~$420</td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout important">
+        <div class="callout-title">📝 Realidad</div>
+        <p>La mayoría de los nodos nuevos tardan meses en construir volumen de operaciones. No esperes rentabilidad inmediata. El valor real suele venir de proporcionar un servicio a tu comunidad, con las comisiones como bonus.</p>
+      </div>
+
+      <h3>Compromiso de tiempo</h3>
+      <table class="guide-table">
+        <thead><tr><th>Tarea</th><th>Frecuencia</th><th>Tiempo</th></tr></thead>
+        <tbody>
+          <tr><td>Monitoreo (revisar logs, estado)</td><td>Diario</td><td>5–10 min</td></tr>
+          <tr><td>Resolución de disputas</td><td>Según necesidad</td><td>15–60 min por disputa</td></tr>
+          <tr><td>Actualizaciones</td><td>Mensual</td><td>15–30 min</td></tr>
+          <tr><td>Gestión de liquidez</td><td>Semanal</td><td>15–30 min</td></tr>
+          <tr><td><strong>Estimación semanal total</strong></td><td></td><td><strong>1–3 horas</strong></td></tr>
+        </tbody>
+      </table>`,
+    },
+    'faq': {
+      title: `7. Preguntas Frecuentes`,
+      nav: `7. Preguntas frecuentes`,
+      navShort: `7. FAQ`,
+      html: `      <h3>¿Necesito ser desarrollador para ejecutar un nodo Mostro?</h3>
+      <p>No, pero necesitas sentirte cómodo con operaciones básicas de línea de comandos (escribir comandos, editar archivos de texto). La ruta Docker (Opción A) está diseñada para ser accesible.</p>
+
+      <h3>¿Puedo ejecutar Mostro en una Raspberry Pi?</h3>
+      <p>Técnicamente sí (usando Start9 o similar), pero no se recomienda para producción debido a la limitación de CPU y RAM. Un VPS es más confiable.</p>
+
+      <h3>¿Puedo usar Core Lightning (CLN) en lugar de LND?</h3>
+      <p>No. Mostro actualmente solo soporta LND, porque depende de la implementación específica de hold invoices de LND. El soporte para otras implementaciones podría llegar en el futuro.</p>
+
+      <h3>¿Cómo se conectan los usuarios a mi Mostro?</h3>
+      <p>Los usuarios necesitan una app cliente de Mostro (como Mostro Mobile o mostro-cli) y la clave pública de tu Mostro (npub). Agregan tu npub a su cliente, y el cliente se comunica a través de relays Nostr. No se necesita conexión directa.</p>
+
+      <h3>¿Puedo ejecutar múltiples instancias de Mostro?</h3>
+      <p>Sí, pero cada una necesita su propio par de claves Nostr, nodo LND (o al menos canales/liquidez separados), y configuración.</p>
+
+      <h3>¿Es legal?</h3>
+      <p>Depende mucho de tu jurisdicción. Mostro es software para trading peer-to-peer. En algunas jurisdicciones, operar un exchange P2P puede requerir licencias. <strong>Consulta las regulaciones locales y asesoría legal.</strong></p>
+
+      <h3>¿Cuánto ancho de banda usa Mostro?</h3>
+      <p>Muy poco — principalmente eventos Nostr pequeños. Unos pocos GB por mes es típico incluso con volumen moderado.</p>
+
+      <h3>¿Qué pasa si mi nodo se desconecta?</h3>
+      <p>Las órdenes pendientes eventualmente expiran. Las operaciones activas con fondos bloqueados continúan cuando vuelves a estar online. Si estás offline demasiado tiempo, los usuarios pueden perder confianza. Desde v0.18.3 también hay un plazo límite para el escrow: si el nodo queda caído lo suficiente para que el hold invoice se acerque a su horizonte CLTV, LND lo cancela y el vendedor recibe el reembolso automáticamente.</p>
+
+      <h3>¿Puedo cambiar mi clave Nostr después?</h3>
+      <p>Puedes, pero perderás la identidad y reputación de tu nodo. Los usuarios lo verán como un Mostro nuevo. Trata tu clave como tu identidad de marca.</p>
+
+      <h3>¿Puedo perder dinero ejecutando un nodo Mostro?</h3>
+      <p>Sí, es posible: los fondos de canales Lightning podrían estar en riesgo por bugs (raro); el cierre forzado de canales durante períodos de comisiones altas puede ser costoso; los costos de VPS son continuos.</p>
+
+      <h3>¿La liquidez Lightning está "en riesgo"?</h3>
+      <p>Tu liquidez Lightning es tuya. No está en riesgo por Mostro en sí — las hold invoices son bloqueos temporales. Sin embargo, aplican los riesgos estándar de Lightning Network (cierres forzados, canales atascados, bugs).</p>
+
+      <h3>¿Cuándo alcanzaré el punto de equilibrio?</h3>
+      <p>Depende de tus costos y volumen de operaciones. Con $20/mes de costos y 0.6% de comisión, necesitas ~$5,000/mes en operaciones para cubrir costos (antes de la comisión de desarrollo). La mayoría de las comunidades tardan 3–6 meses en alcanzar un volumen significativo.</p>
+
+      <h3>¿Puedo mover Mostro a otro nodo Lightning?</h3>
+      <p>Sí, pero no editando la configuración y reiniciando. El escrow está ligado al nodo que lo creó, así que primero se drena en modo mantenimiento, y el daemon se niega a arrancar si te lo salteas. Mover el mismo nodo a otro host no es un cambio de nodo y no necesita nada especial. Mira 5.8.</p>`,
+    },
+    'security': {
+      title: `8. Consideraciones de Seguridad`,
+      nav: `8. Seguridad`,
+      navShort: `8. Seguridad`,
+      html: `      <div class="callout important">
+        <div class="callout-title">⚠️ Aviso de software en etapa temprana</div>
+        <p><strong>Mostro está en una etapa temprana de desarrollo.</strong> Aunque el equipo trabaja duro para asegurar confiabilidad, puede haber bugs no descubiertos — incluyendo bugs de seguridad que podrían resultar en pérdida de fondos. <strong>Los desarrolladores no son responsables de ninguna pérdida de dinero debido a bugs de software.</strong></p>
+        <p>Mostro es open-source y su código está abierto a auditorías. Animamos a las comunidades a promover y financiar auditorías de seguridad independientes.</p>
+        <p>Dicho esto, <strong>el mecanismo central de custodia usando hold invoices de Lightning ha sido probado en batalla desde 2021</strong>, cuando @lnp2pBot implementó por primera vez este tipo de custodia. Miles de operaciones han sido completadas exitosamente.</p>
+      </div>
+
+      <h3>Mantén la Clave de tu Nodo Fuera de Alcance</h3>
+
+      <p>Tu <code>nsec_privkey</code> es la identidad de tu nodo, y cualquiera que la tenga puede suplantar a tu Mostro. Prefiere pasarla por la variable de entorno <code>MOSTRO_NSEC_PRIVKEY</code> o por un archivo <code>.env</code> con <code>chmod 600</code> antes que dejarla en <code>settings.toml</code> (ver 4.1). Tampoco la lleves en una laptop para atender disputas: registra una clave de solver aparte para eso (ver 5.2).</p>
+
+      <h3>Operando bajo regímenes autoritarios</h3>
+
+      <p>Si operas en un país con un gobierno autoritario, <strong>la privacidad no es opcional — es un requisito de seguridad.</strong></p>
+
+      <ol>
+        <li><strong>Ejecuta tu nodo Mostro detrás de Tor y/o una VPN.</strong> Esto oculta la IP de tu servidor de los relays Nostr.</li>
+        <li><strong>Si Tor/VPN no es posible</strong> (común en países en desarrollo con internet lento), <strong>solo publica eventos en relays que poseas o en los que confíes.</strong></li>
+        <li><strong>Ten mucho cuidado con qué relays usas.</strong> En el futuro, los gobiernos podrían crear relays Nostr específicamente para recolectar direcciones IP.</li>
+        <li><strong>Considera también la privacidad de tu nodo Lightning.</strong> Ejecutar LND detrás de Tor es posible y recomendado en entornos sensibles.</li>
+      </ol>
+
+      <div class="callout tip">
+        <div class="callout-title">💡 Consejo</div>
+        <p>La belleza de que Mostro sea descentralizado es que incluso si un nodo es apagado, otros siguen funcionando. Pero la prevención siempre es mejor que la recuperación. Toma la privacidad en serio desde el primer día.</p>
+      </div>`,
+    },
+    'troubleshooting': {
+      title: `9. Solución de Problemas`,
+      nav: `9. Solución de problemas`,
+      navShort: `9. Problemas`,
+      html: `      <h3>Mostro no arranca</h3>
+
+      <h4><code>dev_fee_percentage (0.05) is below minimum (0.1)</code></h4>
+      <p>Establece <code>dev_fee_percentage</code> en al menos <code>0.10</code> en settings.toml.</p>
+
+      <h4>Archivo de configuración o base de datos no encontrado</h4>
+      <p>Asegúrate de que el flag <code>-d</code> apunte al directorio que contiene <code>settings.toml</code>. Para Docker Hub: verifica que <code>~/mostro-config/settings.toml</code> exista.</p>
+
+      <h4>Mostro termina al arrancar con <code>Ln node error</code></h4>
+      <ul>
+        <li>Verifica que LND esté ejecutándose: <code>lncli getinfo</code></li>
+        <li>Revisa que <code>lnd_grpc_host</code> coincida con la dirección de tu LND</li>
+        <li>Verifica que las rutas de <code>tls.cert</code> y <code>mostro.macaroon</code> sean correctas</li>
+        <li>Verifica que el macaroon tenga los permisos de 2.2</li>
+        <li>Docker + LND en el host: usa <code>host.docker.internal</code>. La Opción B además necesita el mapeo <code>extra_hosts</code>.</li>
+      </ul>
+
+      <h4><code>REFUSING TO START: Lightning node changed</code></h4>
+      <p>Mostro apunta a una identidad LND distinta mientras hay escrow abierto en la anterior. Reconecta el nodo viejo y dr&eacute;nalo antes de cambiar. Mira 5.8.</p>
+
+      <h4>Los clientes no ven mis órdenes o no pueden escribirle a mi nodo</h4>
+      <p>Revisa la línea <code>Transport:</code> en tus logs. Un nodo en <code>nip44</code> es invisible para clientes que solo hablan protocolo v1, y un nodo en <code>gift-wrap</code> es invisible para clientes v2. Mira 4.8.</p>
+
+      <h4>Los pagos fallan con "no route"</h4>
+      <p>Revisa <code>payment_cltv_limit</code>. Debe estar al menos 576 bloques por encima de <code>max_final_cltv_expiry_delta</code> y no debe superar el <code>--max-cltv-expiry</code> de tu LND. Mira 4.9.</p>
+
+      <h3>Problemas de conexión</h3>
+
+      <h4>Mostro arranca pero no se conecta a los relays</h4>
+      <ul>
+        <li>Verifica las URLs de los relays (deben empezar con <code>wss://</code>)</li>
+        <li>Asegúrate de que el firewall de tu VPS permita conexiones salientes en el puerto 443</li>
+        <li>Prueba con diferentes relays — algunos pueden estar temporalmente caídos</li>
+      </ul>
+
+      <h3>Problemas con operaciones</h3>
+
+      <h4>Un usuario recibe "cant-do: too_many_requests" al restaurar sesión</h4>
+      <p>Esto ocurre cuando el usuario tiene más órdenes (históricas + activas) que el valor de <code>max_orders_per_response</code> en tu configuración. El cliente intenta consultar todas sus órdenes de golpe y Mostro lo rechaza. <strong>No es un ban ni un bloqueo temporal</strong> — le seguirá pasando hasta que ajustes el valor.</p>
+      <pre><code># En settings.toml, sube el límite:
+max_orders_per_response = 50  # el default es 10, el máximo 255
+</code></pre>
+
+      <p>El valor se guarda en un solo byte, así que <code>255</code> es el techo. Si un usuario tiene más órdenes que eso, tiene que depurar su historial en lugar de que tú sigas subiendo el límite.</p>
+
+      <h4>Las órdenes no aparecen en los clientes</h4>
+      <ul>
+        <li>Verifica las conexiones a relays en los logs</li>
+        <li>Asegúrate de que los clientes usen los mismos relays que tu nodo</li>
+      </ul>
+
+      <h4>Pagos fallando</h4>
+      <ul>
+        <li>Revisa la liquidez: <code>lncli listchannels</code></li>
+        <li>Asegúrate de tener suficiente capacidad saliente</li>
+        <li>Revisa el ajuste <code>max_routing_fee</code></li>
+      </ul>
+
+      <h3>Problemas de base de datos</h3>
+
+      <h4>Errores de base de datos bloqueada</h4>
+      <pre><code>ps aux | grep mostrod
+# Si hay múltiples procesos, elimina los extras:
+kill &lt;PID&gt;</code></pre>
+
+      <h3>Obteniendo ayuda</h3>
+
+      <ol>
+        <li><strong>Revisa los logs primero</strong> — la mayoría de los errores explican qué salió mal</li>
+        <li><strong>Telegram (Desarrolladores):</strong> <a href="https://t.me/mostro_dev" target="_blank" rel="noopener noreferrer">@mostro_dev</a></li>
+        <li><strong>Telegram (Comunidad):</strong> <a href="https://t.me/MostroP2P" target="_blank" rel="noopener noreferrer">@MostroP2P</a></li>
+        <li><strong>GitHub Issues:</strong> <a href="https://github.com/MostroP2P/mostro/issues" target="_blank" rel="noopener noreferrer">github.com/MostroP2P/mostro/issues</a></li>
+        <li><strong>DeepWiki:</strong> <a href="https://deepwiki.com/MostroP2P/mostro" target="_blank" rel="noopener noreferrer">deepwiki.com/MostroP2P/mostro</a></li>
+      </ol>
+
+      <p>Cuando pidas ayuda, siempre incluye: tu versión de Mostro, la salida relevante de los logs, y lo que ya intentaste.</p>
+
+      <!-- ===== APPENDIX ===== -->`,
+    },
+    'appendix': {
+      title: `Apéndice: Referencia Rápida`,
+      nav: `Apéndice`,
+      html: `      <h3>Ubicaciones importantes de archivos</h3>
+      <table class="guide-table">
+        <thead><tr><th>Archivo</th><th>Docker Hub</th><th>Nativo</th></tr></thead>
+        <tbody>
+          <tr><td>Configuración</td><td><code>~/mostro-config/settings.toml</code></td><td><code>/opt/mostro/settings.toml</code></td></tr>
+          <tr><td>Base de datos</td><td><code>~/mostro-config/mostro.db</code></td><td><code>/opt/mostro/mostro.db</code></td></tr>
+          <tr><td>Cert LND</td><td><code>~/mostro-config/lnd/tls.cert</code></td><td>Varía (revisar config LND)</td></tr>
+          <tr><td>Macaroon LND</td><td><code>~/mostro-config/lnd/mostro.macaroon</code></td><td>Varía (revisar config LND)</td></tr>
+          <tr><td>Servicio</td><td>N/A</td><td><code>/etc/systemd/system/mostro.service</code></td></tr>
+          <tr><td>Logs</td><td><code>docker logs -f mostro</code></td><td><code>journalctl -u mostro</code></td></tr>
+        </tbody>
+      </table>
+
+      <h3>Comandos esenciales</h3>
+      <pre><code># Docker
+docker logs -f mostro         # Ver logs
+docker restart mostro          # Reiniciar
+docker stop mostro             # Detener
+
+# Nativo (systemd)
+systemctl start mostro         # Iniciar
+systemctl stop mostro          # Detener
+systemctl restart mostro       # Reiniciar
+systemctl status mostro        # Ver estado
+journalctl -u mostro -f        # Ver logs
+
+# Base de datos
+sqlite3 mostro.db "SELECT COUNT(*) FROM orders;"                           # Total de órdenes
+sqlite3 mostro.db "SELECT COUNT(*) FROM orders WHERE status='success';"    # Operaciones exitosas
+sqlite3 mostro.db "SELECT SUM(fee*2 - COALESCE(dev_fee, 0)) FROM orders WHERE status='success';"  # Comisiones netas que conserva el nodo</code></pre>
+
+      <h3>Configuración recomendada para nodos nuevos</h3>
+      <pre><code>[mostro]
+fee = 0.006
+max_order_amount = 500000
+min_payment_amount = 1000
+expiration_hours = 24
+expiration_seconds = 900
+pow = 0
+dev_fee_percentage = 0.30
+fiat_currencies_accepted = ['USD']  # Cambia a tu moneda local
+
+[nostr]
+relays = [
+  'wss://relay.mostro.network',
+  'wss://nos.lol',
+  'wss://relay.nostr.band'
+]</code></pre>`,
+    },
+  },
+};
+
+export default es;
