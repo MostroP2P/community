@@ -40,6 +40,8 @@ const updated = formatReleaseMonth(publishedAt, locale);
         <li class="toc-h3"><a href="#timeouts">Tiempos</a></li>
         <li class="toc-h3"><a href="#antispam">Anti-Spam</a></li>
         <li class="toc-h3"><a href="#rpc">RPC Admin</a></li>
+        <li class="toc-h3"><a href="#transport">Transporte</a></li>
+        <li class="toc-h3"><a href="#ln-safety">Límites Lightning</a></li>
         <li><a href="#operating">5. Operación del nodo</a></li>
         <li class="toc-h3"><a href="#disputes">Disputas</a></li>
         <li class="toc-h3"><a href="#mostrix">Mostrix</a></li>
@@ -48,6 +50,7 @@ const updated = formatReleaseMonth(publishedAt, locale);
         <li class="toc-h3"><a href="#updating">Actualización</a></li>
         <li class="toc-h3"><a href="#backups">Respaldos</a></li>
         <li class="toc-h3"><a href="#activity">Actividad</a></li>
+        <li class="toc-h3"><a href="#ln-migration">Cambiar nodo LN</a></li>
         <li><a href="#costs">6. Desglose de costos</a></li>
         <li><a href="#faq">7. Preguntas frecuentes</a></li>
         <li><a href="#security">8. Seguridad</a></li>
@@ -371,10 +374,16 @@ chmod 600 ~/mostro-config/lnd/mostro.macaroon</code></pre>
 
       <p>Busca estos mensajes:</p>
       <ul>
-        <li><code>Settings correctly loaded</code> — La configuración es válida</li>
-        <li><code>Connected to LND</code> — Conexión Lightning exitosa</li>
-        <li><code>Connected to relay</code> — Relay Nostr establecido</li>
+        <li><code>Settings correctly loaded!</code> — La configuración es válida</li>
+        <li><code>Transport: nip44 (protocol v2, event kind 14)</code> — Protocolo en uso (ver 4.8)</li>
+        <li><code>Connected to 'wss://...'</code> — Relay Nostr establecido</li>
+        <li><code>Recorded Lightning node identity &lt;pubkey&gt;</code> — LND alcanzado (solo el primer arranque)</li>
       </ul>
+
+      <div class="callout tip">
+        <div class="callout-title">💡 Nota</div>
+        <p>No existe un mensaje de "conectado a LND". Mostro contacta a LND durante el arranque, así que un daemon que sigue corriendo ya tiene la conexión funcionando. El fallo, en cambio, es ruidoso: registra <code>Ln node error</code> y termina.</p>
+      </div>
 
       <div class="callout tip">
         <div class="callout-title">💡 Solución de problemas</div>
@@ -415,6 +424,14 @@ cp ../settings.tpl.toml config/settings.toml</code></pre>
       <pre><code>nano config/settings.toml</code></pre>
       <p>Edita los mismos ajustes que en la Opción A, Paso 8.</p>
 
+      <div class="callout important">
+        <div class="callout-title">⚠️ Si LND corre en la misma VPS</div>
+        <p>A diferencia de la Opción A, el <code>docker/compose.yml</code> del repositorio no mapea <code>host.docker.internal</code>, así que en Linux ese nombre no resuelve dentro del contenedor. Agrega el mapeo al servicio <code>mostro</code> antes de construir:</p>
+        <pre><code>    extra_hosts:
+      - "host.docker.internal:host-gateway"</code></pre>
+        <p>O apunta <code>lnd_grpc_host</code> a la IP local del host. Ten en cuenta que <code>make docker-build</code> también construye la imagen StartOS, que una VPS no necesita: solo cuesta tiempo de compilación.</p>
+      </div>
+
       <h4>Paso 8: Construir la imagen Docker</h4>
       <pre><code>cd ..
 LND_CERT_FILE=/root/.lnd/tls.cert \
@@ -422,9 +439,11 @@ LND_MACAROON_FILE=/root/.lnd/data/chain/bitcoin/mainnet/mostro.macaroon \
 make docker-build</code></pre>
 
       <h4>Paso 9: Iniciar Mostro</h4>
-      <pre><code>make docker-up
+      <pre><code># Inicia Mostro y el relay incluido. `make docker-up` a secas también
+# inicia la imagen StartOS, que no necesitas en una VPS.
+docker compose -f docker/compose.yml up -d mostro nostr-relay
 
-# Verificar
+# Ver estado
 docker compose -f docker/compose.yml ps
 
 # Ver logs
@@ -532,6 +551,19 @@ relays = [
         <p>También puedes ejecutar tu propio relay Nostr junto a Mostro (la instalación Docker incluye uno por defecto).</p>
       </div>
 
+
+      <h4>Mantener la clave fuera de settings.toml</h4>
+      <p>Mostro también lee la clave desde la variable de entorno <code>MOSTRO_NSEC_PRIVKEY</code>. La precedencia es: variable de entorno, luego <code>&lt;directorio-de-config&gt;/.env</code>, luego <code>settings.toml</code>.</p>
+      <pre><code># ~/mostro-config/.env  (chmod 600) — se carga automáticamente al arrancar
+MOSTRO_NSEC_PRIVKEY=nsec1...
+
+# Docker
+docker run -e MOSTRO_NSEC_PRIVKEY=nsec1... ...
+
+# Unidad systemd
+Environment="MOSTRO_NSEC_PRIVKEY=nsec1..."</code></pre>
+      <p>Dejar <code>nsec_privkey</code> en <code>settings.toml</code> sigue funcionando. Si usas el archivo <code>.env</code>, respáldalo con el mismo cuidado que la configuración.</p>
+
       <h3 id="fees">4.2 Comisiones — Cómo generas ingresos</h3>
       <pre><code>[mostro]
 fee = 0.006
@@ -592,18 +624,72 @@ hold_invoice_expiration_window = 300  # Validez de la hold invoice (5 min)</code
       <pre><code>[mostro]
 pow = 0  # 0 = deshabilitado; 10-20 = moderado. Empieza con 0.</code></pre>
 
-      <h3 id="rpc">4.7 Interfaz RPC Admin (Opcional)</h3>
+      <h3 id="rpc">4.7 Interfaz RPC de Administración (Opcional)</h3>
       <pre><code>[rpc]
 enabled = false
 listen_address = "127.0.0.1"
-port = 50051</code></pre>
+port = 50051
+# auth_token = "una-cadena-larga-y-aleatoria"</code></pre>
 
-      <p>Habilítala para herramientas de administración como MostriX (interfaz de terminal) para resolución de disputas.</p>
+      <p>Esta interfaz gRPC es para herramientas del operador: <code>grpcurl</code>, y <code>mostro-cli</code> para el modo mantenimiento (<code>admsetmaintenance</code>, <code>admmaintenancestatus</code>, <code>admcancelpending</code>). Mostrix <strong>no</strong> la usa: trabaja sobre Nostr, así que no necesitas RPC para resolver disputas.</p>
 
       <div class="callout important">
         <div class="callout-title">⚠️ Seguridad</div>
-        <p>Si habilitas RPC, mantén <code>listen_address</code> como <code>"127.0.0.1"</code> (solo localhost). Nunca expongas esto a internet.</p>
+        <p>Mantén <code>listen_address</code> en <code>"127.0.0.1"</code> y nunca expongas el puerto a internet. Configura <code>auth_token</code> siempre que el puerto sea alcanzable por algo distinto de la máquina local, como un túnel SSH o un contenedor sidecar: una conexión reenviada llega como loopback, así que la dirección de escucha por sí sola no es autorización. Con un token configurado, cada llamada que modifica estado debe llevar el header <code>authorization: Bearer &lt;token&gt;</code>.</p>
       </div>
+
+
+      <h3 id="transport">4.8 Protocolo de Transporte</h3>
+
+      <p>Un nodo Mostro habla <strong>un solo</strong> protocolo, y se elige aquí:</p>
+      <pre><code>[mostro]
+transport = "nip44"</code></pre>
+
+      <table class="guide-table">
+        <thead><tr><th>Valor</th><th>Protocolo</th><th>Kind visible en el relay</th><th>Estado</th></tr></thead>
+        <tbody>
+          <tr><td><code>"nip44"</code></td><td>v2 — eventos kind 14 firmados con contenido cifrado NIP-44</td><td><code>14</code></td><td>Por defecto, incluso en una config sin línea <code>transport</code></td></tr>
+          <tr><td><code>"gift-wrap"</code></td><td>v1 — gift wraps NIP-59</td><td><code>1059</code></td><td>Deprecado, solo opt-in, se elimina en v0.19.0</td></tr>
+        </tbody>
+      </table>
+
+      <p>Tu nodo anuncia qué protocolo habla en su evento de info kind 38385, así que los clientes compatibles eligen el formato por su cuenta. Mostro Mobile, Mostrix y mostro-cli soportan v2.</p>
+
+      <div class="callout important">
+        <div class="callout-title">⚠️ Solo si debes atender clientes viejos</div>
+        <p>Escribe <code>transport = "gift-wrap"</code> únicamente para seguir atendiendo clientes que solo hablan protocolo v1 durante la transición. Nunca se selecciona automáticamente y desaparece en v0.19.0, tras lo cual tu nodo corre solo v2. Deja el valor por defecto salvo que tengas una razón concreta.</p>
+      </div>
+
+      <p>El transporte v2 también permite un filtro anti-spam más fino que el de 4.6. <code>pow</code> aplica a todos los mensajes, mientras que <code>pow_first_contact</code> aplica solo a remitentes que no forman parte de una operación activa y se verifica antes de descifrar. Así las operaciones en curso siguen siendo baratas y a los desconocidos les cuesta trabajo real:</p>
+      <pre><code>[mostro]
+pow = 0                  # operaciones en curso
+pow_first_contact = 16   # órdenes y tomas nuevas de claves desconocidas</code></pre>
+
+      <h3 id="ln-safety">4.9 Límites de Seguridad Lightning</h3>
+
+      <p>Estos ajustes de <code>[lightning]</code> limitan cuánto tiempo pueden quedar bloqueados tus canales y cuántos pagos pueden estar sin resolver a la vez. Todos tienen valor por defecto, así que un archivo de configuración de una versión anterior sigue arrancando, pero una plantilla nueva los incluye y vale la pena conocerlos.</p>
+
+      <pre><code>[lightning]
+max_final_cltv_expiry_delta = 144
+escrow_deadline_margin_blocks = 24
+max_inflight_payouts = 100
+max_inflight_payouts_per_destination = 10
+payment_cltv_limit = 1008
+allow_node_change = false</code></pre>
+
+      <table class="guide-table">
+        <thead><tr><th>Ajuste</th><th>Qué protege</th></tr></thead>
+        <tbody>
+          <tr><td><code>max_final_cltv_expiry_delta</code></td><td>Rechaza una factura de cobro cuyo CLTV final permitiría al beneficiario retener tus sats demasiado tiempo. 144 bloques (alrededor de un día) es el máximo que piden las wallets reales. Nunca lo pongas en 0: eso rechaza todas las facturas.</td></tr>
+          <tr><td><code>escrow_deadline_margin_blocks</code></td><td>Margen de seguridad antes de que LND cancele automáticamente un hold invoice aceptado. Debe superar cómodamente el <code>invoices.holdexpirydelta</code> de tu nodo, que por defecto es 12.</td></tr>
+          <tr><td><code>max_inflight_payouts</code></td><td>Tope de pagos sin resolver en todo el nodo, para que un beneficiario que nunca liquida no agote tus slots de HTLC. Un pago frenado se retrasa, nunca se descarta.</td></tr>
+          <tr><td><code>max_inflight_payouts_per_destination</code></td><td>El mismo tope por pubkey de destino, y el más eficaz de los dos.</td></tr>
+          <tr><td><code>payment_cltv_limit</code></td><td>Tope del timelock total de una ruta de pago. No debe superar el <code>--max-cltv-expiry</code> de tu LND y debe estar al menos 576 bloques por encima de <code>max_final_cltv_expiry_delta</code>, o los pagos legítimos fallan con "no route".</td></tr>
+          <tr><td><code>allow_node_change</code></td><td>Guardia de arranque ante un cambio de nodo Lightning. Déjalo en <code>false</code> y mira 5.8.</td></tr>
+        </tbody>
+      </table>
+
+      <p>Nota también que <code>max_routing_fee</code>, en el bloque <code>[mostro]</code>, ahora es <code>0.002</code> (0.2%) por defecto.</p>
 
       <!-- ===== SECTION 5 ===== -->
       <h2 id="operating">5. Operando Tu Nodo Mostro</h2>
@@ -706,10 +792,18 @@ mostro_pubkey = "TU_PUBKEY_MOSTRO_HEX"</code></pre>
       <pre><code># ~/.mostrix/settings.toml
 mostro_pubkey = "TU_PUBKEY_MOSTRO_HEX"
 nsec_privkey = "nsec1tu_clave_personal"      # Auto-generada en la primera ejecución
-admin_privkey = "nsec1tu_clave_admin"        # Tu clave admin del config de Mostro
+admin_privkey = "nsec1tu_clave_admin"        # El nsec del propio daemon — ver abajo
 relays = ["wss://relay.mostro.network"]
 currencies_filter = []                        # Vacío = mostrar todas las monedas
 user_mode = "admin"                           # Habilitar modo admin</code></pre>
+
+      <div class="callout important">
+        <div class="callout-title">⚠️ ¿Qué clave va en admin_privkey?</div>
+        <p>Mostro reconoce al operador por su <strong>propia</strong> clave, así que <code>admin_privkey</code> tiene que ser el <code>nsec_privkey</code> del daemon, el mismo cuya pubkey pusiste en <code>mostro_pubkey</code>. Una clave personal es rechazada.</p>
+        <p>Esa clave es la identidad de tu nodo, así que evita andar con ella en una laptop. Registra una clave de solver aparte y usa esa para las disputas. Solo la clave del operador puede agregar solvers:</p>
+        <pre><code>ADMIN_NSEC=nsec1... mostro-cli admaddsolver -n npub1solver...</code></pre>
+        <p>La opción <strong>Settings → Add Dispute Solver</strong> de Mostrix hace lo mismo.</p>
+      </div>
 
       <h3 id="watchdog">5.3 mostro-watchdog — Notificaciones de disputas en Telegram</h3>
       <p><code>mostro-watchdog</code> monitorea tu nodo Mostro para disputas y envía alertas instantáneas por Telegram. Esencial para tiempos de respuesta rápidos.</p>
@@ -811,6 +905,11 @@ systemctl restart mostro.service</code></pre>
         <p>Siempre respalda tu base de datos antes de actualizar.</p>
       </div>
 
+      <div class="callout important">
+        <div class="callout-title">⚠️ No cambies de nodo Lightning al mismo tiempo</div>
+        <p>Actualizar Mostro es seguro en cualquier momento. Apuntarlo a un nodo Lightning <strong>distinto</strong> no lo es: drena el escrow primero, mira 5.8.</p>
+      </div>
+
       <h3 id="backups">5.6 Respaldos</h3>
 
       <p>Archivos críticos a respaldar: <code>settings.toml</code> (¡contiene tu clave privada Nostr!) y <code>mostro.db</code> (historial de órdenes, reputaciones).</p>
@@ -849,6 +948,30 @@ sqlite3 /ruta/a/mostro.db "SELECT id, fiat_code, fiat_amount, status, created_at
 
 # Ingresos por comisiones: orders.fee guarda la mitad de cada parte, así que la comisión bruta del nodo es fee*2 y el dev fee se descuenta de ella
 sqlite3 /ruta/a/mostro.db "SELECT SUM(fee*2) AS gross_fees, SUM(dev_fee) AS dev_fees, SUM(fee*2 - COALESCE(dev_fee, 0)) AS net_fees FROM orders WHERE status = 'success';"</code></pre>
+
+
+      <h3 id="ln-migration">5.8 Modo Mantenimiento y Cambio de Nodo Lightning</h3>
+
+      <p>Los hold invoices, las fianzas y los pagos en vuelo pertenecen al nodo Lightning que los creó. Apuntar Mostro a otro nodo mientras algo de eso está abierto dejaría esas operaciones colgadas, así que el daemon <strong>se niega a arrancar</strong> cuando ve una identidad LND nueva con escrow todavía ligado a la anterior:</p>
+      <pre><code>REFUSING TO START: Lightning node changed from ... but escrow is still bound to the old node</code></pre>
+
+      <p>El modo mantenimiento es la forma de drenar primero. Mientras está activo se rechazan órdenes y tomas nuevas, y las operaciones abiertas siguen funcionando para que el escrow pueda liquidarse. Requiere la interfaz RPC habilitada (ver 4.7).</p>
+
+      <ol>
+        <li>Anuncia la ventana a tus usuarios con bastante antelación.</li>
+        <li>Activa el modo mantenimiento: <code>mostro-cli admsetmaintenance -e true -r "LN node migration"</code>.</li>
+        <li>Consulta <code>mostro-cli admmaintenancestatus</code> hasta que reporte <code>drained = true</code>. Las órdenes pendientes expiran solas; para acortar el drenaje puedes cancelar una con <code>mostro-cli admcancelpending -o &lt;order-id&gt;</code>, que libera la fianza del creador de inmediato. Avísalo antes, es la orden del usuario. Cierra las disputas de larga duración como siempre.</li>
+        <li>Mantén el nodo <strong>viejo</strong> en línea todo el tiempo. Todavía tiene que terminar los pagos en vuelo.</li>
+        <li>Detén Mostro y respalda <code>mostro.db</code>.</li>
+        <li>Apunta <code>[lightning]</code> al nodo nuevo y deja <code>allow_node_change = false</code>.</li>
+        <li>Arranca Mostro. Registra la pubkey nueva. Desactiva el modo mantenimiento y prueba con una orden.</li>
+        <li>Solo entonces da de baja el nodo viejo.</li>
+      </ol>
+
+      <div class="callout important">
+        <div class="callout-title">⚠️ allow_node_change</div>
+        <p>Ponlo en <code>true</code> solo para recuperación de desastres, cuando el nodo viejo se perdió definitivamente. Deja a sabiendas las operaciones afectadas sin resolver. Mover el mismo nodo a otro host no es un cambio de nodo y no necesita nada de esto.</p>
+      </div>
 
       <!-- ===== SECTION 6 ===== -->
       <h2 id="costs">6. Desglose de Costos</h2>
@@ -927,7 +1050,7 @@ sqlite3 /ruta/a/mostro.db "SELECT SUM(fee*2) AS gross_fees, SUM(dev_fee) AS dev_
       <p>Muy poco — principalmente eventos Nostr pequeños. Unos pocos GB por mes es típico incluso con volumen moderado.</p>
 
       <h3>¿Qué pasa si mi nodo se desconecta?</h3>
-      <p>Las órdenes pendientes eventualmente expiran. Las operaciones activas con fondos bloqueados continúan cuando vuelves a estar online. Si estás offline demasiado tiempo, los usuarios pueden perder confianza.</p>
+      <p>Las órdenes pendientes eventualmente expiran. Las operaciones activas con fondos bloqueados continúan cuando vuelves a estar online. Si estás offline demasiado tiempo, los usuarios pueden perder confianza. Desde v0.18.3 también hay un plazo límite para el escrow: si el nodo queda caído lo suficiente para que el hold invoice se acerque a su horizonte CLTV, LND lo cancela y el vendedor recibe el reembolso automáticamente.</p>
 
       <h3>¿Puedo cambiar mi clave Nostr después?</h3>
       <p>Puedes, pero perderás la identidad y reputación de tu nodo. Los usuarios lo verán como un Mostro nuevo. Trata tu clave como tu identidad de marca.</p>
@@ -941,6 +1064,9 @@ sqlite3 /ruta/a/mostro.db "SELECT SUM(fee*2) AS gross_fees, SUM(dev_fee) AS dev_
       <h3>¿Cuándo alcanzaré el punto de equilibrio?</h3>
       <p>Depende de tus costos y volumen de operaciones. Con $20/mes de costos y 0.6% de comisión, necesitas ~$5,000/mes en operaciones para cubrir costos (antes de la comisión de desarrollo). La mayoría de las comunidades tardan 3–6 meses en alcanzar un volumen significativo.</p>
 
+      <h3>¿Puedo mover Mostro a otro nodo Lightning?</h3>
+      <p>Sí, pero no editando la configuración y reiniciando. El escrow está ligado al nodo que lo creó, así que primero se drena en modo mantenimiento, y el daemon se niega a arrancar si te lo salteas. Mover el mismo nodo a otro host no es un cambio de nodo y no necesita nada especial. Mira 5.8.</p>
+
       <!-- ===== SECTION 8 ===== -->
       <h2 id="security">8. Consideraciones de Seguridad</h2>
 
@@ -950,6 +1076,10 @@ sqlite3 /ruta/a/mostro.db "SELECT SUM(fee*2) AS gross_fees, SUM(dev_fee) AS dev_
         <p>Mostro es open-source y su código está abierto a auditorías. Animamos a las comunidades a promover y financiar auditorías de seguridad independientes.</p>
         <p>Dicho esto, <strong>el mecanismo central de custodia usando hold invoices de Lightning ha sido probado en batalla desde 2021</strong>, cuando @lnp2pBot implementó por primera vez este tipo de custodia. Miles de operaciones han sido completadas exitosamente.</p>
       </div>
+
+      <h3>Mantén la Clave de tu Nodo Fuera de Alcance</h3>
+
+      <p>Tu <code>nsec_privkey</code> es la identidad de tu nodo, y cualquiera que la tenga puede suplantar a tu Mostro. Prefiere pasarla por la variable de entorno <code>MOSTRO_NSEC_PRIVKEY</code> o por un archivo <code>.env</code> con <code>chmod 600</code> antes que dejarla en <code>settings.toml</code> (ver 4.1). Tampoco la lleves en una laptop para atender disputas: registra una clave de solver aparte para eso (ver 5.2).</p>
 
       <h3>Operando bajo regímenes autoritarios</h3>
 
@@ -978,13 +1108,23 @@ sqlite3 /ruta/a/mostro.db "SELECT SUM(fee*2) AS gross_fees, SUM(dev_fee) AS dev_
       <h4>Archivo de configuración o base de datos no encontrado</h4>
       <p>Asegúrate de que el flag <code>-d</code> apunte al directorio que contiene <code>settings.toml</code>. Para Docker Hub: verifica que <code>~/mostro-config/settings.toml</code> exista.</p>
 
-      <h4>"Failed to connect to LND"</h4>
+      <h4>Mostro termina al arrancar con <code>Ln node error</code></h4>
       <ul>
         <li>Verifica que LND esté ejecutándose: <code>lncli getinfo</code></li>
         <li>Revisa que <code>lnd_grpc_host</code> coincida con la dirección de tu LND</li>
         <li>Verifica que las rutas de <code>tls.cert</code> y <code>mostro.macaroon</code> sean correctas</li>
-        <li>Docker + LND en host: usa <code>host.docker.internal</code></li>
+        <li>Verifica que el macaroon tenga los permisos de 2.2</li>
+        <li>Docker + LND en el host: usa <code>host.docker.internal</code>. La Opción B además necesita el mapeo <code>extra_hosts</code>.</li>
       </ul>
+
+      <h4><code>REFUSING TO START: Lightning node changed</code></h4>
+      <p>Mostro apunta a una identidad LND distinta mientras hay escrow abierto en la anterior. Reconecta el nodo viejo y dr&eacute;nalo antes de cambiar. Mira 5.8.</p>
+
+      <h4>Los clientes no ven mis órdenes o no pueden escribirle a mi nodo</h4>
+      <p>Revisa la línea <code>Transport:</code> en tus logs. Un nodo en <code>nip44</code> es invisible para clientes que solo hablan protocolo v1, y un nodo en <code>gift-wrap</code> es invisible para clientes v2. Mira 4.8.</p>
+
+      <h4>Los pagos fallan con "no route"</h4>
+      <p>Revisa <code>payment_cltv_limit</code>. Debe estar al menos 576 bloques por encima de <code>max_final_cltv_expiry_delta</code> y no debe superar el <code>--max-cltv-expiry</code> de tu LND. Mira 4.9.</p>
 
       <h3>Problemas de conexión</h3>
 
