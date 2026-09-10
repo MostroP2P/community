@@ -1,10 +1,13 @@
 ---
-import { type Locale, t, getLocalePath, getOtherLocales, getLocaleLabel } from '../i18n/translations';
+import { type Locale, t, getLocalePath, getLocaleAnchor, getOtherLocales, getLocaleLabel } from '../i18n/translations';
 
 interface Props { locale: Locale; }
 const { locale } = Astro.props;
 const i = t(locale);
 const otherLocales = getOtherLocales(locale);
+// Nav entries below point at home-page sections, so they need the home path
+// unless the reader is already there.
+const anchor = (id: string) => getLocaleAnchor(locale, id, Astro.url.pathname);
 ---
 <header class="header">
   <div class="container header-inner">
@@ -13,10 +16,10 @@ const otherLocales = getOtherLocales(locale);
       <span class="logo-text">Mostro<span class="logo-accent">.community</span></span>
     </a>
     <nav class="nav">
-      <a href="#communities">{i.nav.communities}</a>
-      <a href="#how-it-works">{i.nav.howItWorks}</a>
-      <a href="#start">{i.nav.getStarted}</a>
-      <a href="#faq">{i.nav.faqNav}</a>
+      <a href={anchor('communities')}>{i.nav.communities}</a>
+      <a href={anchor('how-it-works')}>{i.nav.howItWorks}</a>
+      <a href={anchor('start')}>{i.nav.getStarted}</a>
+      <a href={anchor('faq')}>{i.nav.faqNav}</a>
       <a href={getLocalePath(locale, '/guide')}>{i.nav.guideNav}</a>
       <a href={getLocalePath(locale, '/call-for-action')}>{i.nav.joinNav}</a>
       <a href="https://mostro.network" target="_blank" class="btn btn-outline btn-sm">{i.nav.protocol}</a>
