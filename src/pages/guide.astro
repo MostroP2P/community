@@ -4,7 +4,11 @@ import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import '../styles/guide.css';
 
+import { getMostroRelease, formatReleaseMonth } from '../lib/mostroVersion';
+
 const locale = 'en' as const;
+const { version, publishedAt } = await getMostroRelease();
+const updated = formatReleaseMonth(publishedAt, locale);
 ---
 
 <Layout title="How to Run a Mostro Node — Complete Setup Guide for P2P Bitcoin Exchange" description="Step-by-step guide to running your own Mostro P2P Bitcoin exchange node. Docker & native installation, Lightning Network setup, configuration, dispute resolution, and monitoring." locale={locale}>
@@ -71,7 +75,7 @@ const locale = 'en' as const;
 
     <article class="guide-content">
       <h1>Running Your Own Mostro Node</h1>
-      <p class="guide-version">Mostro v0.16.3 — Community Guide · February 2026</p>
+      <p class="guide-version">Mostro {version} — Community Guide · {updated}</p>
 
       <!-- ===== SECTION 1 ===== -->
       <h2 id="what-is-mostro">1. What is Mostro and Why Should Your Community Run One?</h2>
@@ -291,7 +295,7 @@ docker compose version</code></pre>
       <pre><code>mkdir -p ~/mostro-config/lnd</code></pre>
 
       <h4>Step 6: Get the configuration template</h4>
-      <pre><code>curl -sL https://raw.githubusercontent.com/MostroP2P/mostro/v0.16.3/settings.tpl.toml \
+      <pre><code>curl -sL https://raw.githubusercontent.com/MostroP2P/mostro/{version}/settings.tpl.toml \
   -o ~/mostro-config/settings.toml</code></pre>
 
       <h4>Step 7: Copy LND credentials</h4>
@@ -345,13 +349,13 @@ chmod 600 ~/mostro-config/lnd/admin.macaroon</code></pre>
   --restart unless-stopped \
   --add-host=host.docker.internal:host-gateway \
   -v ~/mostro-config:/config \
-  mostrop2p/mostro:v0.16.3</code></pre>
+  mostrop2p/mostro:{version}</code></pre>
 
       <p><strong>If LND is on a different server:</strong></p>
       <pre><code>docker run -d --name mostro \
   --restart unless-stopped \
   -v ~/mostro-config:/config \
-  mostrop2p/mostro:v0.16.3</code></pre>
+  mostrop2p/mostro:{version}</code></pre>
 
       <h4>Step 11: Check the logs</h4>
       <pre><code>docker logs -f mostro</code></pre>
@@ -371,7 +375,7 @@ chmod 600 ~/mostro-config/lnd/admin.macaroon</code></pre>
       <p>🎉 <strong>Congratulations!</strong> If you see successful connections in the logs, your Mostro node is running!</p>
 
       <h4>Updating (Docker Hub)</h4>
-      <pre><code>export MOSTRO_TAG=v0.16.3
+      <pre><code>export MOSTRO_TAG={version}
 docker pull mostrop2p/mostro:$MOSTRO_TAG
 docker stop mostro
 docker rm mostro
@@ -383,7 +387,7 @@ docker run -d --name mostro \
 
       <div class="callout security">
         <div class="callout-title">🔒 Security Note</div>
-        <p>Always use a specific version tag (e.g., <code>mostrop2p/mostro:v0.16.3</code>) instead of <code>:latest</code> to control deployments.</p>
+        <p>Always use a specific version tag (e.g., <code>mostrop2p/mostro:{version}</code>) instead of <code>:latest</code> to control deployments.</p>
       </div>
 
       <h3 id="option-b">Option B: Docker Build (Build image locally)</h3>
@@ -768,7 +772,7 @@ docker compose -f /opt/mostro/docker/compose.yml logs -f mostro</code></pre>
       <h3 id="updating">5.5 Updating Mostro</h3>
 
       <p><strong>Docker Hub:</strong></p>
-      <pre><code>export MOSTRO_TAG=v0.16.3
+      <pre><code>export MOSTRO_TAG={version}
 docker stop mostro
 docker rm mostro
 docker pull mostrop2p/mostro:$MOSTRO_TAG
@@ -1079,7 +1083,7 @@ relays = [
       <div style="text-align:center; margin-top:48px; padding:24px; border-top:1px solid var(--border);">
         <p>This guide is maintained by the Mostro community. Found an error or want to improve it?<br>
         Contributions are welcome at <a href="https://github.com/MostroP2P/community" target="_blank" rel="noopener noreferrer">github.com/MostroP2P/community</a></p>
-        <p style="color:var(--text-secondary); margin-top:12px;">Last updated: February 2026 · Mostro v0.16.3</p>
+        <p style="color:var(--text-secondary); margin-top:12px;">Last updated: {updated} · Mostro {version}</p>
       </div>
     </article>
   </div>
