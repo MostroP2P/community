@@ -42,6 +42,8 @@ const updated = formatReleaseMonth(publishedAt, locale);
         <li class="toc-h3"><a href="#rpc">RPC Admin</a></li>
         <li class="toc-h3"><a href="#transport">Transporte</a></li>
         <li class="toc-h3"><a href="#ln-safety">Limites Lightning</a></li>
+        <li class="toc-h3"><a href="#price">Fontes de preço</a></li>
+        <li class="toc-h3"><a href="#optional-blocks">Blocos opcionais</a></li>
         <li><a href="#operating">5. Operação do nó</a></li>
         <li class="toc-h3"><a href="#disputes">Disputas</a></li>
         <li class="toc-h3"><a href="#mostrix">Mostrix</a></li>
@@ -51,6 +53,7 @@ const updated = formatReleaseMonth(publishedAt, locale);
         <li class="toc-h3"><a href="#backups">Backups</a></li>
         <li class="toc-h3"><a href="#activity">Atividade</a></li>
         <li class="toc-h3"><a href="#ln-migration">Trocar nó LN</a></li>
+        <li class="toc-h3"><a href="#operator-cli">CLI de operador</a></li>
         <li><a href="#costs">6. Análise de custos</a></li>
         <li><a href="#faq">7. Perguntas frequentes</a></li>
         <li><a href="#security">8. Segurança</a></li>
@@ -331,7 +334,7 @@ lnd_grpc_host = 'https://host.docker.internal:10009'  # Se LND no mesmo VPS
 # Ou usar 'https://SEU_IP_LND:10009' se LND em servidor diferente
 
 [database]
-url = "sqlite:///config/mostro.db"
+url = "sqlite:///config/mostro.db"  # o mostrod sempre usa <diretório-de-config>/mostro.db
 
 [nostr]
 nsec_privkey = 'SUA_CHAVE_NSEC_AQUI'
@@ -501,6 +504,11 @@ nano /opt/mostro/settings.toml</code></pre>
 # Definir permissões
 chown -R mostro:mostro /opt/mostro</code></pre>
 
+      <div class="callout tip">
+        <div class="callout-title">💡 O assistente interativo de configuração</div>
+        <p>Se você rodar o <code>mostrod</code> sem um <code>settings.toml</code> no diretório indicado e estiver num terminal, ele oferece um menu de configuração que pode montar o arquivo para você e escrever o nsec num <code>.env</code>. Sem terminal (Docker, systemd, CI) ele copia o template, imprime onde o deixou e encerra para você editar.</p>
+      </div>
+
       <p>Criar o serviço systemd:</p>
       <pre><code># /etc/systemd/system/mostro.service
 [Unit]
@@ -548,7 +556,7 @@ relays = [
 
       <div class="callout tip">
         <div class="callout-title">💡 Dica</div>
-        <p>Você também pode executar seu próprio relay Nostr junto com o Mostro (a instalação Docker inclui um por padrão).</p>
+        <p>Você também pode rodar seu próprio relay Nostr ao lado do Mostro. O caminho Docker Build (Opção B) inclui um no seu <code>compose.yml</code>; a Opção A e a compilação nativa não.</p>
       </div>
 
 
@@ -618,7 +626,7 @@ website = "https://site-da-sua-comunidade.com"</code></pre>
       <pre><code>[mostro]
 expiration_hours = 24        # Quanto tempo uma ordem fica aberta
 expiration_seconds = 900     # Tempo para completar (15 min)
-hold_invoice_expiration_window = 300  # Validade da hold invoice (5 min)</code></pre>
+hold_invoice_expiration_window = 300  # Tempo que o tomador tem para pagar a fatura ou fornecer uma de recebimento (5 min)</code></pre>
 
       <h3 id="antispam">4.6 Anti-Spam</h3>
       <pre><code>[mostro]
@@ -691,6 +699,69 @@ allow_node_change = false</code></pre>
 
       <p>Note também que <code>max_routing_fee</code>, no bloco <code>[mostro]</code>, agora tem padrão <code>0.002</code> (0,2%).</p>
 
+
+      <h3 id="price">4.10 Fontes de Preço do Bitcoin</h3>
+
+      <p>O Mostro precisa de uma taxa BTC/fiat para cotar as ordens. Sem um bloco <code>[price]</code> ele usa uma única fonte, a Yadio, através do já descontinuado <code>bitcoin_price_api_url</code>. Adicionar o bloco te dá várias fontes, combinadas por mediana e com descarte de valores atípicos, então uma API fora do ar ou devolvendo um número ruim não move seus preços.</p>
+
+      <pre><code>[price]
+update_interval_seconds = 300
+max_price_staleness_seconds = 1800
+outlier_threshold_pct = 5.0        # descarta uma fonte a essa distância da mediana (precisa de 3+ fontes)
+provider_timeout_seconds = 10
+provider_failure_threshold = 3     # falhas antes de deixar uma fonte de molho
+provider_failure_cooldown_seconds = 120
+publish_to_nostr = true            # publica as taxas agregadas como kind 30078
+
+[price.providers.yadio]
+enabled = true
+url = "https://api.yadio.io"
+
+[price.providers.coingecko]
+enabled = true
+url = "https://api.coingecko.com/api/v3"
+# api_key = "CG-xxxx"              # opcional, aumenta os limites de taxa
+
+[price.providers.currency_api]
+enabled = true
+url = "https://currency-api.pages.dev/v1"
+fallback_urls = ["https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1"]
+except = ["CUP", "MLC"]            # só taxa oficial, não misturar com fontes informais
+
+[price.providers.blockchain]
+enabled = true
+url = "https://blockchain.info"</code></pre>
+
+      <p>Cada fonte aceita <code>only</code> ou <code>except</code> para limitar a quais moedas contribui, e <code>fallback_urls</code> para espelhos tentados quando a URL principal falha. Uma fonte habilitada sem um segredo obrigatório falha na inicialização em vez de silenciosamente não produzir cotação alguma.</p>
+
+      <div class="callout tip">
+        <div class="callout-title">💡 Se as APIs de preço estão bloqueadas no seu país</div>
+        <p>Você pode pegar as taxas do Nostr em vez de HTTP, publicadas por nós Mostro em que você confia. Isso reaproveita os relays que já estão em <code>[nostr]</code>, então funciona em qualquer lugar onde seu nó já alcance um relay. Com vários nós confiáveis, vence o evento válido mais recente.</p>
+        <pre><code>[price.providers.nostr]
+enabled = true
+trusted_nodes = [
+    # pubkeys hex de nós Mostro em que você confia para publicar taxas exatas
+]</code></pre>
+      </div>
+
+      <p>Operadores que atendem o peso cubano podem adicionar o El Toque para CUP e MLC do mercado informal. É opt-in, restrito a essas duas moedas, e precisa de um token gratuito: um El Toque habilitado sem <code>token</code> se recusa a iniciar.</p>
+
+      <h3 id="optional-blocks">4.11 Outros Blocos Opcionais</h3>
+
+      <p>Mais três blocos que você pode encontrar num template recente. Nenhum é obrigatório.</p>
+
+      <p><strong>Retenção de eventos.</strong> Quanto tempo o Mostro guarda cada tipo de evento antes de expirar. Omita o bloco inteiro para aceitar os padrões.</p>
+      <pre><code>[expiration]
+order_days = 30        # eventos de ordens (kind 38383)
+rating_days = 90       # histórico de reputação (kind 38384)
+dispute_days = 90      # disputas, guardadas mais tempo para auditoria (kind 38386)
+fee_audit_days = 365   # transparência de taxas (kind 8383)
+dm_days = 30           # mensagens diretas do protocolo v2 (kind 14)</code></pre>
+
+      <p><strong>Cauções anti-abuso</strong> (<code>[anti_abuse_bond]</code>) podem exigir uma caução por hold invoice dos tomadores, dos criadores ou de ambos, para que abandonar uma operação tenha custo. Desabilitado por padrão e ainda em liberação por fases. Leia o <code>docs/ANTI_ABUSE_BOND.md</code> do projeto antes de habilitá-lo num nó em produção.</p>
+
+      <p><strong>Escrow com Cashu</strong> (<code>[cashu]</code>) é um modo experimental que roda sem LND e mantém o escrow em tokens Cashu de uma única mint. Ainda não serve para operar de verdade, as ações de trade continuam sendo rejeitadas, e não pode ser combinado com as cauções anti-abuso. Mencionado aqui para você saber o que é esse bloco quando o vir.</p>
+
       <!-- ===== SECTION 5 ===== -->
       <h2 id="operating">5. Operando Seu Nó Mostro</h2>
 
@@ -718,6 +789,21 @@ allow_node_change = false</code></pre>
         <p>Escolha seus árbitros com cuidado. Eles têm o poder de decidir para onde vão os fundos bloqueados. Escolha membros confiáveis e imparciais da comunidade. Recomenda-se 2-3 árbitros.</p>
       </div>
 
+
+      <h4>Níveis de permissão dos solvers</h4>
+
+      <p>Um solver pode ser registrado como somente leitura ou com poderes completos. Os dois níveis podem assumir uma disputa e falar com as partes, mas só um solver read-write pode decidir para onde vai o dinheiro.</p>
+
+      <table class="guide-table">
+        <thead><tr><th>Registrado como</th><th>Pode</th><th>Não pode</th></tr></thead>
+        <tbody>
+          <tr><td><code>npub1...:read</code></td><td>Assumir uma disputa, ler, escrever para ambas as partes</td><td>Liquidar ou cancelar a ordem</td></tr>
+          <tr><td><code>npub1...:read-write</code></td><td>Tudo, incluindo liquidar e cancelar</td><td>—</td></tr>
+        </tbody>
+      </table>
+
+      <p>Um <code>npub1...</code> sem sufixo fica como read-write por padrão, e o mesmo vale para o registro pela interface RPC. Comece um árbitro novo em <code>:read</code> enquanto ele aprende o processo, e registre-o de novo como read-write quando você confiar no julgamento dele.</p>
+
       <h3 id="mostrix">5.2 Mostrix — Sua ferramenta de administração</h3>
       <p>Mostrix é um cliente baseado em terminal (TUI) para resolução de disputas. Se você executa um nó Mostro, precisa do Mostrix.</p>
 
@@ -738,24 +824,21 @@ chmod +x mostrix-aarch64-unknown-linux-musl
 # Baixe mostrix-x86_64-pc-windows-gnu.exe da página de releases</code></pre>
 
       <div class="callout tip">
-        <div class="callout-title">🔐 Verifique a release</div>
-        <p>Sempre verifique a assinatura do binário antes de executá-lo. Baixe <code>manifest.txt</code> e os arquivos de assinatura da release:</p>
-        <pre><code># Importar chaves dos desenvolvedores (uma única vez)
-curl https://raw.githubusercontent.com/MostroP2P/mostrix/main/keys/negrunch.asc | gpg --import
-curl https://raw.githubusercontent.com/MostroP2P/mostrix/main/keys/arkanoider.asc | gpg --import
-
-# Baixar manifest e assinaturas
-wget https://github.com/MostroP2P/mostrix/releases/latest/download/manifest.txt
-wget https://github.com/MostroP2P/mostrix/releases/latest/download/manifest.txt.sig.negrunch
+        <div class="callout-title">🔐 Verifique a Release</div>
+        <p>Verifique sempre o binário antes de executá-lo. Importe as chaves dos mantenedores uma única vez:</p>
+        <pre><code>curl https://raw.githubusercontent.com/MostroP2P/mostrix/main/keys/negrunch.asc | gpg --import
+curl https://raw.githubusercontent.com/MostroP2P/mostrix/main/keys/arkanoider.asc | gpg --import</code></pre>
+        <p>As assinaturas são arquivos separados chamados <code>manifest.txt.sig.&lt;mantenedor&gt;</code>. Não toda release traz as duas, então confira a página da release e baixe as que realmente estiverem listadas:</p>
+        <pre><code>wget https://github.com/MostroP2P/mostrix/releases/latest/download/manifest.txt
 wget https://github.com/MostroP2P/mostrix/releases/latest/download/manifest.txt.sig.arkanoider
 
-# Verificar assinaturas
-gpg --verify manifest.txt.sig.negrunch manifest.txt
+# Verifique cada assinatura que baixou
 gpg --verify manifest.txt.sig.arkanoider manifest.txt
 
-# Verificar se o checksum corresponde
+# Depois compare o hash do binário com o manifest
 shasum -a 256 mostrix-x86_64-unknown-linux-musl
-# Compare a saída com o hash em manifest.txt</code></pre>
+grep mostrix-x86_64-unknown-linux-musl manifest.txt</code></pre>
+        <p>Uma assinatura válida de uma chave de mantenedor em que você confia é suficiente. Se um <code>wget</code> retornar 404, essa assinatura simplesmente não foi publicada para essa release: não trate um arquivo ausente como um verificado.</p>
       </div>
 
       <h4>Opção B: Compilar do código fonte</h4>
@@ -870,6 +953,13 @@ docker compose -f /opt/mostro/docker/compose.yml logs -f mostro</code></pre>
         <p>Configure um monitor de uptime simples usando <a href="https://uptimerobot.com/" target="_blank" rel="noopener noreferrer">UptimeRobot</a> (nível gratuito) ou um cron job que te alerte se o Mostro cair.</p>
       </div>
 
+
+      <h4>Checar seu nó de fora</h4>
+      <p>Seu nó republica um evento de info (kind 38385) que se descreve: taxas, moedas, versão de protocolo, flag de manutenção. Ler isso de um relay é o jeito mais rápido de confirmar que o mundo externo vê o que você acha que vê.</p>
+      <pre><code>cargo install nostreq nostcat
+nostreq --kinds 38385 --limit 1 --authors SUA_MOSTRO_PUBKEY_HEX \
+  | nostcat --stream wss://relay.mostro.network | jq</code></pre>
+
       <h3 id="updating">5.5 Atualizando Mostro</h3>
 
       <p><strong>Docker Hub:</strong></p>
@@ -912,23 +1002,29 @@ systemctl restart mostro.service</code></pre>
 
       <h3 id="backups">5.6 Backups</h3>
 
-      <p>Arquivos críticos para backup: <code>settings.toml</code> (contém sua chave privada Nostr!) e <code>mostro.db</code> (histórico de ordens, reputação).</p>
+      <p>Arquivos críticos para backup: <code>settings.toml</code>, o arquivo <code>.env</code> se você guarda seu nsec ali (veja 4.1), e <code>mostro.db</code> (histórico de ordens, reputação).</p>
+
+      <div class="callout important">
+        <div class="callout-title">⚠️ Não copie um banco em uso com cp</div>
+        <p>O SQLite roda em modo WAL, então as escritas recentes ficam em <code>mostro.db-wal</code> até serem consolidadas. Copiar só o <code>mostro.db</code> com o Mostro rodando pode gerar um backup sem as operações mais novas. Use o comando de backup do próprio SQLite, que é seguro num banco em uso e escreve um único arquivo consistente.</p>
+      </div>
 
       <pre><code># Backup manual — Docker Hub:
 mkdir -p /root/mostro-backups
+sqlite3 ~/mostro-config/mostro.db ".backup '/root/mostro-backups/mostro.db.$(date +%Y%m%d)'"
 cp ~/mostro-config/settings.toml /root/mostro-backups/settings.toml.$(date +%Y%m%d)
-cp ~/mostro-config/mostro.db /root/mostro-backups/mostro.db.$(date +%Y%m%d)
+cp ~/mostro-config/.env /root/mostro-backups/env.$(date +%Y%m%d) 2>/dev/null
 
 # Backup manual — Nativo:
-cp /opt/mostro/settings.toml /root/mostro-backups/settings.toml.$(date +%Y%m%d)
-cp /opt/mostro/mostro.db /root/mostro-backups/mostro.db.$(date +%Y%m%d)</code></pre>
+sqlite3 /opt/mostro/mostro.db ".backup '/root/mostro-backups/mostro.db.$(date +%Y%m%d)'"
+cp /opt/mostro/settings.toml /root/mostro-backups/settings.toml.$(date +%Y%m%d)</code></pre>
 
-      <p><strong>Backup diário automatizado</strong> (adicionar ao crontab com <code>crontab -e</code>):</p>
+      <p><strong>Backup diário automático</strong> (adicione ao crontab com <code>crontab -e</code>):</p>
       <pre><code># Docker Hub (Opção A):
-0 3 * * * mkdir -p /root/mostro-backups && cp ~/mostro-config/mostro.db /root/mostro-backups/mostro.db.$(date +\%Y\%m\%d) && cp ~/mostro-config/settings.toml /root/mostro-backups/settings.toml.$(date +\%Y\%m\%d)
+0 3 * * * mkdir -p /root/mostro-backups && sqlite3 /root/mostro-config/mostro.db ".backup '/root/mostro-backups/mostro.db.$(date +\%Y\%m\%d)'" && cp /root/mostro-config/settings.toml /root/mostro-backups/settings.toml.$(date +\%Y\%m\%d)
 
 # Nativo (Opção C) / Docker Build (Opção B):
-0 3 * * * mkdir -p /root/mostro-backups && cp /opt/mostro/mostro.db /root/mostro-backups/mostro.db.$(date +\%Y\%m\%d) && cp /opt/mostro/settings.toml /root/mostro-backups/settings.toml.$(date +\%Y\%m\%d)</code></pre>
+0 3 * * * mkdir -p /root/mostro-backups && sqlite3 /opt/mostro/mostro.db ".backup '/root/mostro-backups/mostro.db.$(date +\%Y\%m\%d)'" && cp /opt/mostro/settings.toml /root/mostro-backups/settings.toml.$(date +\%Y\%m\%d)</code></pre>
 
       <div class="callout important">
         <div class="callout-title">⚠️ Crítico</div>
@@ -972,6 +1068,33 @@ sqlite3 /caminho/para/mostro.db "SELECT SUM(fee*2) AS gross_fees, SUM(dev_fee) A
         <div class="callout-title">⚠️ allow_node_change</div>
         <p>Coloque <code>true</code> apenas para recuperação de desastre, quando o nó antigo se perdeu de vez. Isso deixa deliberadamente as operações afetadas sem resolução. Mover o mesmo nó para outro host não é troca de nó e não precisa de nada disso.</p>
       </div>
+
+
+      <h3 id="operator-cli">5.9 Comandos de Operador com mostro-cli</h3>
+
+      <p>O Mostrix é o jeito confortável de trabalhar disputas, mas o <code>mostro-cli</code> cobre o mesmo terreno de um shell e tem alguns comandos que o Mostrix não tem. Os comandos de disputa são assinados com uma chave Nostr passada como <code>ADMIN_NSEC</code>, e ela precisa ser a do próprio daemon ou a de um solver registrado.</p>
+
+      <pre><code># Trabalho de disputas (via Nostr, precisa de ADMIN_NSEC)
+export ADMIN_NSEC=nsec1...
+mostro-cli listdisputes
+mostro-cli admtakedispute -d &lt;dispute-id&gt;
+mostro-cli admsenddm -p &lt;npub&gt; -m "mensagem para uma parte"
+mostro-cli admsettle -o &lt;order-id&gt;      # liberar para o comprador
+mostro-cli admcancel -o &lt;order-id&gt;      # reembolsar o vendedor
+
+# Registrar um árbitro, opcionalmente somente leitura
+mostro-cli admaddsolver -n npub1...:read</code></pre>
+
+      <p>Outro grupo de comandos vai pelo gRPC de administração em vez do Nostr, então precisam de <code>MOSTRO_RPC_URL</code> e <code>MOSTRO_RPC_TOKEN</code> em vez de <code>ADMIN_NSEC</code>, e da interface RPC habilitada (veja 4.7).</p>
+
+      <pre><code>export MOSTRO_RPC_URL=http://127.0.0.1:50051
+export MOSTRO_RPC_TOKEN=seu-token-de-auth
+
+mostro-cli admsetmaintenance -e true -r "motivo"
+mostro-cli admmaintenancestatus
+mostro-cli admcancelpending -o &lt;order-id&gt;</code></pre>
+
+      <p>Vale conhecer o <code>admcancelpending</code> fora de uma migração. Ele cancela uma ordem que ainda está pendente ou esperando a caução de um tomador, avisa o criador e libera todas as cauções de uma vez. Use para uma ordem claramente abandonada ou mal cotada, e avise o criador antes: é a ordem dele, e isso não é uma resolução de disputa.</p>
 
       <!-- ===== SECTION 6 ===== -->
       <h2 id="costs">6. Análise de Custos</h2>
@@ -1102,7 +1225,7 @@ sqlite3 /caminho/para/mostro.db "SELECT SUM(fee*2) AS gross_fees, SUM(dev_fee) A
 
       <h3>Mostro não inicia</h3>
 
-      <h4>"Configuration error: dev_fee_percentage below minimum"</h4>
+      <h4><code>dev_fee_percentage (0.05) is below minimum (0.1)</code></h4>
       <p>Defina <code>dev_fee_percentage</code> em pelo menos <code>0.10</code> no settings.toml.</p>
 
       <h4>Arquivo de configuração ou banco de dados não encontrado</h4>
@@ -1140,8 +1263,10 @@ sqlite3 /caminho/para/mostro.db "SELECT SUM(fee*2) AS gross_fees, SUM(dev_fee) A
       <h4>Um usuário recebe "cant-do: too_many_requests" ao restaurar sessão</h4>
       <p>Isso acontece quando o usuário tem mais ordens (históricas + ativas) que o valor de <code>max_orders_per_response</code> na sua configuração. O cliente tenta consultar todas as ordens de uma vez e o Mostro rejeita. <strong>Não é um ban nem um bloqueio temporário</strong> — continuará acontecendo até que você ajuste o valor.</p>
       <pre><code># Em settings.toml, aumente o limite:
-max_orders_per_response = 50  # padrão é 10
+max_orders_per_response = 50  # o padrão é 10, o máximo 255
 </code></pre>
+
+      <p>O valor é guardado em um único byte, então <code>255</code> é o teto. Se um usuário tem mais ordens que isso, ele precisa limpar o histórico em vez de você seguir subindo o limite.</p>
 
       <h4>Ordens não aparecem nos clientes</h4>
       <ul>
