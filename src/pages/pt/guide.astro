@@ -174,9 +174,15 @@ const updated = formatReleaseMonth(publishedAt, locale);
       <p><strong>O que você precisa do seu nó LND:</strong></p>
       <ul>
         <li>O arquivo <code>tls.cert</code> (um certificado de segurança)</li>
-        <li>O arquivo <code>admin.macaroon</code> (um token de autenticação)</li>
+        <li>Um arquivo <code>mostro.macaroon</code> dedicado (um token de autenticação apenas com as permissões que o Mostro precisa, veja abaixo)</li>
         <li>O endereço gRPC (tipicamente <code>https://127.0.0.1:10009</code> se na mesma máquina)</li>
       </ul>
+
+      <p><strong>Gere um macaroon dedicado para o Mostro.</strong> Não entregue ao Mostro o seu <code>admin.macaroon</code>: ele concede controle total sobre o seu nó e seus fundos. Crie um macaroon que contenha apenas as permissões que o Mostro realmente usa (ler informações do nó, criar/liquidar/cancelar hold invoices, enviar e acompanhar pagamentos):</p>
+      <pre><code>lncli bakemacaroon --root_key_id 1 \
+  --save_to /root/.lnd/data/chain/bitcoin/mainnet/mostro.macaroon \
+  info:read invoices:read invoices:write offchain:read offchain:write</code></pre>
+      <p>Este macaroon não pode abrir ou fechar canais, mover fundos on-chain nem alterar a configuração do seu nó. Se algum dia vazar, revogue-o com <code>lncli deletemacaroonid 1</code> e gere um novo.</p>
 
       <h3 id="liquidity">2.3 Liquidez Lightning</h3>
 
@@ -300,12 +306,12 @@ docker compose version</code></pre>
 
       <h4>Passo 7: Copiar credenciais LND</h4>
       <pre><code>cp /caminho/para/seu/tls.cert ~/mostro-config/lnd/tls.cert
-cp /caminho/para/seu/admin.macaroon ~/mostro-config/lnd/admin.macaroon</code></pre>
+cp /caminho/para/seu/mostro.macaroon ~/mostro-config/lnd/mostro.macaroon</code></pre>
 
       <p>Se o LND está na <strong>mesma máquina</strong>, os caminhos típicos são:</p>
       <ul>
         <li><code>/root/.lnd/tls.cert</code></li>
-        <li><code>/root/.lnd/data/chain/bitcoin/mainnet/admin.macaroon</code></li>
+        <li><code>/root/.lnd/data/chain/bitcoin/mainnet/mostro.macaroon</code></li>
       </ul>
 
       <h4>Passo 8: Editar a configuração</h4>
@@ -314,7 +320,7 @@ cp /caminho/para/seu/admin.macaroon ~/mostro-config/lnd/admin.macaroon</code></p
       <p><strong>Alterações necessárias:</strong></p>
       <pre><code>[lightning]
 lnd_cert_file = '/config/lnd/tls.cert'
-lnd_macaroon_file = '/config/lnd/admin.macaroon'
+lnd_macaroon_file = '/config/lnd/mostro.macaroon'
 lnd_grpc_host = 'https://host.docker.internal:10009'  # Se LND no mesmo VPS
 # Ou usar 'https://SEU_IP_LND:10009' se LND em servidor diferente
 
@@ -341,7 +347,7 @@ fiat_currencies_accepted = ['USD', 'BRL']  # Suas moedas</code></pre>
       <pre><code>sudo chown -R 1000:1000 ~/mostro-config
 chmod 700 ~/mostro-config
 chmod 600 ~/mostro-config/settings.toml
-chmod 600 ~/mostro-config/lnd/admin.macaroon</code></pre>
+chmod 600 ~/mostro-config/lnd/mostro.macaroon</code></pre>
 
       <h4>Passo 10: Executar o container</h4>
       <p><strong>Se o LND está no mesmo VPS:</strong></p>
@@ -409,7 +415,7 @@ cp ../settings.tpl.toml config/settings.toml</code></pre>
       <h4>Passo 8: Construir a imagem Docker</h4>
       <pre><code>cd ..
 LND_CERT_FILE=/root/.lnd/tls.cert \
-LND_MACAROON_FILE=/root/.lnd/data/chain/bitcoin/mainnet/admin.macaroon \
+LND_MACAROON_FILE=/root/.lnd/data/chain/bitcoin/mainnet/mostro.macaroon \
 make docker-build</code></pre>
 
       <h4>Passo 9: Iniciar Mostro</h4>
@@ -457,8 +463,6 @@ swapon /swapfile</code></pre>
 
       <h4>Passos 8–10: Instalar, inicializar e limpar</h4>
       <pre><code>install target/release/mostrod /usr/local/bin
-cargo install sqlx-cli --version 0.6.3
-./init_db.sh
 cargo clean  # Economiza 2+ GB de espaço</code></pre>
 
       <h4>Passos 11–12: Criar usuário e configurar</h4>
@@ -740,7 +744,7 @@ relays = ["wss://relay.mostro.network", "wss://nos.lol"]
 
 [telegram]
 bot_token = "SEU_BOT_TOKEN"
-chat_id = "SEU_CHAT_ID"</code></pre>
+chat_id = -1001234567890</code></pre>
 
       <div class="callout tip">
         <div class="callout-title">💡 Dica</div>
@@ -784,19 +788,19 @@ docker run -d --name mostro \
 
       <p><strong>Docker Build:</strong></p>
       <pre><code>cd /opt/mostro
-git pull origin main
+git fetch --tags
+git checkout {version}
 make docker-build
 make docker-down
 make docker-up</code></pre>
 
       <p><strong>Nativo:</strong></p>
       <pre><code>cd /opt/mostro
-git pull origin main
+git fetch --tags
+git checkout {version}
 cargo build --release
 install target/release/mostrod /usr/local/bin
 cargo clean
-cargo install sqlx-cli --version 0.6.3
-sqlx migrate run
 systemctl restart mostro.service</code></pre>
 
       <div class="callout tip">
@@ -840,8 +844,8 @@ sqlite3 /caminho/para/mostro.db "SELECT id, fiat_code, fiat_amount, amount, fee,
 # Ordens pendentes
 sqlite3 /caminho/para/mostro.db "SELECT id, fiat_code, fiat_amount, status, created_at FROM orders WHERE status = 'pending';"
 
-# Receita total de taxas (taxa do nó + dev_fee)
-sqlite3 /caminho/para/mostro.db "SELECT SUM(fee) as node_fees, SUM(dev_fee) as dev_fees, SUM(fee + dev_fee) as total_fees_sats FROM orders WHERE status = 'success';"</code></pre>
+# Receita de taxas: orders.fee guarda a metade de cada parte, então a taxa bruta do nó é fee*2 e a dev fee é descontada dela
+sqlite3 /caminho/para/mostro.db "SELECT SUM(fee*2) AS gross_fees, SUM(dev_fee) AS dev_fees, SUM(fee*2 - dev_fee) AS net_fees FROM orders WHERE status = 'success';"</code></pre>
 
       <!-- ===== SECTION 6 ===== -->
       <h2 id="costs">6. Análise de Custos</h2>
@@ -975,7 +979,7 @@ sqlite3 /caminho/para/mostro.db "SELECT SUM(fee) as node_fees, SUM(dev_fee) as d
       <ul>
         <li>Verifique se o LND está executando: <code>lncli getinfo</code></li>
         <li>Confira se <code>lnd_grpc_host</code> corresponde ao endereço do seu LND</li>
-        <li>Verifique se os caminhos de <code>tls.cert</code> e <code>admin.macaroon</code> estão corretos</li>
+        <li>Verifique se os caminhos de <code>tls.cert</code> e <code>mostro.macaroon</code> estão corretos</li>
         <li>Docker + LND no host: use <code>host.docker.internal</code></li>
       </ul>
 
@@ -1038,7 +1042,7 @@ kill &lt;PID&gt;</code></pre>
           <tr><td>Configuração</td><td><code>~/mostro-config/settings.toml</code></td><td><code>/opt/mostro/settings.toml</code></td></tr>
           <tr><td>Banco de dados</td><td><code>~/mostro-config/mostro.db</code></td><td><code>/opt/mostro/mostro.db</code></td></tr>
           <tr><td>Cert LND</td><td><code>~/mostro-config/lnd/tls.cert</code></td><td>Varia (verifique config LND)</td></tr>
-          <tr><td>Macaroon LND</td><td><code>~/mostro-config/lnd/admin.macaroon</code></td><td>Varia (verifique config LND)</td></tr>
+          <tr><td>Macaroon LND</td><td><code>~/mostro-config/lnd/mostro.macaroon</code></td><td>Varia (verifique config LND)</td></tr>
           <tr><td>Serviço</td><td>N/A</td><td><code>/etc/systemd/system/mostro.service</code></td></tr>
           <tr><td>Logs</td><td><code>docker logs -f mostro</code></td><td><code>journalctl -u mostro</code></td></tr>
         </tbody>
@@ -1060,7 +1064,7 @@ journalctl -u mostro -f        # Ver logs
 # Banco de dados
 sqlite3 mostro.db "SELECT COUNT(*) FROM orders;"                           # Total de ordens
 sqlite3 mostro.db "SELECT COUNT(*) FROM orders WHERE status='success';"    # Operações bem-sucedidas
-sqlite3 mostro.db "SELECT SUM(fee + dev_fee) FROM orders WHERE status='success';"  # Total de taxas</code></pre>
+sqlite3 mostro.db "SELECT SUM(fee*2 - dev_fee) FROM orders WHERE status='success';"  # Taxas líquidas mantidas pelo nó
 
       <h3>Configuração recomendada para nós novos</h3>
       <pre><code>[mostro]
