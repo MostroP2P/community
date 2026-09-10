@@ -4,7 +4,11 @@ import Header from '../../components/Header.astro';
 import Footer from '../../components/Footer.astro';
 import '../../styles/guide.css';
 
+import { getMostroRelease, formatReleaseMonth } from '../../lib/mostroVersion';
+
 const locale = 'it' as const;
+const { version, publishedAt } = await getMostroRelease();
+const updated = formatReleaseMonth(publishedAt, locale);
 ---
 
 <Layout title="Guida alla Configurazione del Nodo — Mostro Community" description="Guida completa per eseguire il tuo nodo Mostro P2P per lo scambio di Bitcoin." locale={locale}>
@@ -71,7 +75,7 @@ const locale = 'it' as const;
 
     <article class="guide-content">
       <h1>Eseguire il Tuo Nodo Mostro</h1>
-      <p class="guide-version">Mostro v0.16.3 — Guida della Comunità · Febbraio 2026</p>
+      <p class="guide-version">Mostro {version} — Guida della Comunità · {updated}</p>
 
       <!-- ===== SECTION 1 ===== -->
       <h2 id="what-is-mostro">1. Cos'è Mostro e perché la tua comunità dovrebbe eseguirne uno?</h2>
@@ -291,7 +295,7 @@ docker compose version</code></pre>
       <pre><code>mkdir -p ~/mostro-config/lnd</code></pre>
 
       <h4>Passo 6: Ottenere il template di configurazione</h4>
-      <pre><code>curl -sL https://raw.githubusercontent.com/MostroP2P/mostro/v0.16.3/settings.tpl.toml \
+      <pre><code>curl -sL https://raw.githubusercontent.com/MostroP2P/mostro/{version}/settings.tpl.toml \
   -o ~/mostro-config/settings.toml</code></pre>
 
       <h4>Passo 7: Copiare le credenziali LND</h4>
@@ -345,13 +349,13 @@ chmod 600 ~/mostro-config/lnd/admin.macaroon</code></pre>
   --restart unless-stopped \
   --add-host=host.docker.internal:host-gateway \
   -v ~/mostro-config:/config \
-  mostrop2p/mostro:v0.16.3</code></pre>
+  mostrop2p/mostro:{version}</code></pre>
 
       <p><strong>Se LND è su un server diverso:</strong></p>
       <pre><code>docker run -d --name mostro \
   --restart unless-stopped \
   -v ~/mostro-config:/config \
-  mostrop2p/mostro:v0.16.3</code></pre>
+  mostrop2p/mostro:{version}</code></pre>
 
       <h4>Passo 11: Controllare i log</h4>
       <pre><code>docker logs -f mostro</code></pre>
@@ -371,7 +375,7 @@ chmod 600 ~/mostro-config/lnd/admin.macaroon</code></pre>
       <p>🎉 <strong>Congratulazioni!</strong> Se vedi connessioni riuscite nei log, il tuo nodo Mostro è in funzione!</p>
 
       <h4>Aggiornamento (Docker Hub)</h4>
-      <pre><code>export MOSTRO_TAG=v0.16.3
+      <pre><code>export MOSTRO_TAG={version}
 docker pull mostrop2p/mostro:$MOSTRO_TAG
 docker stop mostro
 docker rm mostro
@@ -383,7 +387,7 @@ docker run -d --name mostro \
 
       <div class="callout security">
         <div class="callout-title">🔒 Nota di Sicurezza</div>
-        <p>Usa sempre un tag di versione specifico (es. <code>mostrop2p/mostro:v0.16.3</code>) invece di <code>:latest</code> per controllare i deployment.</p>
+        <p>Usa sempre un tag di versione specifico (es. <code>mostrop2p/mostro:{version}</code>) invece di <code>:latest</code> per controllare i deployment.</p>
       </div>
 
       <h3 id="option-b">Opzione B: Docker Build (Costruire l'immagine localmente)</h3>
@@ -768,7 +772,7 @@ docker compose -f /opt/mostro/docker/compose.yml logs -f mostro</code></pre>
       <h3 id="updating">5.5 Aggiornare Mostro</h3>
 
       <p><strong>Docker Hub:</strong></p>
-      <pre><code>export MOSTRO_TAG=v0.16.3
+      <pre><code>export MOSTRO_TAG={version}
 docker stop mostro
 docker rm mostro
 docker pull mostrop2p/mostro:$MOSTRO_TAG
@@ -1079,7 +1083,7 @@ relays = [
       <div style="text-align:center; margin-top:48px; padding:24px; border-top:1px solid var(--border);">
         <p>Questa guida è mantenuta dalla comunità Mostro. Hai trovato un errore o vuoi migliorarla?<br>
         I contributi sono benvenuti su <a href="https://github.com/MostroP2P/community" target="_blank" rel="noopener noreferrer">github.com/MostroP2P/community</a></p>
-        <p style="color:var(--text-secondary); margin-top:12px;">Ultimo aggiornamento: Febbraio 2026 · Mostro v0.16.3</p>
+        <p style="color:var(--text-secondary); margin-top:12px;">Ultimo aggiornamento: {updated} · Mostro {version}</p>
       </div>
     </article>
   </div>
