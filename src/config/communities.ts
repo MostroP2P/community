@@ -83,6 +83,14 @@ export const COMMUNITIES: CommunityConfig[] = [
     ],
     website: 'https://mostroeuropa.github.io/',
   },
+  {
+    pubkey: 'npub1qqdagara05n9ahlrh5ah9xvgv9r2mpgd2yy4lemmwc7ryq2kskuswt0t3x',
+    region: 'Ecuador',
+    social: [
+      { type: 'telegram', url: 'https://t.me/P2PBitcoinEC' },
+    ],
+    website: 'https://mostro.bitmaxis.com/',
+  },
 ];
 
 /** Default Mostro relay for fetching community metadata */
