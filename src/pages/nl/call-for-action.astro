@@ -1,0 +1,413 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Header from '../../components/Header.astro';
+import Footer from '../../components/Footer.astro';
+import '../../styles/guide.css';
+
+const locale = 'nl' as const;
+---
+
+<Layout title="Begin een P2P bitcoin-exchange in je gemeenschap: het Trusted Nodes-programma van Mostro" description="Draai je eigen non-custodial bitcoin-exchange. Verdien aan de trades, los disputen lokaal op en geef je gemeenschap financiële zelfstandigheid. Meld je aan voor het Trusted Nodes-programma van Mostro." locale={locale}>
+  <Header locale={locale} />
+
+  <div class="container guide-layout">
+    <nav class="toc">
+      <div class="toc-title">Op deze pagina</div>
+      <ul class="toc-list">
+        <li><a href="#your-exchange">1. Jouw gemeenschap, jouw exchange</a></li>
+        <li><a href="#what-is-node">2. Wat is een Mostro-node?</a></li>
+        <li><a href="#benefits">3. Wat het oplevert</a></li>
+        <li><a href="#who-should-apply">4. Voor wie is dit?</a></li>
+        <li><a href="#what-you-need">5. Wat je nodig hebt</a></li>
+        <li><a href="#trusted-program">6. Het Trusted Nodes-programma</a></li>
+        <li><a href="#success-stories">7. Hoe succes eruitziet</a></li>
+        <li><a href="#how-to-apply">8. Hoe je je aanmeldt</a></li>
+        <li><a href="#cta-faq">9. Veelgestelde vragen</a></li>
+      </ul>
+    </nav>
+
+    <div class="toc-mobile">
+      <button class="toc-toggle" id="toc-toggle">📑 Inhoud</button>
+      <div class="toc-mobile-list" id="toc-mobile-list">
+        <ul class="toc-list">
+          <li><a href="#your-exchange">1. Jouw exchange</a></li>
+          <li><a href="#benefits">3. Wat het oplevert</a></li>
+          <li><a href="#trusted-program">6. Het programma</a></li>
+          <li><a href="#how-to-apply">8. Aanmelden</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <article class="guide-content">
+      <h1>Draai de eigen bitcoin-exchange van je gemeenschap</h1>
+      <p class="guide-version">Het Trusted Nodes-programma van Mostro · februari 2026</p>
+
+      <div class="callout tip">
+        <div class="callout-title">⚡ Kort samengevat</div>
+        <p>Met Mostro draait een bitcoingemeenschap haar eigen P2P-exchange: zonder KYC, zonder tussenpersoon, zonder één punt waar alles op vastloopt. Je verdient aan elke trade, lost disputen op in je eigen taal en geeft je gemeenschap echte financiële zelfstandigheid. De infrastructuur begint bij zo'n $20 per maand. We zoeken gevestigde bitcoingemeenschappen voor de eerste lichting vertrouwde nodes. Aanmelden kan nu.</p>
+      </div>
+
+      <h2 id="your-exchange">1. Jouw gemeenschap, jouw exchange</h2>
+
+      <p>Laten we het over een probleem hebben dat elke bitcoiner kent.</p>
+
+      <p>Centrale exchanges vragen om je identiteitsbewijs. Ze bevriezen accounts. Ze rapporteren aan overheden. Ze worden gehackt, gaan failliet, of besluiten opeens dat ze jouw land niet meer bedienen. Weet je nog dat exchanges van de ene op de andere dag hele regio's verlieten? Dat ze opnames blokkeerden tijdens een bankrun? Dat gebruikers in Venezuela, Nigeria en tientallen andere landen buitengesloten raakten van precies het gereedschap dat hun financiële vrijheid moest geven?</p>
+
+      <p>Bitcoin beloofde zelfstandigheid. Centrale exchanges hebben die belofte gebroken.</p>
+
+      <p>Peer-to-peer handelen lost dat op, maar tot nu toe betekende een P2P-exchange draaien dat je afhankelijk was van Telegram of van een centrale website. Beter, zeker. Maar nog steeds één punt waar alles op vastloopt. Nog steeds het platform van iemand anders. Nog steeds de regels van iemand anders.</p>
+
+      <p><strong>Mostro verandert dat.</strong></p>
+
+      <p>Mostro is een peer-to-peer bitcoin-exchange, gebouwd op twee technieken die niet uit te zetten zijn:</p>
+      <ul>
+        <li><strong>Lightning Network</strong>: snelle, goedkope bitcoinbetalingen</li>
+        <li><strong>Nostr</strong>: een communicatieprotocol zonder centrale server, zonder bedrijf, zonder noodknop</li>
+      </ul>
+
+      <p>Samen vormen ze iets wat nog niet bestond: een P2P-exchange die geen overheid, geen bedrijf en geen individu offline kan halen. In plaats van één grote exchange onder één team is Mostro een <strong>netwerk van zelfstandige nodes, beheerd door gemeenschappen</strong>. Elke gemeenschap draait haar eigen exchange, stelt haar eigen regels, ondersteunt haar eigen valuta en lost haar eigen disputen op.</p>
+
+      <p><strong>Jouw gemeenschap. Jouw exchange. Jouw regels.</strong></p>
+
+      <p>En het moment is er rijp voor. Mostro is geen whitepaper of een idee. Het is werkende software. Er is een mobiele app. Het protocol is in de praktijk beproefd via zijn voorganger <a href="https://lnp2pbot.com" target="_blank">@lnp2pBot</a>, die sinds 2021 duizenden echte trades heeft verwerkt, vooral in Latijns-Amerika, Cuba en Venezuela, waar mensen het dagelijks gebruiken om aan een kapot financieel stelsel te ontsnappen.</p>
+
+      <h2 id="what-is-node">2. Wat is een Mostro-node?</h2>
+
+      <p>Zie een Mostro-node als de eigen bitcoinmarkt van je gemeenschap: als een lokale exchange, maar dan een die op het internet draait, 24 uur per dag open is en niet te censureren of uit te zetten valt.</p>
+
+      <p>Zo verloopt een trade, in 30 seconden:</p>
+      <ol>
+        <li><strong>Alice wil bitcoin verkopen</strong> → ze plaatst een aanbod: "100.000 sats te koop voor $50 via bankoverschrijving"</li>
+        <li><strong>Bob wil kopen</strong> → hij ziet het aanbod van Alice en neemt het</li>
+        <li><strong>Mostro maakt een tijdelijke kluis</strong> → Alice zet haar bitcoin daarin</li>
+        <li><strong>Bob maakt $50 over</strong> aan Alice via de bank → (Zelle, contant, mobiel betalen, wat je gemeenschap ook gebruikt)</li>
+        <li><strong>Alice bevestigt</strong> dat het geld binnen is → Mostro geeft de bitcoin vrij aan Bob</li>
+      </ol>
+
+      <p>✔ Klaar. Geen KYC. Geen tussenpersoon. Geen centrale exchange.</p>
+
+      <p>Gaat er iets mis, dan kan elk van beiden een dispuut openen. En dit maakt Mostro bijzonder: <strong>jouw gemeenschap lost het op</strong>. Geen klantenservice in een ander land die je taal niet spreekt. Jullie mensen. Jullie oordeel. Jullie taal.</p>
+
+      <div class="callout security">
+        <div class="callout-title">🔒 Beproefd sinds 2021</div>
+        <p>Het escrow-mechanisme in het hart van Mostro, de Lightning hold invoices, draait sinds 2021 in de praktijk via @lnp2pBot op Telegram. Duizenden trades. Echt geld. Echte mensen die er elke dag op rekenen.</p>
+      </div>
+
+      <h2 id="benefits">3. Wat het je gemeenschap oplevert</h2>
+
+      <h3>💰 Inkomsten</h3>
+      <p>Je node verdient aan elke trade. Standaard is dat 0,6% (verdeeld over koper en verkoper).</p>
+
+      <table class="guide-table">
+        <thead><tr><th>Volume per maand</th><th>Opbrengst</th><th>Bijdrage aan ontwikkeling (30%)</th><th>Wat jij overhoudt</th></tr></thead>
+        <tbody>
+          <tr><td>$1.000</td><td>$6</td><td>$1,80</td><td>$4,20</td></tr>
+          <tr><td>$5.000</td><td>$30</td><td>$9</td><td>$21</td></tr>
+          <tr><td>$10.000</td><td>$60</td><td>$18</td><td>$42</td></tr>
+          <tr><td>$50.000</td><td>$300</td><td>$90</td><td>$210</td></tr>
+          <tr><td>$100.000</td><td>$600</td><td>$180</td><td>$420</td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout tip">
+        <div class="callout-title">📊 Over de bijdrage aan de ontwikkeling</div>
+        <p>De bijdrage aan de ontwikkeling is een instelbaar deel van je opbrengst (standaard 30%, minimaal 10%) dat naar het doorontwikkelen van Mostro gaat. Het is open en op Nostr na te gaan.</p>
+      </div>
+
+      <div class="callout warning">
+        <div class="callout-title">⚠️ Even reëel</div>
+        <p>De meeste nieuwe nodes hebben tijd nodig om volume op te bouwen. Verwacht niet dat je er meteen rijk van wordt. De echte waarde zit in de dienst die je je gemeenschap levert; de opbrengst is een extraatje dat meegroeit. Zie het als een lokale onderneming: vertrouwen en volume kosten tijd, maar daarna draait het zichzelf rond.</p>
+      </div>
+
+      <h3>🔐 Financiële zelfstandigheid</h3>
+      <p>Geen KYC. Geen identiteitscontrole. Geen persoonsgegevens die worden verzameld. Je leden kopen en verkopen bitcoin zoals het bedoeld was: privé en vrij. Dat is geen extraatje, dat is de hele bedoeling.</p>
+
+      <h3>🌍 Lokaal geregeld</h3>
+      <p>Komt er een dispuut, dan handelt je eigen gemeenschap het af. Mensen die je taal spreken, je cultuur kennen en weten hoe er bij jullie betaald wordt.</p>
+
+      <h3>🏗️ Onafhankelijk</h3>
+      <p>Er zit geen bedrijf achter Mostro dat onder druk gezet, stilgelegd of overgenomen kan worden. Jouw node is van jou. Zelfs als elke andere Mostro-node offline gaat, blijft die van jou draaien.</p>
+
+      <h3>⚙️ Naar eigen inzicht</h3>
+      <ul>
+        <li><strong>Jouw valuta:</strong> euro, dollar, ARS, naira, bolívar, wat je gemeenschap ook gebruikt</li>
+        <li><strong>Jouw betaalmethodes:</strong> bankoverschrijving, mobiel betalen, contant, Zelle, Mercado Pago</li>
+        <li><strong>Jouw tarief:</strong> 0,6%, 1%, of zelfs 0% zolang je groeit</li>
+        <li><strong>Jouw grenzen:</strong> stel de handelsbedragen in op je liquiditeit</li>
+        <li><strong>Jouw regels:</strong> jij beheert de node, jij beslist</li>
+      </ul>
+
+      <h3>🤝 Een hechtere gemeenschap</h3>
+      <p>Een Mostro-node is niet alleen handelsgereedschap: het is de economische ruggengraat van je gemeenschap. Het geeft mensen een reden om actief mee te doen, levert een echt gebruik van bitcoin op en maakt de band tussen leden sterker. Wie samen handelt, blijft samen.</p>
+
+      <h3>🚀 Vroeg erbij zijn loont</h3>
+      <p>Gemeenschappen die zich nu aansluiten komen als <strong>vertrouwde node in de mobiele app</strong> te staan: de nodes die nieuwe gebruikers als eerste zien. Naarmate het netwerk groeit, hebben de vroege beheerders al een reputatie en een trouwe groep gebruikers. Dit is de begane grond.</p>
+
+      <h2 id="who-should-apply">4. Voor wie is dit?</h2>
+
+      <p>We zoeken gevestigde gemeenschappen met echte mensen die bitcoin en financiële vrijheid serieus nemen. In het bijzonder:</p>
+
+      <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap:16px; margin:24px 0;">
+        <div class="glass" style="padding:20px; border-radius:12px; text-align:center;">
+          <div style="font-size:2rem;">🎤</div>
+          <h4 style="margin:8px 0 4px;">Bitcoin-meetups</h4>
+          <p style="color:var(--text-secondary); font-size:0.9rem; margin:0;">De mensen heb je al. Geef ze iets om mee te handelen.</p>
+        </div>
+        <div class="glass" style="padding:20px; border-radius:12px; text-align:center;">
+          <div style="font-size:2rem;">🔄</div>
+          <h4 style="margin:8px 0 4px;">Circulaire economieën</h4>
+          <p style="color:var(--text-secondary); font-size:0.9rem; margin:0;">Geef je lokale economie een in- en uitstap naar bitcoin.</p>
+        </div>
+        <div class="glass" style="padding:20px; border-radius:12px; text-align:center;">
+          <div style="font-size:2rem;">📚</div>
+          <h4 style="margin:8px 0 4px;">Bitcoin-educatie</h4>
+          <p style="color:var(--text-secondary); font-size:0.9rem; margin:0;">Leer mensen bitcoin door het ze echt te laten gebruiken.</p>
+        </div>
+        <div class="glass" style="padding:20px; border-radius:12px; text-align:center;">
+          <div style="font-size:2rem;">🌎</div>
+          <h4 style="margin:8px 0 4px;">Regionale adoptiegroepen</h4>
+          <p style="color:var(--text-secondary); font-size:0.9rem; margin:0;">Versnel de adoptie met echte economische infrastructuur.</p>
+        </div>
+        <div class="glass" style="padding:20px; border-radius:12px; text-align:center;">
+          <div style="font-size:2rem;">💬</div>
+          <h4 style="margin:8px 0 4px;">Online bitcoingemeenschappen</h4>
+          <p style="color:var(--text-secondary); font-size:0.9rem; margin:0;">Telegram-groepen, Discord-servers en fora met actieve handelaren.</p>
+        </div>
+        <div class="glass" style="padding:20px; border-radius:12px; text-align:center;">
+          <div style="font-size:2rem;">🤝</div>
+          <h4 style="margin:8px 0 4px;">Elke groep die elkaar vertrouwt</h4>
+          <p style="color:var(--text-secondary); font-size:0.9rem; margin:0;">Vertrouwen je leden elkaar en willen ze in bitcoin handelen, dan kom je in aanmerking.</p>
+        </div>
+      </div>
+
+      <h3>Waar we op letten</h3>
+      <ul>
+        <li><strong>Een gevestigde gemeenschap</strong>: je hebt geen duizenden leden nodig. Vijftig betrokken leden zijn meer waard dan vijfduizend passieve volgers.</li>
+        <li><strong>Verantwoordelijke beheerders</strong>: iemand die de node wil onderhouden en disputen eerlijk afhandelt.</li>
+        <li><strong>Toewijding aan disputen</strong>: dat is de belangrijkste taak in de dagelijkse praktijk.</li>
+        <li><strong>Denken op de lange termijn</strong>: dit is geen snel-rijk-worden-plan. Dit is infrastructuur.</li>
+      </ul>
+
+      <h2 id="what-you-need">5. Wat je nodig hebt</h2>
+
+      <h3>👥 Mensen</h3>
+      <ul>
+        <li>Een gemeenschap met actieve leden die peer-to-peer in bitcoin willen handelen</li>
+        <li>Een beheerder: iemand die technische instructies durft te volgen</li>
+        <li>2 tot 3 scheidsrechters: leden die het vertrouwen genieten en disputen eerlijk kunnen beslechten</li>
+      </ul>
+
+      <h3>💵 Geld</h3>
+      <ul>
+        <li><strong>Infrastructuur:</strong> zo'n $20 tot $30 per maand voor een VPS. Sommige aanbieders nemen bitcoin aan.</li>
+        <li><strong>Lightning-liquiditeit:</strong> begin met 0,01 tot 0,05 BTC. Dat is geen kostenpost; dat kapitaal blijft van jou.</li>
+        <li><strong>Tijd:</strong> 4 tot 8 uur om het op te zetten. Daarna 1 tot 3 uur per week.</li>
+      </ul>
+
+      <table class="guide-table">
+        <thead><tr><th>Wat</th><th>Waarvoor</th><th>Hoe lastig</th></tr></thead>
+        <tbody>
+          <tr><td>Een VPS</td><td>Draait je node dag en nacht</td><td>Makkelijk · ~$20 per maand</td></tr>
+          <tr><td>Een LND Lightning-node</td><td>Verwerkt de bitcoinbetalingen</td><td>Lastig, maar we helpen</td></tr>
+          <tr><td>Lightning-liquiditeit</td><td>Werkkapitaal voor de trades</td><td>Middel · begin klein</td></tr>
+          <tr><td>Een Nostr-sleutelpaar</td><td>De identiteit van je node</td><td>Makkelijk · 30 seconden</td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout tip">
+        <div class="callout-title">💡 Eerlijk is eerlijk</div>
+        <p>De Lightning-node opzetten is het lastigste deel. Heeft je gemeenschap iemand met technische aanleg, dan kan die het aan. Zo niet, dan helpen we je erdoorheen. Kijk in onze <a href="/guide">handleiding om een node op te zetten</a>.</p>
+      </div>
+
+      <h2 id="trusted-program">6. Het Trusted Nodes-programma</h2>
+
+      <h3>Wat betekent "vertrouwd"?</h3>
+      <p>Vertrouwde nodes zijn <strong>gecontroleerd door het Mostro-team</strong> en staan standaard in de mobiele app. Opent iemand de app voor het eerst, dan ziet hij de vertrouwde nodes. Dat is een flink voordeel: de gebruikers komen naar jou toe.</p>
+
+      <p>"Vertrouwd" betekent:</p>
+      <ul>
+        <li>Je gemeenschap is als echt en serieus vastgesteld</li>
+        <li>Je beheerders hebben hun inzet laten zien</li>
+        <li>Je hebt een proefperiode goed doorstaan</li>
+        <li>Je staat prominent in de mobiele app</li>
+      </ul>
+
+      <h3>Hoe de aanmelding verloopt</h3>
+      <ol>
+        <li><strong>📋 Vul de aanmelding in</strong>: vertel ons over je gemeenschap, je team en je plannen.</li>
+        <li><strong>📞 Kennismakingsgesprek</strong>: een videogesprek van een half uur met het Mostro-team. Geen druk, gewoon een gesprek.</li>
+        <li><strong>✅ Goedkeuring</strong>: we bekijken je aanmelding en besluiten samen of het past.</li>
+        <li><strong>🛠️ Samen opzetten</strong>: we helpen je node draaiend te krijgen. Niet "hier is de documentatie, succes"; we zitten met je aan de lijn.</li>
+        <li><strong>🧪 Proefperiode (2 tot 4 weken)</strong>: je node draait met echte trades. We kijken naar beschikbaarheid, dispuutafhandeling en betrouwbaarheid.</li>
+        <li><strong>🚀 Opgenomen als vertrouwde node</strong>: je staat live in de mobiele app. De trades komen binnen.</li>
+      </ol>
+
+      <h3>Wat wij bieden</h3>
+      <ul>
+        <li>Technische hulp tijdens het opzetten, met echte mensen die meekijken</li>
+        <li>Volledige documentatie, met handleidingen stap voor stap</li>
+        <li>Een groep beheerders: contact met anderen die een node draaien</li>
+        <li>Blijvende ondersteuning: we verdwijnen niet zodra het draait</li>
+      </ul>
+
+      <h3>Wat wij verwachten</h3>
+      <ul>
+        <li><strong>Beschikbaarheid</strong>: je node hoort dag en nacht te draaien</li>
+        <li><strong>Vlotte dispuutafhandeling</strong>: binnen 24 uur</li>
+        <li><strong>Betrokkenheid</strong>: maak je node actief bekend in je gemeenschap</li>
+        <li><strong>Eerlijk spel</strong>: beslecht disputen onpartijdig</li>
+      </ul>
+
+      <h2 id="success-stories">7. Hoe succes eruitziet</h2>
+
+      <p><em>Dit zijn bedachte voorbeelden, gebaseerd op echte patronen bij @lnp2pBot.</em></p>
+
+      <h3>🇻🇪 "Bolívar Libre", Caracas, Venezuela</h3>
+      <p>María leidt een bitcoingemeenschap van 200 leden. Toen de overheid de kapitaalcontroles aanscherpte, kon haar gemeenschap geen bolívares meer in bitcoin omzetten. Ze zette een Mostro-node op voor VES en USD. Binnen drie maanden: $15.000 aan trades per maand, ongeveer $63 netto per maand. Haar scheidsrechters handelen disputen in het Spaans af, en weten dat een bankoverschrijving in Venezuela 24 uur kan duren. Dat is geen oplichterij, zo werkt het systeem daar.</p>
+
+      <h3>🇪🇺 "Bitcoin Munich", München, Duitsland</h3>
+      <p>Thomas organiseert een maandelijkse meetup met 80 bezoekers. Het volume is bescheiden, $5.000 per maand, maar de meetup groeide in een half jaar met 40%, omdat nieuwe leden juist voor het handelen zonder KYC komen. Drie disputen in vier maanden. SEPA-overschrijvingen zijn snel en betrouwbaar.</p>
+
+      <h3>🇳🇬 "Satoshi Lagos", Lagos, Nigeria</h3>
+      <p>Nadat de centrale bank overschrijvingen naar cryptobeurzen aan banden legde, hadden de 150 handelaren van Adebayo een alternatief nodig. Begonnen met $2.000 per maand, in de vierde maand gegroeid naar $30.000. Zijn scheidsrechters kennen de eigenaardigheden van mobiel betalen: overboekingen kunnen urenlang "in behandeling" blijven staan.</p>
+
+      <h3>🌱 "Bitcoin Beach 2.0", Costa Rica</h3>
+      <p>Een circulaire economie waarin lokale ondernemers bitcoin aannemen. De Mostro-node vormt de instap: leden kopen bitcoin met colones. $3.000 per maand: klein, maar het is de lijm die de circulaire economie bij elkaar houdt.</p>
+
+      <h2 id="how-to-apply">8. Hoe je je aanmeldt</h2>
+
+      <p>Stuur ons een aanmelding met daarin:</p>
+      <ul>
+        <li><strong>De naam van je gemeenschap</strong> en een korte beschrijving</li>
+        <li><strong>De omvang</strong>: hoeveel actieve leden?</li>
+        <li><strong>De plek</strong>: waar zitten je leden?</li>
+        <li><strong>De valuta</strong>: welke fiatvaluta wil je ondersteunen?</li>
+        <li><strong>De betaalmethodes</strong>: bankoverschrijving, mobiel betalen, contant, enzovoort</li>
+        <li><strong>Je team</strong>: wie beheert de node en handelt de disputen af?</li>
+        <li><strong>Je beweegreden</strong>: waarom wil je een Mostro-node draaien?</li>
+      </ul>
+
+      <h3>Waar je je aanmeldt</h3>
+      <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap:12px; margin:20px 0;">
+        <a href="https://t.me/MostroP2P" target="_blank" rel="noopener noreferrer" class="glass" style="padding:16px; border-radius:12px; text-align:center; display:block;">
+          <div style="font-size:1.5rem;">💬</div>
+          <div style="font-weight:600; margin:4px 0;">Telegram</div>
+          <div style="color:var(--text-secondary); font-size:0.85rem;">@MostroP2P</div>
+        </a>
+        <a href="https://github.com/MostroP2P/mostro/discussions" target="_blank" rel="noopener noreferrer" class="glass" style="padding:16px; border-radius:12px; text-align:center; display:block;">
+          <div style="font-size:1.5rem;">🐙</div>
+          <div style="font-weight:600; margin:4px 0;">GitHub</div>
+          <div style="color:var(--text-secondary); font-size:0.85rem;">Open een discussie</div>
+        </a>
+        <a href="https://mostro.network" target="_blank" rel="noopener noreferrer" class="glass" style="padding:16px; border-radius:12px; text-align:center; display:block;">
+          <div style="font-size:1.5rem;">🟣</div>
+          <div style="font-weight:600; margin:4px 0;">Nostr</div>
+          <div style="color:var(--text-secondary); font-size:0.85rem;">npub op onze site</div>
+        </a>
+      </div>
+
+      <div class="apply-box glass" style="text-align:center; padding:40px; margin:32px 0;">
+        <h3 style="margin-top:0;">Klaar om te beginnen?</h3>
+        <p style="color:var(--text-secondary);">Kom in onze Telegram-groep en vertel ons over je gemeenschap.</p>
+        <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap; margin-top:20px;">
+          <a href="https://t.me/MostroP2P" target="_blank" rel="noopener noreferrer" class="btn btn-primary">Aanmelden via Telegram →</a>
+          <a href="/guide" class="btn btn-outline">Lees de handleiding</a>
+        </div>
+      </div>
+
+      <table class="guide-table">
+        <thead><tr><th>Wanneer</th><th>Stand</th></tr></thead>
+        <tbody>
+          <tr><td>Aanmeldingen</td><td><strong style="color:var(--accent);">Nu open</strong></td></tr>
+          <tr><td>Eerste lichting</td><td>2e kwartaal 2026</td></tr>
+          <tr><td>Daarna</td><td>Doorlopend</td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout tip">
+        <div class="callout-title">💚 Wacht niet af</div>
+        <p>Je hoeft nog niet alles uitgedacht te hebben. Heb je belangstelling maar twijfel je over de techniek, neem dan toch contact op. We helpen je liever op weg dan dat je je niet aanmeldt omdat je dacht dat je er nog niet klaar voor was.</p>
+      </div>
+
+      <h2 id="cta-faq">9. Veelgestelde vragen</h2>
+
+      <h3>Is dit legaal?</h3>
+      <p>Mostro is open source software. Of het is toegestaan, hangt af van je rechtsgebied. In de meeste landen is handel in bitcoin tussen personen toegestaan, maar in sommige is een vergunning nodig. We raden je met klem aan de plaatselijke regels na te gaan. Het Mostro-project geeft geen juridisch advies.</p>
+
+      <h3>Wat kost het om te draaien?</h3>
+      <p>$20 tot $30 per maand voor een VPS. Lightning-liquiditeit van 0,01 tot 0,05 BTC (werkkapitaal dat van jou blijft). 1 tot 3 uur van je tijd per week.</p>
+
+      <h3>Moet ik technisch zijn?</h3>
+      <p>Iemand in je team moet technische instructies kunnen volgen en zich thuis voelen in een terminal. We hebben handleidingen stap voor stap en helpen persoonlijk mee. Denk aan een IKEA-kast in elkaar zetten, niet aan meubelmaken.</p>
+
+      <h3>Hoeveel kan ik verdienen?</h3>
+      <p>$10.000 aan trades per maand levert ongeveer $42 netto op; $50.000 ongeveer $210. Begin er niet in de eerste plaats om het geld aan. Begin omdat je gemeenschap het nodig heeft. De opbrengst volgt op het gebruik.</p>
+
+      <h3>En de risico's?</h3>
+      <p>Eerlijk gezegd:</p>
+      <ul>
+        <li>Mostro is jonge software. De escrow-kern draait weliswaar sinds 2021 in de praktijk, maar fouten zijn mogelijk.</li>
+        <li>Het Lightning Network kent zijn eigen risico's: een kanaal geforceerd sluiten bij hoge fees kan duur uitpakken.</li>
+        <li>Je kapitaal zit vast in de kanalen zolang het uitstaat.</li>
+        <li>Volume kost tijd: de meeste nodes doen er maanden over om noemenswaardige handel op te bouwen.</li>
+      </ul>
+      <p>We zijn daar liever eerlijk over. Dit is echte infrastructuur, geen plan voor passief inkomen.</p>
+
+      <h3>Wat als er iets misgaat?</h3>
+      <p>Je krijgt hulp van het Mostro-ontwikkelteam en van andere node-beheerders. Veelvoorkomende problemen hebben een beschreven oplossing. Fouten kun je melden op GitHub; het team reageert snel. En vergeet niet: de kerntechniek draait al sinds 2021.</p>
+
+      <h3>Wat als ik niet genoeg Lightning-liquiditeit heb?</h3>
+      <p>Begin klein. Zelfs 0,01 BTC (ongeveer een miljoen sats) is genoeg voor kleine trades. Groeit je gemeenschap, dan leg je er stap voor stap bij. Je gebruikers laten het merken wanneer er meer nodig is: trades gaan dan mislukken door te weinig capaciteit. Groei mee met de vraag.</p>
+
+      <h3>Kan ik de tarieven later aanpassen?</h3>
+      <p>Ja. Je past het percentage, de ondersteunde valuta, de betaalmethodes en de ordergrenzen op elk moment aan in het configuratiebestand, gevolgd door een herstart.</p>
+
+      <h3>Hoe gaat een dispuut in zijn werk?</h3>
+      <p>De scheidsrechters die je hebt aangewezen (leden die het vertrouwen genieten) onderzoeken het dispuut, praten met beide partijen, bekijken het bewijs en nemen een beslissing. Ze kunnen de bitcoin aan de koper vrijgeven of de trade annuleren, waarmee de bitcoin teruggaat naar de verkoper. Dat is een serieuze verantwoordelijkheid, dus kies je scheidsrechters met zorg.</p>
+
+      <h3>Moet ik een eigen Lightning-node draaien?</h3>
+      <p>Ja, Mostro heeft een LND-node nodig. Dat kan op dezelfde server, met een kant-en-klare node zoals Start9 (die een Mostro-pakket met één klik heeft), via een gehoste dienst als Voltage.cloud, of door aan te sluiten op een bestaande LND-node in je gemeenschap.</p>
+
+      <h3>Kan mijn node worden uitgezet?</h3>
+      <p>Je node draait op een server die jij beheert, over Nostr (geen centrale server). Om hem uit te zetten zou iemand precies jouw server moeten treffen. Met Tor of een VPN maak je dat lastiger. En valt je node toch uit, dan draait de rest van het netwerk gewoon door.</p>
+
+      <h2 id="contact">📬 Contact</h2>
+      <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap:12px; margin:20px 0;">
+        <a href="https://t.me/MostroP2P" target="_blank" rel="noopener noreferrer" class="glass" style="padding:16px; border-radius:12px; text-align:center; display:block;">
+          <div style="font-size:1.5rem;">💬</div>
+          <div style="font-weight:600; margin:4px 0;">Telegram</div>
+          <div style="color:var(--text-secondary); font-size:0.85rem;">@MostroP2P</div>
+        </a>
+        <a href="https://t.me/mostro_dev" target="_blank" rel="noopener noreferrer" class="glass" style="padding:16px; border-radius:12px; text-align:center; display:block;">
+          <div style="font-size:1.5rem;">👨‍💻</div>
+          <div style="font-weight:600; margin:4px 0;">Ontwikkelaarsgroep</div>
+          <div style="color:var(--text-secondary); font-size:0.85rem;">@mostro_dev</div>
+        </a>
+        <a href="https://github.com/MostroP2P/mostro/discussions" target="_blank" rel="noopener noreferrer" class="glass" style="padding:16px; border-radius:12px; text-align:center; display:block;">
+          <div style="font-size:1.5rem;">🐙</div>
+          <div style="font-weight:600; margin:4px 0;">GitHub</div>
+          <div style="color:var(--text-secondary); font-size:0.85rem;">MostroP2P/mostro</div>
+        </a>
+        <a href="https://mostro.network" target="_blank" rel="noopener noreferrer" class="glass" style="padding:16px; border-radius:12px; text-align:center; display:block;">
+          <div style="font-size:1.5rem;">🌐</div>
+          <div style="font-weight:600; margin:4px 0;">Website</div>
+          <div style="color:var(--text-secondary); font-size:0.85rem;">mostro.network</div>
+        </a>
+      </div>
+
+      <div style="text-align:center; margin-top:56px; padding:32px; border-top:1px solid var(--border);">
+        <h3 style="font-size:1.5rem;">Het grotere plaatje</h3>
+        <p style="color:var(--text-secondary); max-width:600px; margin:16px auto;">Elke Mostro-node die live gaat, maakt het netwerk sterker. Elke gemeenschap met een eigen exchange is er één minder die van centrale platforms afhangt. Dit gaat niet alleen over handelen in bitcoin. Dit gaat over infrastructuur bouwen voor financiële vrijheid.</p>
+        <p style="font-size:1.1rem; color:var(--accent); font-weight:600; margin-top:24px;">Je gemeenschap verdient haar eigen exchange. Wij helpen je hem te bouwen.</p>
+      </div>
+    </article>
+  </div>
+
+  <Footer locale={locale} />
+</Layout>
+
+<script>
+  document.getElementById('toc-toggle')?.addEventListener('click', () => {
+    document.getElementById('toc-mobile-list')?.classList.toggle('open');
+  });
+</script>

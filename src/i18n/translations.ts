@@ -569,10 +569,124 @@ export const translations = {
     },
     langSwitch: "🌐",
   },
+  nl: {
+    nav: {
+      communities: "Communities",
+      howItWorks: "Hoe het werkt",
+      getStarted: "Beginnen",
+      faqNav: "FAQ",
+      guideNav: "Gids",
+      joinNav: "Doe mee",
+      protocol: "Mostro-protocol",
+    },
+    hero: {
+      badge: "⚡ Peer-to-peer handelen in bitcoin",
+      title: "Sluit je aan bij een",
+      titleHighlight: "Mostro",
+      titleEnd: "gemeenschap",
+      desc: "Koop en verkoop bitcoin zonder tussenpersoon. Vind je lokale gemeenschap, handel peer-to-peer over het Lightning Network en houd je financiële zelfstandigheid in eigen hand.",
+      cta: "🚀 Doe mee aan het programma",
+      ctaSecondary: "Bekijk hoe het werkt →",
+      stat1: "Non-custodial",
+      stat1Label: "Jouw sleutels, jouw bitcoin",
+      stat2: "Razendsnel",
+      stat2Label: "Direct afgewikkeld",
+      stat3: "Bestand tegen censuur",
+      stat3Label: "Gebouwd op Nostr",
+    },
+    communities: {
+      title: "Vind je gemeenschap",
+      subtitle: "Sluit je aan bij een lokale gemeenschap of bij de wereldwijde groep. Handel in je eigen valuta met mensen bij je in de buurt.",
+      startTitle: "🤝 Wil je een gemeenschap in je eigen land beginnen?",
+      startCta: "Begin een gemeenschap →",
+      // Card UI strings
+      allCurrencies: "🌍 Alle valuta",
+      fee: "Kosten",
+      web: "🌐 Web",
+      pubkeyCopied: "✅ Pubkey gekopieerd!",
+      copyPubkey: "Pubkey van de node kopiëren",
+    },
+    howItWorks: {
+      title: "Hoe werkt Mostro?",
+      subtitle: "Non-custodial P2P handelen in 4 stappen. Geen tussenpersoon, geen KYC.",
+      step1: "Neem een Lightning-wallet",
+      step1Desc: "Download een wallet die Lightning ondersteunt (Phoenix, Mutiny, Zeus of een andere) en zet er wat sats op.",
+      step2: "Open Mostro",
+      step2Desc: "Verbind met de mobiele app of de webclient van Mostro. Geen KYC, geen registratie, alleen je Nostr-sleutels.",
+      step3: "Plaats of neem een order",
+      step3Desc: "Zet een koop- of verkooporder neer met je prijs en betaalmethode, of kijk wat andere handelaren aanbieden.",
+      step4: "Handel peer-to-peer",
+      step4Desc: "Mostro houdt de bitcoin in escrow met een Lightning hold invoice. Zodra de fiatbetaling bevestigd is, komen de sats meteen vrij.",
+      feature1: "Non-custodial escrow",
+      feature1Desc: "De bitcoin staat vast in een Lightning hold invoice: niemand, ook Mostro niet, heeft je geld in handen.",
+      feature2: "Privacy vanzelf",
+      feature2Desc: "Alle communicatie is versleuteld met NIP-59 gift wraps. Niemand kan je trades zien.",
+      feature3: "Disputen oplossen",
+      feature3Desc: "Beheerders van de gemeenschap kunnen bemiddelen bij een dispuut. Een open procedure met een eerlijke uitkomst.",
+    },
+    getStarted: {
+      title: "Klaar om te beginnen?",
+      subtitle: "Download de app, sluit je aan bij een gemeenschap en doe je eerste trade. Geen KYC, geen tussenpersoon, gewoon P2P.",
+      mobile: "Mobiele app",
+      mobileDesc: "Download Mostro voor Android. De iOS-versie komt eraan.",
+      docs: "Documentatie",
+      docsDesc: "Lees over het protocol, de installatie en de ontwikkelaarsdocumentatie.",
+      openSource: "Open source",
+      openSourceDesc: "100% open source. Bekijk de code, draag bij, bouw erop verder.",
+    },
+    footer: {
+      desc: "Non-custodial P2P bitcoin-exchange, gebouwd op Lightning Network en Nostr.",
+      protocol: "Protocol",
+      daemon: "Daemon (Rust)",
+      mobileApp: "Mobiele app",
+      community: "Gemeenschap",
+      supportedBy: "Ondersteund door",
+      bottom: "Gemaakt met ⚡ door de Mostro-gemeenschap · 100% open source",
+    },
+    faq: {
+      title: "Veelgestelde vragen",
+      subtitle: "Alles wat je moet weten om een Mostro-gemeenschap te beginnen.",
+      items: [
+        {
+          q: "Wat is Mostro?",
+          a: "Mostro is een non-custodial peer-to-peer bitcoin-exchange, gebouwd op Lightning Network en Nostr. Je handelt er rechtstreeks in bitcoin met andere mensen, zonder tussenpersoon: geen KYC, niemand die je geld vasthoudt, volledig versleuteld en bestand tegen censuur. Lees meer op mostro.network.",
+        },
+        {
+          q: "Wat is Mostro Community?",
+          a: "Mostro Community is een ondersteuningsprogramma voor bitcoingemeenschappen die een eigen Mostro-node willen draaien. Wij helpen technisch op weg, denken mee bij installatie en instellingen, delen wat andere gemeenschappen hebben geleerd, en bouwen samen aan een gedecentraliseerd netwerk van betrouwbare P2P-nodes over de hele wereld.",
+        },
+        {
+          q: "Heb ik toestemming nodig om Mostro in mijn gemeenschap te gebruiken?",
+          a: "Absoluut niet. Mostro is 100% open source en vraagt van niemand toestemming. Iedereen kan een eigen Mostro-node draaien, zijn gemeenschap uitnodigen en beginnen met handelen, zonder het aan iemand te vragen en zonder zich ergens te registreren. De code staat op GitHub en werkt meteen.",
+        },
+        {
+          q: "Wat levert meedoen aan dit programma op?",
+          a: "Gemeenschappen die meedoen krijgen rechtstreeks steun van het Mostro-team: hulp bij het instellen van je node, vertrouwen dat met de tijd groeit, de ervaring van andere gemeenschappen, en uiteindelijk een plek als vertrouwde node in de mobiele app van Mostro. Het gaat om een band opbouwen: wij leren jullie gemeenschap, jullie mensen en jullie werkwijze kennen. Dat vertrouwen gaat twee kanten op.",
+        },
+        {
+          q: "Wat heb ik nodig om een gemeenschap te beginnen?",
+          a: "Een actieve bitcoingemeenschap met mensen die zich eraan verbinden, en de bereidheid om een Mostro-node te draaien. Je hoeft geen techneut te zijn, we helpen je bij het opzetten. Wat het meest telt, zijn echte mensen die in hun eigen valuta P2P willen handelen.",
+        },
+        {
+          q: "Kan ik een Mostro-node draaien zonder aan dit programma mee te doen?",
+          a: "Natuurlijk. Dat is het mooie aan open source: het werkt met of zonder ons. Je zet je eigen node neer, stelt hem in zoals jij wilt en geeft je gebruikers de publieke sleutel van je node. Geen poortwachters, geen goedkeuring nodig. Dit programma maakt de weg alleen makkelijker en verbindt je met de rest van het netwerk.",
+        },
+        {
+          q: "Wat voor technische ondersteuning krijg ik?",
+          a: "We helpen bij het installeren van de node, de instellingen, de Lightning-verbinding en het oplossen van problemen. We leveren documentatie, delen wat in de praktijk goed werkt en brengen je in contact met andere beheerders die dit al hebben gedaan.",
+        },
+        {
+          q: "Kan ik in mijn land een gemeenschap beginnen?",
+          a: "Ja! Is er in jouw land nog geen Mostro-gemeenschap, dan kun jij de eerste zijn. Sluit je aan bij de wereldwijde Telegram-groep, neem contact op met het team, en we helpen je op weg. Elke gemeenschap in dit netwerk begon met één iemand die de eerste stap zette.",
+        },
+      ],
+    },
+    langSwitch: "🌐",
+  },
 } as const;
 
 export type Locale = keyof typeof translations;
-export const locales: Locale[] = ['en', 'es', 'fr', 'it', 'pt'];
+export const locales: Locale[] = ['en', 'es', 'fr', 'it', 'pt', 'nl'];
 
 export function t(locale: Locale) {
   return translations[locale];
@@ -584,6 +698,7 @@ export function getLocaleFromUrl(url: URL): Locale {
   if (lang === 'fr') return 'fr';
   if (lang === 'it') return 'it';
   if (lang === 'pt') return 'pt';
+  if (lang === 'nl') return 'nl';
   return 'en';
 }
 
@@ -621,6 +736,7 @@ export function getLocaleLabel(locale: Locale): string {
     fr: 'FR 🇫🇷',
     it: 'IT 🇮🇹',
     pt: 'PT 🇧🇷',
+    nl: 'NL 🇳🇱',
   };
   return labels[locale];
 }

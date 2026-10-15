@@ -12,20 +12,31 @@ import Header from './Header.astro';
 import Footer from './Footer.astro';
 import '../styles/guide.css';
 import { getMostroRelease, formatReleaseMonth } from '../lib/mostroVersion';
-import { GUIDE, type GuideLocale } from '../data/guide';
+import { GUIDE, GUIDE_LOCALES, type GuideLocale } from '../data/guide';
+import type { Locale } from '../i18n/translations';
 import { resolveSections, mobileNav, fillRelease } from '../lib/guide';
 
 interface Props {
-  locale: GuideLocale;
+  /** Site language: layout, header, footer and the language switcher. */
+  locale: Locale;
+  /**
+   * Language of the guide text. Defaults to `locale`, and falls back to
+   * English for a site language the guide has not been translated into yet.
+   */
+  guideLocale?: GuideLocale;
+  /** Line above the guide, for when its text is in another language. */
+  notice?: string;
 }
 
-const { locale } = Astro.props;
-const translation = GUIDE[locale];
-const sections = resolveSections(locale, translation);
+const { locale, guideLocale, notice } = Astro.props;
+const textLocale: GuideLocale =
+  guideLocale ?? (GUIDE_LOCALES.includes(locale as GuideLocale) ? (locale as GuideLocale) : 'en');
+const translation = GUIDE[textLocale];
+const sections = resolveSections(textLocale, translation);
 const mobile = mobileNav(sections);
 
 const { version, publishedAt } = await getMostroRelease();
-const updated = formatReleaseMonth(publishedAt, locale);
+const updated = formatReleaseMonth(publishedAt, textLocale);
 const fill = (text: string) => fillRelease(text, version, updated);
 
 const { meta } = translation;
@@ -60,6 +71,7 @@ const { meta } = translation;
     <article class="guide-content">
       <h1 set:html={meta.h1} />
       <p class="guide-version" set:html={fill(meta.versionLine)} />
+      {notice && <p class="guide-notice">{notice}</p>}
 
       {sections.map((section) => (
         <Fragment>

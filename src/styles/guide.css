@@ -74,6 +74,16 @@
   margin-bottom: 40px;
 }
 
+.guide-notice {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  border-left: 3px solid var(--border);
+  padding-left: 12px;
+  margin: -20px 0 40px;
+  padding-top: 2px;
+  padding-bottom: 2px;
+}
+
 .guide-content h2 {
   font-size: 1.8rem;
   font-weight: 700;

@@ -20,6 +20,7 @@ const LOCALE_MAP: Record<string, string> = {
   fr: 'fr-FR',
   it: 'it-IT',
   pt: 'pt-BR',
+  nl: 'nl-NL',
 };
 
 async function fetchLatestRelease(): Promise<MostroRelease> {
