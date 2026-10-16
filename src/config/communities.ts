@@ -91,6 +91,14 @@ export const COMMUNITIES: CommunityConfig[] = [
     ],
     website: 'https://mostro.bitmaxis.com/',
   },
+  {
+    pubkey: 'npub1qqqr76l9rdg6rgx0nj2zx243hwsltsdl6ksws6r7jer4tpfkk7gsywukt9',
+    region: 'México',
+    social: [
+      { type: 'telegram', url: 'https://t.me/MostroMexico' },
+      { type: 'email', url: 'mailto:mostromexico@lulus.com.mx' },
+    ],
+  },
 ];
 
 /** Default Mostro relay for fetching community metadata */
@@ -107,4 +115,5 @@ export const SOCIAL_ICONS: Record<string, string> = {
   whatsapp: '📱',
   matrix: '🔗',
   tiktok: '📺',
+  email: '✉️',
 };
