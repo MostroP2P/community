@@ -5,8 +5,8 @@
  * so the guide picks up new releases automatically.
  */
 const RELEASES_URL = 'https://api.github.com/repos/MostroP2P/mostro/releases/latest';
-const FALLBACK_VERSION = 'v0.18.7';
-const FALLBACK_DATE = '2026-09-01';
+const FALLBACK_VERSION = 'v0.20.2';
+const FALLBACK_DATE = '2026-10-28';
 const FETCH_TIMEOUT_MS = 10_000;
 
 export interface MostroRelease {

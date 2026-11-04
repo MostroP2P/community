@@ -41,7 +41,7 @@ const it: GuideTranslation = {
       title: `Perché la tua comunità vorrebbe eseguire un nodo Mostro?`,
       nav: `Perché un nodo?`,
       html: `      <ol>
-        <li><strong>Entrate da commissioni</strong> — Ogni operazione ti genera una commissione (0,6% di default). Se la tua comunità fa $10.000 in operazioni mensili, sono ~$60/mese in commissioni.</li>
+        <li><strong>Entrate da commissioni</strong> — Ogni operazione ti genera la commissione che hai impostato (il template parte da 0; lo 0,6% è una scelta comune). Con lo 0,6%, una comunità che fa $10.000 in operazioni mensili guadagna ~$60/mese in commissioni.</li>
         <li><strong>Trading P2P senza KYC</strong> — I membri della tua comunità possono comprare e vendere Bitcoin senza fornire documenti d'identità. Particolarmente importante in regioni con valute instabili o regolamentazioni restrittive.</li>
         <li><strong>Dispute nella tua lingua</strong> — Quando un'operazione va storta, la <em>tua</em> comunità la risolve, nella <em>tua</em> lingua, comprendendo i <em>tuoi</em> metodi di pagamento locali.</li>
         <li><strong>Indipendenza</strong> — Nessuna azienda può chiudere il tuo exchange. Nessun governo può fare pressione su un singolo operatore per chiuderlo.</li>
@@ -133,7 +133,7 @@ const it: GuideTranslation = {
         <li>L'indirizzo gRPC (tipicamente <code>https://127.0.0.1:10009</code> se sulla stessa macchina)</li>
       </ul>
 
-      <p><strong>Genera un macaroon dedicato per Mostro.</strong> Non dare a Mostro il tuo <code>admin.macaroon</code>: concede il controllo totale sul tuo nodo e sui suoi fondi. Crea un macaroon che contenga solo i permessi che Mostro usa davvero (leggere le info del nodo, creare/regolare/annullare hold invoice, inviare e tracciare pagamenti).</p>
+      <p><strong>Genera un macaroon dedicato per Mostro.</strong> Non dare a Mostro il tuo <code>admin.macaroon</code>: concede il controllo totale sul tuo nodo e sui suoi fondi. Crea un macaroon che contenga solo i permessi che Mostro usa davvero (leggere le info del nodo, elencare i canali per il report di salute, creare/regolare/annullare hold invoice, inviare e tracciare pagamenti).</p>
       <p>Scegli prima un root key ID non ancora in uso. Revocare un macaroon revoca tutti i macaroon che condividono il suo ID, quindi riutilizzarne uno porterebbe via credenziali estranee. L'ID 0 appartiene ai macaroon di LND, quindi scegli un numero libero diverso da zero e annotalo:</p>
       <pre><code>lncli listmacaroonids</code></pre>
       <p>Poi crea il macaroon con l'ID che hai scelto (<code>7</code> in questo esempio, sostituisci con il tuo):</p>
@@ -333,15 +333,16 @@ chmod 600 ~/mostro-config/lnd/mostro.macaroon</code></pre>
 
       <p>Cerca questi messaggi:</p>
       <ul>
+        <li><code>Mostro pubkey: npub1... (hex ...)</code> — L'identità del tuo nodo. Annota la npub: è ciò che servirà a utenti e altri strumenti</li>
         <li><code>Settings correctly loaded!</code> — La configurazione è valida</li>
         <li><code>Transport: nip44 (protocol v2, event kind 14)</code> — Protocollo in uso (vedi 4.8)</li>
-        <li><code>Connected to 'wss://...'</code> — Relay Nostr stabilito</li>
         <li><code>Recorded Lightning node identity &lt;pubkey&gt;</code> — LND raggiunto (solo al primo avvio)</li>
+        <li><code>Published health event: status ok, seq N</code> — Ripetuto ogni minuto. Almeno un relay ha accettato il report di salute del nodo (vedi 5.4)</li>
       </ul>
 
       <div class="callout tip">
         <div class="callout-title">💡 Nota</div>
-        <p>Non esiste un messaggio "connesso a LND". Mostro contatta LND durante l'avvio, quindi un daemon che continua a girare ha già la connessione funzionante. Il fallimento invece è rumoroso: registra <code>Ln node error</code> e termina.</p>
+        <p>Non esiste un messaggio "connesso a LND" né "connesso al relay". Mostro contatta LND durante l'avvio, quindi un daemon che supera l'avvio ha raggiunto LND. Il fallimento invece è rumoroso: registra <code>Ln node error</code> e termina. Dopo l'avvio interroga LND ogni 15 secondi e registra <code>LND did not answer GetInfo</code> se smette di rispondere; i pagamenti in uscita restano in attesa finché non torna (5.4). Per i relay, il segnale è la riga dell'evento di salute: <code>No relay accepted the health event</code> significa che nessuno lo ha accettato.</p>
       </div>
 
       <div class="callout tip">
@@ -389,7 +390,8 @@ cp ../settings.tpl.toml config/settings.toml</code></pre>
 
       <h4>Passo 7: Modificare il file di configurazione</h4>
       <pre><code>nano config/settings.toml</code></pre>
-      <p>Modifica le stesse impostazioni dell'Opzione A, Passo 8.</p>
+      <p>Modifica le stesse impostazioni dell'Opzione A, Passo 8, con una differenza: <code>make docker-build</code> copia il tuo macaroon in <code>config/lnd/admin.macaroon</code>, qualunque fosse il nome originale, quindi punta Mostro lì:</p>
+      <pre><code>lnd_macaroon_file = '/config/lnd/admin.macaroon'  # è sempre il tuo mostro.macaroon ristretto, con un altro nome</code></pre>
 
       <div class="callout important">
         <div class="callout-title">⚠️ Se LND gira sulla stessa VPS</div>
@@ -484,7 +486,6 @@ After=network.target
 Type=simple
 User=mostro
 WorkingDirectory=/home/mostro
-Environment=RUST_LOG=info
 ExecStart=/usr/local/bin/mostrod -d /opt/mostro
 Restart=on-failure
 
@@ -561,6 +562,9 @@ dev_fee_percentage = 0.30</code></pre>
         <li><code>0.30</code> = 30% (default) — su 600 sat, 180 vanno al fondo di sviluppo</li>
         <li>Minimo: 10% (<code>0.10</code>), Massimo: 100% (<code>1.0</code>)</li>
         <li>Pagata dal tuo nodo dai suoi guadagni, non addebitata agli utenti</li>
+        <li>Inviata automaticamente all'indirizzo Lightning <code>dev@pay.mostro.foundation</code>; non c'è nulla da configurare</li>
+        <li>Pagata solo quando il tuo LND gira su <strong>mainnet</strong>. Su testnet, signet o regtest gli importi vengono comunque calcolati, ma non si paga nulla e il log dice <code>dev fee payments are disabled</code></li>
+        <li>Un pagamento fallito viene ritentato per ordine, a intervalli da un minuto fino a un'ora</li>
         <li>Tutti i pagamenti verificabili pubblicamente tramite eventi Nostr (kind 8383)</li>
       </ul>
 
@@ -580,9 +584,9 @@ fiat_currencies_accepted = ['USD', 'EUR', 'ARS', 'CUP']</code></pre>
 
       <ul>
         <li><strong><code>max_order_amount</code>:</strong> Operazione più grande in satoshi. Configuralo in base alla capacità dei tuoi canali Lightning.</li>
-        <li><strong><code>min_payment_amount</code>:</strong> Operazione minima in satoshi. 1.000 o 10.000 è più pratico di 100.</li>
+        <li><strong><code>min_payment_amount</code>:</strong> Operazione minima in satoshi. 1.000 o 10.000 è più pratico di 100. Entrambi i limiti si verificano sui sat che l'ordine sposta davvero, premio o sconto inclusi.</li>
         <li><strong><code>max_orders_per_response</code>:</strong> Numero massimo di ordini che Mostro restituisce in una singola query. Se un utente accumula più ordini di questo limite (ad esempio durante il ripristino della sessione dal client mobile), riceverà un errore <code>cant-do: too_many_requests</code> e non potrà recuperare i suoi ordini. Se i tuoi utenti operano frequentemente, aumenta questo valore (ad esempio 50 o 100). Il valore predefinito di 10 potrebbe non essere sufficiente.</li>
-        <li><strong><code>fiat_currencies_accepted</code>:</strong> Usa <a href="https://en.wikipedia.org/wiki/ISO_4217" target="_blank" rel="noopener noreferrer">codici ISO 4217</a>. Array vuoto <code>[]</code> accetta tutte le valute.</li>
+        <li><strong><code>fiat_currencies_accepted</code>:</strong> Usa <a href="https://en.wikipedia.org/wiki/ISO_4217" target="_blank" rel="noopener noreferrer">codici ISO 4217</a>, in MAIUSCOLO: la corrispondenza è esatta. Array vuoto <code>[]</code> accetta tutte le valute. Dalla v0.20.2 la lista può contenere anche le stablecoin <code>USDT</code>, <code>USDC</code> e <code>DOC</code>, e bitcoin su altre reti (<code>BTC</code>, <code>LBTC</code>, <code>RBTC</code>) — vedi 4.12.</li>
       </ul>`,
     },
     'profile': {
@@ -600,15 +604,32 @@ website = "https://sito-della-tua-comunita.com"</code></pre>
       title: `4.5 Tempi e scadenza`,
       nav: `Tempi`,
       html: `      <pre><code>[mostro]
-expiration_hours = 24        # Quanto tempo un ordine resta aperto
-expiration_seconds = 900     # Tempo per completare (15 min)
-hold_invoice_expiration_window = 300  # Tempo che ha il taker per pagare la fattura o fornirne una di incasso (5 min)</code></pre>`,
+expiration_hours = 24        # Quanto tempo un ordine non preso resta nel book
+max_expiration_days = 15     # Scadenza massima che un maker può chiedere
+expiration_seconds = 900     # Quanto può attendere un ordine preso la hold invoice
+                             # o la fattura dell'acquirente prima di tornare nel book (15 min)
+
+[lightning]
+hold_invoice_expiration_window = 300  # Tempo che ha il taker per pagare la fattura o fornirne una di incasso (5 min)
+hold_invoice_cltv_delta = 144         # Durata dell'escrow, in blocchi (~1 giorno)</code></pre>
+
+      <p>Nota che <code>hold_invoice_expiration_window</code> appartiene a <code>[lightning]</code>: scritto sotto <code>[mostro]</code> viene ignorato in silenzio. Deve essere maggiore di 0, ed è anche la scadenza della fattura della cauzione di un taker.</p>
+
+      <p>Una volta bloccati i sat del venditore, l'acquirente ha circa <code>hold_invoice_cltv_delta - escrow_deadline_margin_blocks</code> blocchi per inviare il pagamento: 144 − 24 = 120 blocchi, circa 20 ore, con i valori predefiniti. Allo scadere, Mostro annulla l'operazione se l'acquirente non ha mai segnato il pagamento come inviato, oppure apre una disputa se lo ha fatto (vedi 4.9). Gli utenti vedono il conto alla rovescia nell'app.</p>`,
     },
     'antispam': {
       title: `4.6 Anti-Spam`,
       nav: `Anti-Spam`,
       html: `      <pre><code>[mostro]
-pow = 0  # 0 = disabilitato; 10-20 = moderato. Inizia con 0.</code></pre>`,
+pow = 0  # 0 = disabilitato; 10-20 = moderato. Inizia con 0.</code></pre>
+
+      <p>Un filtro più fine è <code>pow_first_contact</code>. <code>pow</code> si applica a ogni messaggio, mentre <code>pow_first_contact</code> si applica solo ai mittenti estranei a un'operazione attiva e viene verificato prima della decifratura. Così le operazioni in corso restano economiche mentre agli sconosciuti costa lavoro reale:</p>
+      <pre><code>[mostro]
+pow = 0                  # operazioni in corso
+pow_first_contact = 16   # nuovi ordini e prese da chiavi sconosciute</code></pre>
+      <p>I client devono minare almeno quel valore. Chi usa mostro-cli deve impostare <code>POW</code> (o <code>-p</code>) al tuo valore, altrimenti i nuovi ordini e le prese vengono scartati senza risposta.</p>
+
+      <p>Un deterrente più forte contro chi prende ordini e poi sparisce è la cauzione anti-abuso (vedi 4.11).</p>`,
     },
     'rpc': {
       title: `4.7 Interfaccia RPC di Amministrazione (Opzionale)`,
@@ -624,39 +645,35 @@ port = 50051
       <div class="callout important">
         <div class="callout-title">⚠️ Sicurezza</div>
         <p>Mantieni <code>listen_address</code> su <code>"127.0.0.1"</code> e non esporre mai la porta a internet. Imposta <code>auth_token</code> ogni volta che la porta è raggiungibile da qualcosa che non sia la macchina locale, come un tunnel SSH o un container sidecar: una connessione inoltrata arriva come loopback, quindi l'indirizzo di ascolto da solo non è autorizzazione. Con un token impostato, ogni chiamata che modifica lo stato deve portare l'header <code>authorization: Bearer &lt;token&gt;</code>.</p>
-      </div>`,
+      </div>
+
+      <p>Oltre alla modalità manutenzione, l'RPC espone le chiamate di reputazione <code>RevokeReputationImports</code> e <code>RebindReputationExport</code> (vedi 4.13). Entrambe sono accettate solo da loopback e mostro-cli non ha ancora un comando per loro: usa <code>grpcurl</code>. mostro-cli invia <code>MOSTRO_RPC_TOKEN</code> solo a un indirizzo loopback o su <code>https://</code>, mai in chiaro a un host remoto.</p>`,
     },
     'transport': {
       title: `4.8 Protocollo di Trasporto`,
       nav: `Trasporto`,
-      html: `      <p>Un nodo Mostro parla <strong>un solo</strong> protocollo, scelto qui:</p>
-      <pre><code>[mostro]
-transport = "nip44"</code></pre>
+      html: `      <p>Dalla v0.19.0 un nodo Mostro parla <strong>solo</strong> il protocollo v2: eventi kind 14 firmati con contenuto cifrato NIP-44. Il protocollo v1 (gift wrap NIP-59, kind 1059) è stato rimosso e non c'è più nulla da scegliere. Lascia fuori la riga <code>transport</code> da <code>settings.toml</code>; il template non ce l'ha più.</p>
 
       <table class="guide-table">
-        <thead><tr><th>Valore</th><th>Protocollo</th><th>Kind visibile sul relay</th><th>Stato</th></tr></thead>
+        <thead><tr><th>Riga in settings.toml</th><th>Risultato</th></tr></thead>
         <tbody>
-          <tr><td><code>"nip44"</code></td><td>v2 — eventi kind 14 firmati con contenuto cifrato NIP-44</td><td><code>14</code></td><td>Predefinito, anche per una config senza riga <code>transport</code></td></tr>
-          <tr><td><code>"gift-wrap"</code></td><td>v1 — gift wrap NIP-59</td><td><code>1059</code></td><td>Deprecato, solo opt-in, rimosso in v0.19.0</td></tr>
+          <tr><td>nessuna</td><td>Protocollo v2. Raccomandato.</td></tr>
+          <tr><td><code>transport = "nip44"</code></td><td>Protocollo v2. Accettata e innocua.</td></tr>
+          <tr><td><code>transport = "gift-wrap"</code></td><td><strong>Mostro si rifiuta di partire</strong>, con un errore che ti dice di eliminare la riga.</td></tr>
         </tbody>
       </table>
 
-      <p>Il tuo nodo annuncia quale protocollo parla nel suo evento info kind 38385, quindi i client compatibili scelgono il formato da soli. Mostro Mobile, Mostrix e mostro-cli supportano v2.</p>
+      <p>Il tuo nodo annuncia <code>protocol_version</code> 2 nel suo evento info kind 38385. Tutti i client attuali parlano v2: la Mostro App, Mostrix 0.3.1 o successivo, mostro-cli 0.16.2 o successivo e Bosstro. Un client che parla solo v1, come una vecchia build di Mostro Mobile, non riceve alcuna risposta dal tuo nodo: chiedi ai tuoi utenti di aggiornare.</p>
 
       <div class="callout important">
-        <div class="callout-title">⚠️ Solo se devi servire client vecchi</div>
-        <p>Scrivi <code>transport = "gift-wrap"</code> solo per continuare a servire client che parlano soltanto il protocollo v1 durante la transizione. Non viene mai selezionato automaticamente e scompare in v0.19.0, dopodiché il tuo nodo gira solo in v2. Lascia il valore predefinito se non hai una ragione precisa.</p>
-      </div>
-
-      <p>Il trasporto v2 permette anche un filtro anti-spam più fine di quello in 4.6. <code>pow</code> si applica a ogni messaggio, mentre <code>pow_first_contact</code> si applica solo ai mittenti estranei a un'operazione attiva e viene verificato prima della decifratura. Così le operazioni in corso restano economiche mentre agli sconosciuti costa lavoro reale:</p>
-      <pre><code>[mostro]
-pow = 0                  # operazioni in corso
-pow_first_contact = 16   # nuovi ordini e prese da chiavi sconosciute</code></pre>`,
+        <div class="callout-title">⚠️ Aggiornamento dalla v0.18.x</div>
+        <p>Se il tuo <code>settings.toml</code> dice ancora <code>transport = "gift-wrap"</code>, elimina quella riga prima di aggiornare. L'unico modo per continuare a servire i client protocollo v1 è restare su mostrod 0.18.x, che non riceve più correzioni.</p>
+      </div>`,
     },
     'ln-safety': {
       title: `4.9 Limiti di Sicurezza Lightning`,
       nav: `Limiti Lightning`,
-      html: `      <p>Queste impostazioni di <code>[lightning]</code> limitano quanto a lungo i tuoi canali possono restare bloccati e quanti pagamenti possono essere irrisolti contemporaneamente. Hanno tutte un valore predefinito, quindi un file di configurazione di una versione precedente si avvia ancora, ma un template nuovo le include e vale la pena conoscerle.</p>
+      html: `      <p>Queste impostazioni di <code>[lightning]</code> limitano quanto a lungo i tuoi canali possono restare bloccati e quanti pagamenti possono essere irrisolti contemporaneamente. Hanno tutte un valore predefinito, quindi un file di configurazione di una versione precedente di solito si avvia ancora, ma un template nuovo le include e vale la pena conoscerle.</p>
 
       <pre><code>[lightning]
 max_final_cltv_expiry_delta = 144
@@ -670,7 +687,7 @@ allow_node_change = false</code></pre>
         <thead><tr><th>Impostazione</th><th>Cosa protegge</th></tr></thead>
         <tbody>
           <tr><td><code>max_final_cltv_expiry_delta</code></td><td>Rifiuta una fattura di pagamento il cui CLTV finale permetterebbe al beneficiario di trattenere i tuoi sat troppo a lungo. 144 blocchi (circa un giorno) è il massimo che chiedono i wallet reali. Non impostarlo mai a 0: rifiuterebbe ogni fattura.</td></tr>
-          <tr><td><code>escrow_deadline_margin_blocks</code></td><td>Margine di sicurezza prima che LND annulli automaticamente una hold invoice accettata. Deve superare comodamente <code>invoices.holdexpirydelta</code> del tuo nodo, che per default è 12.</td></tr>
+          <tr><td><code>escrow_deadline_margin_blocks</code></td><td>Margine di sicurezza prima che LND annulli automaticamente una hold invoice accettata. Quando la catena si avvicina a questo punto, Mostro annulla l'operazione o apre una disputa mentre l'escrow esiste ancora. Dalla v0.20.0 Mostro <strong>si rifiuta di partire</strong> a meno che non sia almeno 18 (il valore predefinito di LND per <code>invoices.holdexpirydelta</code>, 12, più 6 blocchi di margine) e inferiore a <code>hold_invoice_cltv_delta</code>. Se hai alzato <code>holdexpirydelta</code>, mantieni tu questo margine ad almeno 6 blocchi sopra. Il valore è pubblicato nel tuo evento info.</td></tr>
           <tr><td><code>max_inflight_payouts</code></td><td>Tetto ai pagamenti irrisolti su tutto il nodo, così un beneficiario che non liquida mai non può esaurire i tuoi slot HTLC. Un pagamento frenato viene ritardato, mai scartato.</td></tr>
           <tr><td><code>max_inflight_payouts_per_destination</code></td><td>Lo stesso tetto per pubkey di destinazione, ed è il più efficace dei due.</td></tr>
           <tr><td><code>payment_cltv_limit</code></td><td>Tetto al timelock totale di una rotta di pagamento. Non deve superare <code>--max-cltv-expiry</code> del tuo LND e deve stare almeno 576 blocchi sopra <code>max_final_cltv_expiry_delta</code>, altrimenti i pagamenti legittimi falliscono con "no route".</td></tr>
@@ -725,12 +742,19 @@ trusted_nodes = [
 ]</code></pre>
       </div>
 
-      <p>Gli operatori che servono il peso cubano possono aggiungere El Toque per CUP e MLC del mercato informale. È opt-in, limitato a queste due valute, e richiede un token gratuito: un El Toque abilitato senza <code>token</code> si rifiuta di partire.</p>`,
+      <p>Gli operatori che servono il peso cubano possono aggiungere El Toque per CUP e MLC del mercato informale. È opt-in, limitato a queste due valute, e richiede un token gratuito: un El Toque abilitato senza <code>token</code> si rifiuta di partire.</p>
+
+      <p>Mantieni <code>publish_to_nostr = true</code>. Oltre ad alimentare gli altri nodi, i tassi pubblicati dicono alla Mostro App quali valute il tuo nodo sa quotare a prezzo di mercato: un codice che manca da lì viene offerto solo a prezzo fisso. Per quotare le stablecoin e bitcoin su altre reti, vedi 4.12.</p>
+
+      <div class="callout important">
+        <div class="callout-title">⚠️ Aggiungere qualsiasi blocco [price] cambia il motore dei prezzi</div>
+        <p>Appena <code>settings.toml</code> ha una tabella <code>[price]</code> o <code>[price.providers.*]</code>, Mostro usa il motore multi-fonte e ignora <code>bitcoin_price_api_url</code>. Assicurati che almeno una fonte di mercato (Yadio, CoinGecko, Currency API, Blockchain.com…) sia abilitata, altrimenti il tuo nodo non ha un tasso fiat e rifiuta ogni ordine a prezzo di mercato. Controlla nel log di avvio gli avvisi che iniziano con <code>price:</code>.</p>
+      </div>`,
     },
     'optional-blocks': {
       title: `4.11 Altri Blocchi Opzionali`,
       nav: `Blocchi opzionali`,
-      html: `      <p>Altri tre blocchi che potresti incontrare in un template recente. Nessuno è obbligatorio.</p>
+      html: `      <p>Altri blocchi che potresti incontrare in un template recente. Nessuno è obbligatorio. Tre di loro hanno una sezione dedicata: <code>[price.providers.pegged]</code> (4.12), <code>[reputation_import]</code> / <code>[reputation_export]</code> (4.13) e <code>[health]</code> (5.4). <code>serbero_pubkey</code>, in <code>[mostro]</code>, è trattato in 5.10.</p>
 
       <p><strong>Ritenzione degli eventi.</strong> Quanto tempo Mostro conserva ogni tipo di evento prima che scada. Ometti del tutto il blocco per accettare i valori predefiniti.</p>
       <pre><code>[expiration]
@@ -740,9 +764,154 @@ dispute_days = 90      # dispute, conservate più a lungo per l'audit (kind 3838
 fee_audit_days = 365   # trasparenza delle commissioni (kind 8383)
 dm_days = 30           # messaggi diretti del protocollo v2 (kind 14)</code></pre>
 
-      <p><strong>Le cauzioni anti-abuso</strong> (<code>[anti_abuse_bond]</code>) possono richiedere una cauzione tramite hold invoice ai taker, ai maker o a entrambi, così abbandonare un'operazione ha un costo. Disabilitato per default e ancora in rilascio a fasi. Leggi il <code>docs/ANTI_ABUSE_BOND.md</code> del progetto prima di abilitarlo su un nodo in produzione.</p>
+      <h4>Cauzioni anti-abuso</h4>
+      <p><code>[anti_abuse_bond]</code> chiede ai taker, ai maker o a entrambi di bloccare una piccola hold invoice Lightning accanto all'operazione. Gli utenti onesti la riavono intatta; un solver può confiscare la cauzione di chi ha agito in malafede, e una quota va alla controparte onesta. Gli utenti la vedono come un "deposito" nell'app, e la documentazione utente la spiega nel capitolo <em>Deposito anti-abuso</em>. Tutte le fasi sono state rilasciate; è disabilitata per default.</p>
+      <pre><code>[anti_abuse_bond]
+enabled = true
+amount_pct = 0.01                 # cauzione = max(1% dell'ordine, base_amount_sats)
+base_amount_sats = 1000
+apply_to = "take"                 # "take" | "make" | "both"
+slash_on_waiting_timeout = false  # confisca anche a chi lascia scadere il proprio passaggio
+slash_node_share_pct = 0.5        # quota della cauzione confiscata che il nodo trattiene
+payout_claim_window_days = 15     # tempo che ha il vincitore per reclamare la sua quota
+maker_bond_payment_timeout_seconds = 900
+# bond_cltv_delta = 432           # vedi sotto</code></pre>
+      <ul>
+        <li>Un maker che non ha ancora pagato la cauzione può annullare l'ordine, e un ordine non pagato scade dopo <code>maker_bond_payment_timeout_seconds</code>.</li>
+        <li>La cauzione di un maker resta bloccata mentre l'ordine riposa nel book, quindi un ordine vi resta al massimo <code>bond_cltv_delta - hold_invoice_cltv_delta - 144</code> blocchi (circa 24 h con i valori predefiniti), qualunque cosa dica <code>expiration_hours</code>.</li>
+        <li><code>bond_cltv_delta</code> deve essere sopra <code>hold_invoice_cltv_delta + 144</code> e al massimo 864. Nella v0.20.2 il suo default è un 432 fisso, quindi se hai alzato <code>hold_invoice_cltv_delta</code> a 288 o più, impostalo esplicitamente o Mostro si rifiuta di partire.</li>
+        <li>I solver confiscano con l'opzione cauzione quando liquidano o annullano (Mostrix, Bosstro, oppure <code>mostro-cli admsettle/admcancel --slashseller/--slashbuyer</code>).</li>
+      </ul>
+      <p>Leggi il <code>docs/ANTI_ABUSE_BOND.md</code> del progetto prima di abilitarla su un nodo in produzione, e annunciala prima ai tuoi utenti.</p>
 
-      <p><strong>L'escrow Cashu</strong> (<code>[cashu]</code>) è una modalità sperimentale che gira senza LND e tiene l'escrow in token Cashu su una singola mint. Non è ancora utilizzabile per operare davvero, le azioni di trade vengono ancora rifiutate, e non si può combinare con le cauzioni anti-abuso. Menzionato qui perché sappia cos'è quel blocco quando lo vedi.</p>`,
+      <h4>Storico del pagatore (sperimentale)</h4>
+      <p><code>[payer_history]</code> combatte la truffa della triangolazione, in cui un acquirente paga dal conto bancario di un terzo. L'acquirente si impegna con un hash del conto da cui pagherà (<code>declare-payer</code>), il venditore può confrontarlo con il mittente nel suo estratto conto, e Mostro conserva solo un HMAC. Alla v0.20.2 è collegata solo la dichiarazione: il controllo <code>require_declaration</code> e lo storico mostrato ai venditori non sono ancora implementati, e nessun client rilasciato invia <code>declare-payer</code>. Per ora lascialo spento.</p>
+      <pre><code># [payer_history]
+# enabled = false
+# require_declaration = false</code></pre>
+
+      <h4>Escrow Cashu</h4>
+      <p><code>[cashu]</code> è una modalità sperimentale che gira senza LND e tiene l'escrow in token Cashu. Non è ancora utilizzabile per operare davvero — le azioni di trade dopo la presa vengono ancora rifiutate — e non si può combinare con le cauzioni anti-abuso. Dalla v0.19.3 il maker sceglie la mint per ogni ordine da una lista consentita:</p>
+      <pre><code># [cashu]
+# enabled = false
+# mint_urls = ["https://mint.example.com"]   # [] vuoto = qualsiasi mint con host pubblico
+# escrow_locktime_days = 15</code></pre>
+      <p>La vecchia chiave singola <code>mint_url</code> viene rifiutata: una configurazione che la contiene non si carica.</p>`,
+    },
+    'pegged': {
+      title: `4.12 Stablecoin e Bitcoin su Altre Reti`,
+      nav: `Stablecoin e altri BTC`,
+      html: `      <p>Dalla v0.20.2 un nodo può offrire operazioni contro sei codici che non sono valute fiat: stablecoin in dollari e bitcoin su altre reti. I sat Lightning sono sempre un lato dell'operazione; l'altro lato viene pagato on-chain, su Liquid, su Rootstock o sulla rete della stablecoin, direttamente tra i due utenti.</p>
+
+      <table class="guide-table">
+        <thead><tr><th>Codice</th><th>Cos'è</th><th>Quotato come</th><th>Importo dell'ordine in</th></tr></thead>
+        <tbody>
+          <tr><td><code>USDT</code></td><td>Tether USD</td><td>1 USD</td><td>monete intere</td></tr>
+          <tr><td><code>USDC</code></td><td>USD Coin</td><td>1 USD</td><td>monete intere</td></tr>
+          <tr><td><code>DOC</code></td><td>Dollar on Chain (Rootstock)</td><td>1 USD</td><td>monete intere</td></tr>
+          <tr><td><code>BTC</code></td><td>Bitcoin on-chain</td><td>1 sat = 1 sat</td><td>sat</td></tr>
+          <tr><td><code>LBTC</code></td><td>L-BTC su Liquid</td><td>1 sat = 1 sat</td><td>sat</td></tr>
+          <tr><td><code>RBTC</code></td><td>RBTC su Rootstock</td><td>1 sat = 1 sat</td><td>sat</td></tr>
+        </tbody>
+      </table>
+
+      <ul>
+        <li><strong>Le stablecoin</strong> sono agganciate 1:1 al dollaro, quindi un ordine USDT a prezzo di mercato è quotato esattamente come un ordine USD, premio incluso. Il tasso USD viene dalle tue normali fonti di prezzo (4.10); non viene chiamata nessuna API aggiuntiva.</li>
+        <li><strong>BTC, LBTC e RBTC</strong> sono quotati 1:1 in sat, quindi non servono affatto API di prezzo. Un ordine da 100.000 significa 100.000 sat dell'asset (0,001 RBTC). A prezzo di mercato il premio è il prezzo dello swap: un ordine di vendita (il creatore vende sat Lightning) per 100.000 sat di RBTC con un premio dell'1% blocca 99.000 sat Lightning, e il venditore riceve 100.000 sat di RBTC.</li>
+        <li>Nessun altro codice è supportato: DAI, EURC e gli altri vengono rifiutati all'avvio se li elenchi sotto <code>only</code>.</li>
+      </ul>
+
+      <h4>Abilitarlo</h4>
+      <p>Ti serve mostrod v0.20.2 o successivo. Due impostazioni lavorano insieme: <code>fiat_currencies_accepted</code> dice quali codici possono usare gli ordini, e il provider <code>pegged</code> dice quali di loro hanno un prezzo di mercato.</p>
+      <pre><code>[mostro]
+# Mantieni le tue valute fiat e aggiungi i nuovi codici, in MAIUSCOLO
+fiat_currencies_accepted = ['USD', 'EUR', 'USDT', 'USDC', 'DOC', 'LBTC', 'RBTC']
+
+# Una fonte di prezzo di mercato per il fiat (e quindi per le stablecoin).
+# Obbligatoria nella v0.20.2 appena aggiungi una qualsiasi tabella [price.providers.*].
+[price.providers.yadio]
+enabled = true
+url = "https://api.yadio.io"
+
+[price.providers.pegged]
+enabled = true
+only = ["USDT", "USDC", "DOC", "LBTC", "RBTC"]   # oppure except = ["BTC"]; senza nessuno dei due, tutti e sei</code></pre>
+      <p>Riavvia Mostro e controlla il log. Se vedi <code>price: the pegged provider quotes ... but fiat_currencies_accepted does not list them</code>, aggiungi i codici mancanti: un codice quotato ma non accettato pubblica un tasso ma rifiuta ogni ordine. Un <code>fiat_currencies_accepted = []</code> vuoto accetta tutti i codici.</p>
+
+      <div class="callout important">
+        <div class="callout-title">⚠️ Non aggiungere il blocco pegged da solo nella v0.20.2</div>
+        <p>Qualsiasi tabella <code>[price.providers.*]</code> porta il nodo al motore di prezzi multi-fonte e abbandona il vecchio <code>bitcoin_price_api_url</code>. Nella v0.20.2 una tabella <code>pegged</code> senza una fonte di mercato accanto lascia il nodo senza tassi fiat: tutti gli ordini a prezzo di mercato in USD, EUR e USDT vengono rifiutati. Abilita sempre almeno una fonte di mercato, come nell'esempio sopra. (La prossima versione mantiene automaticamente la vecchia fonte Yadio in quel caso.) Nella v0.20.1 o precedenti, non aggiungere affatto il blocco: il provider lì non esiste.</p>
+      </div>
+
+      <p><strong>Solo prezzo fisso.</strong> Per accettare un codice senza quotarlo a mercato, elencalo in <code>fiat_currencies_accepted</code> e lascialo fuori da <code>only</code>. Gli utenti dovranno allora impostare un importo fisso di sat. È una scelta sensata per il <code>BTC</code> on-chain, dove le commissioni di rete rendono scomodi i piccoli ordini a prezzo di mercato.</p>
+
+      <h4>Cosa vedono i tuoi utenti</h4>
+      <p>La Mostro App 2.1.2 e successive mostra questi codici nel selettore di valuta sotto <em>Stablecoin</em> e <em>Bitcoin su altre reti</em>, ma solo quelli che il tuo nodo accetta. Gli importi in BTC, LBTC e RBTC si inseriscono in sat. Il metodo di pagamento indica la rete (<code>USDT (Tron)</code>, <code>USDC (Base)</code>, <code>DOC (Rootstock)</code>, <code>LBTC (Liquid)</code>…), il venditore condivide un indirizzo di ricezione nella chat dell'operazione, e l'acquirente vi incolla l'ID della transazione dopo aver pagato. Mostro non verifica mai né la rete né l'indirizzo. Per ora mostro-cli e Mostrix possono creare solo ordini a prezzo fisso in questi codici.</p>
+
+      <h4>Le dispute richiedono prove diverse</h4>
+      <p>Informa i tuoi solver prima di abilitarlo. Non c'è nessun estratto conto bancario: la prova è l'ID della transazione incollato nella chat, che il solver controlla in un block explorer di quella rete. Per Liquid l'acquirente deve condividere il link <em>unblinded</em>, perché Liquid nasconde gli importi. I trasferimenti sono irreversibili, un pagamento sulla rete sbagliata può andare perso, e l'acquirente paga la commissione di rete: il venditore deve ricevere l'importo intero. Il venditore dovrebbe rilasciare solo dopo la conferma del trasferimento. La finestra è la stessa del fiat (circa 120 blocchi con i valori predefiniti, vedi 4.5), quindi un trasferimento on-chain a commissione bassa può non rispettarla.</p>
+
+      <div class="callout tip">
+        <div class="callout-title">💡 Se una stablecoin perde l'aggancio</div>
+        <p>Non esiste ancora una protezione automatica dal depeg. Se USDT o USDC si allontana da un dollaro, toglila da <code>only</code>, o aggiungila a <code>except</code> se non usi <code>only</code> (lasciala in <code>fiat_currencies_accepted</code> se vuoi ancora ordini a prezzo fisso) e riavvia.</p>
+      </div>`,
+    },
+    'reputation': {
+      title: `4.13 Importazione ed esportazione della reputazione`,
+      nav: `Import reputazione`,
+      html: `      <p>Gli utenti possono portare nel tuo nodo la reputazione guadagnata altrove — sul bot Telegram <strong>@lnp2pBot</strong> o su un altro nodo Mostro — così chi si trasferisce non riparte da zero. Viaggiano tre dati: il numero di valutazioni ricevute, la valutazione media e la data della prima operazione. Arrivano come <em>attestazione</em>: un piccolo evento Nostr (kind 38388) firmato dalla fonte, indirizzato all'identità dell'utente e valido per 7 giorni. Il tuo nodo li somma alla reputazione dell'utente, e le controparti vedono un'unica cifra unita.</p>
+      <p>Entrambe le direzioni sono opt-in e spente per default. L'importazione richiede mostrod v0.20.0 o successivo; l'esportazione, v0.20.1 o successivo. Gli utenti hanno bisogno della Mostro App in <strong>modalità reputazione</strong>: in modalità privacy totale non esiste un'identità che possa portare una reputazione.</p>
+
+      <h4>Importare da lnp2pBot</h4>
+      <p>lnp2pBot firma le attestazioni con una chiave dedicata. Aggiungila alla tua lista di fiducia:</p>
+      <pre><code>[reputation_import]
+enabled = true
+max_lifetime_seconds = 604800   # attestazione più longeva che accetti (7 giorni; al massimo 30)
+
+[[reputation_import.issuers]]
+name = "lnp2pbot"               # non rinominare mai una voce che ha già importazioni
+keys = ["000004ac730537f1cf7d91f4f584a498a530a0205d35e816ebbaf23aec61e459"]
+# npub1qqqqftrnq5mlrnmaj860tp9ynzjnpgpqt567s9hthter4mrpu3vsrta3em</code></pre>
+      <p>Riavvia Mostro. Il tuo evento info (kind 38385) porta ora un tag <code>reputation_import_issuers</code>, ed è così che l'app sa di poter offrire l'importazione sul tuo nodo. Diversi nodi di comunità si fidano già di questa chiave.</p>
+      <p>Il bot esporta un account con almeno 10 operazioni completate e 5 valutazioni ricevute che non sia bannato. L'utente parte dall'app (<em>Impostazioni → Rete → Reputazione → Importa reputazione → Ottienila da lnp2pBot</em>), conferma su Telegram che la npub corrisponde e incolla il messaggio che il bot gli invia.</p>
+
+      <h4>Fidarsi di un altro nodo Mostro</h4>
+      <p>Un nodo che esporta annuncia la sua chiave di firma nel tag <code>reputation_issuer</code> del suo evento info. Leggilo con il comando in 5.4 (cerca quel tag), confermalo con l'operatore e aggiungi una voce per lui:</p>
+      <pre><code>[[reputation_import.issuers]]
+name = "mostro-example"         # un nome locale stabile a tua scelta
+keys = ["&lt;that node's reputation_issuer key, npub or hex&gt;"]</code></pre>
+      <ul>
+        <li>Il <code>name</code> è ciò su cui si deduplicano le importazioni. Non rinominare mai una voce che ha già importazioni: Mostro si rifiuta di partire se una chiave passa a un altro nome.</li>
+        <li>Una chiave può appartenere a una sola voce. Per seguire una rotazione di chiave, aggiungi la nuova chiave alla stessa voce e rimuovi la vecchia quando le sue attestazioni sono scadute.</li>
+        <li>Fidati solo di fonti di cui ti fidi: un grande storico importato pesa più delle valutazioni locali.</li>
+      </ul>
+      <p>Un utente può importare una volta da ciascuna fonte su ciascun nodo, e l'importazione non può essere annullata dall'utente. Le cifre sono un'istantanea: le valutazioni successive sulla fonte non vengono seguite.</p>
+
+      <h4>Esportare dal tuo nodo</h4>
+      <p>L'esportazione permette ai tuoi utenti di portare la reputazione guadagnata <em>sul tuo nodo</em> in un altro. Viaggiano solo le valutazioni ricevute sul tuo nodo, mai quelle importate. L'utente ha bisogno di 10 operazioni completate e 5 valutazioni ricevute sul tuo nodo, e non deve essere bannato.</p>
+      <p>Le attestazioni sono firmate con una chiave dedicata, mai con quella del tuo nodo. Generane una e tienila accanto al nsec, nell'ambiente o in <code>&lt;config-dir&gt;/.env</code>:</p>
+      <pre><code># Layout Docker Hub; altrimenti usa la tua directory di configurazione
+echo "MOSTRO_REPUTATION_ISSUER_SK=$(openssl rand -hex 32)" >> ~/mostro-config/.env
+sudo chown 1000:1000 ~/mostro-config/.env
+chmod 600 ~/mostro-config/.env</code></pre>
+      <pre><code>[reputation_export]
+enabled = true
+issuer_key_env = "MOSTRO_REPUTATION_ISSUER_SK"
+lifetime_seconds = 604800       # da 1 a 604800 (7 giorni)</code></pre>
+      <p>Mostro si rifiuta di partire se la variabile manca o non è valida, se contiene la chiave del tuo nodo, o se la sua chiave pubblica è anche nella tua lista <code>[reputation_import]</code>. Una volta in funzione, il tuo evento info porta il tag <code>reputation_issuer</code>: condividi quella chiave con gli operatori che vogliono fidarsi del tuo nodo. Fai il backup della chiave insieme agli altri segreti. Se trapela, chiunque può coniare attestazioni a nome del tuo nodo finché gli altri operatori non la rimuovono e revocano le importazioni.</p>
+
+      <h4>Revocare le importazioni e ricollegare le esportazioni</h4>
+      <p>Due chiamate RPC di amministrazione (4.7) gestiscono i casi rari. Sono accettate solo da loopback; aggiungi <code>-H 'authorization: Bearer &lt;token&gt;'</code> se hai impostato <code>auth_token</code>. Eseguile da un checkout del repository <code>mostro</code>, che contiene <code>proto/admin.proto</code>.</p>
+      <p><strong>La chiave di un emittente di fiducia è trapelata.</strong> Prima rimuovi la chiave dalla sua voce e riavvia, poi annulla ogni importazione firmata con essa (aggiungi <code>"imported_after": &lt;unix time&gt;</code> per limitarti a quelle recenti):</p>
+      <pre><code>grpcurl -plaintext -import-path proto -proto admin.proto \\
+  -d '{"issuer_key": "&lt;npub or hex&gt;", "reason": "key leaked"}' \\
+  127.0.0.1:50051 mostro.admin.v1.AdminService/RevokeReputationImports</code></pre>
+      <p>Ogni importazione viene annullata esattamente, le valutazioni ricevute da allora vengono mantenute, e gli utenti possono importare di nuovo con un'attestazione della nuova chiave.</p>
+      <p><strong>Un utente ha perso l'identità a cui è legata la sua esportazione.</strong> La prima esportazione lega l'account a una identità; spostarlo richiede normalmente un'autorizzazione firmata con la vecchia identità, che l'app produce. Se la vecchia identità è persa, puoi spostarlo tu stesso dopo aver verificato la persona:</p>
+      <pre><code>grpcurl -plaintext -import-path proto -proto admin.proto \\
+  -d '{"identity": "&lt;old npub&gt;", "new_identity": "&lt;new npub&gt;", "reason": "support ticket"}' \\
+  127.0.0.1:50051 mostro.admin.v1.AdminService/RebindReputationExport</code></pre>
+      <p>Un utente che ripristina le stesse 12 parole mantiene la stessa identità e non ha bisogno di nulla di tutto questo.</p>`,
     },
     'operating': {
       title: `5. Gestione del Tuo Nodo Mostro`,
@@ -768,8 +937,12 @@ dm_days = 30           # messaggi diretti del protocollo v2 (kind 14)</code></pr
         <li><strong>Mostro segna l'ordine</strong> — Lo stato cambia in "Disputa", i fondi restano bloccati</li>
         <li><strong>L'arbitro prende il caso</strong> — Un admin assegnato al tuo nodo indaga</li>
         <li><strong>Indagine</strong> — Comunica con entrambe le parti, richiede prove</li>
-        <li><strong>Risoluzione</strong> — L'arbitro decide: rilasciare all'acquirente, o rimborsare al venditore</li>
+        <li><strong>Risoluzione</strong> — L'arbitro decide: rilasciare all'acquirente, o rimborsare al venditore. Con le cauzioni anti-abuso abilitate (4.11), l'arbitro può anche confiscare la cauzione di chi ha agito in malafede.</li>
       </ol>
+
+      <p>L'arbitro scrive a ciascuna parte su una chat di disputa privata, che la Mostro App mostra sotto <em>Chat → Dispute</em>. Ciascuna parte può anche condividere con l'arbitro la chiave della propria chat dell'operazione, e l'arbitro legge allora quella conversazione nella scheda Observer di Mostrix o in Bosstro. Le parti possono comunque chiudere l'operazione da sole: se il venditore rilascia, o se entrambe concordano un annullamento cooperativo, Mostro chiude da sé la disputa e avvisa l'arbitro.</p>
+
+      <p>Se esegui <strong>Serbero</strong> (5.10), questo avvisa i tuoi arbitri nel momento in cui si apre una disputa e può compiere i primi passi con le parti. Non decide né sposta mai fondi.</p>
 
       <div class="callout important">
         <div class="callout-title">⚠️ Importante</div>
@@ -789,12 +962,14 @@ dm_days = 30           # messaggi diretti del protocollo v2 (kind 14)</code></pr
         </tbody>
       </table>
 
-      <p>Un <code>npub1...</code> nudo senza suffisso diventa read-write per default, e lo stesso vale per la registrazione tramite l'interfaccia RPC. Fai partire un nuovo arbitro con <code>:read</code> mentre impara il processo, poi registralo di nuovo come read-write quando ti fidi del suo giudizio.</p>`,
+      <p>Un <code>npub1...</code> nudo senza suffisso diventa read-write per default, e lo stesso vale per la registrazione tramite l'interfaccia RPC. Fai partire un nuovo arbitro con <code>:read</code> mentre impara il processo, poi registralo di nuovo come read-write quando ti fidi del suo giudizio. Un solver read-write può rilevare una disputa che un solver in sola lettura (o Serbero) sta seguendo.</p>
+
+      <p>I tuoi arbitri possono lavorare da un terminale con Mostrix (5.2) o da un telefono Android con Bosstro (5.11).</p>`,
     },
     'mostrix': {
       title: `5.2 Mostrix — Il tuo strumento di amministrazione`,
       nav: `Mostrix`,
-      html: `      <p>Mostrix è un client basato su terminale (TUI) per la risoluzione delle dispute. Se esegui un nodo Mostro, hai bisogno di Mostrix.</p>
+      html: `      <p>Mostrix è un client Mostro da terminale (TUI) con due modalità: una modalità <strong>utente</strong> per operare e una modalità <strong>admin</strong> per la risoluzione delle dispute — prendere le dispute, parlare con entrambe le parti, liquidare o annullare, confiscare cauzioni e aggiungere solver. Se esegui un nodo Mostro, hai bisogno di Mostrix. Parla con il tuo nodo solo via Nostr, mai tramite l'interfaccia RPC.</p>
 
       <h4>Opzione A: Scarica il binario pre-compilato (Raccomandato)</h4>
       <p>Scarica l'ultima versione per la tua piattaforma da <a href="https://github.com/MostroP2P/mostrix/releases" target="_blank" rel="noopener noreferrer">GitHub Releases</a>:</p>
@@ -802,11 +977,18 @@ dm_days = 30           # messaggi diretti del protocollo v2 (kind 14)</code></pr
       <pre><code># Linux (x86_64)
 wget https://github.com/MostroP2P/mostrix/releases/latest/download/mostrix-x86_64-unknown-linux-musl
 
-# Linux (ARM64 / Raspberry Pi 4)
+# Linux (ARM64 / Raspberry Pi 4 e 5, SO a 64 bit)
 wget https://github.com/MostroP2P/mostrix/releases/latest/download/mostrix-aarch64-unknown-linux-musl
 
-# Windows
-# Scarica mostrix-x86_64-pc-windows-gnu.exe dalla pagina delle release</code></pre>
+# Linux (ARMv7 / Raspberry Pi OS a 32 bit)
+wget https://github.com/MostroP2P/mostrix/releases/latest/download/mostrix-armv7-unknown-linux-gnueabi
+
+# macOS (Apple Silicon / Intel)
+curl -LO https://github.com/MostroP2P/mostrix/releases/latest/download/mostrix-aarch64-apple-darwin
+curl -LO https://github.com/MostroP2P/mostrix/releases/latest/download/mostrix-x86_64-apple-darwin
+
+# FreeBSD: mostrix-x86_64-unknown-freebsd
+# Windows: scarica mostrix-x86_64-pc-windows-msvc.exe dalla pagina delle release</code></pre>
 
       <p>Verifica il download prima di eseguirlo, come spiegato subito sotto.</p>
 
@@ -815,7 +997,7 @@ wget https://github.com/MostroP2P/mostrix/releases/latest/download/mostrix-aarch
         <p>Verifica sempre il binario prima di eseguirlo. Importa le chiavi dei manutentori una sola volta:</p>
         <pre><code>curl https://raw.githubusercontent.com/MostroP2P/mostrix/main/keys/negrunch.asc | gpg --import
 curl https://raw.githubusercontent.com/MostroP2P/mostrix/main/keys/arkanoider.asc | gpg --import</code></pre>
-        <p>Le firme sono file separati chiamati <code>manifest.txt.sig.&lt;manutentore&gt;</code>. Non tutte le release ne portano due, quindi controlla la pagina della release e scarica quelle effettivamente elencate:</p>
+        <p>Le firme sono file separati chiamati <code>manifest.txt.sig.&lt;manutentore&gt;</code>. Le release recenti portano solo <code>manifest.txt.sig.arkanoider</code> (chiave <code>2E98 6CA1 C5E7 EA16 35CD 059C 4989 CC74 15A4 3AEC</code>), quindi controlla la pagina della release e scarica quelle effettivamente elencate:</p>
         <pre><code>wget https://github.com/MostroP2P/mostrix/releases/latest/download/manifest.txt
 wget https://github.com/MostroP2P/mostrix/releases/latest/download/manifest.txt.sig.arkanoider
 
@@ -823,8 +1005,8 @@ wget https://github.com/MostroP2P/mostrix/releases/latest/download/manifest.txt.
 gpg --verify manifest.txt.sig.arkanoider manifest.txt
 
 # Poi confronta l'hash del binario con il manifest
-shasum -a 256 mostrix-x86_64-unknown-linux-musl
-grep mostrix-x86_64-unknown-linux-musl manifest.txt</code></pre>
+# (le righe del manifest hanno un prefisso artifact-&lt;target&gt;/, qui rimosso)
+sed 's#  artifact-[^/]*/#  #' manifest.txt | sha256sum -c --ignore-missing</code></pre>
         <p>Una firma valida da una chiave di manutentore di cui ti fidi è sufficiente. Se un <code>wget</code> restituisce 404, quella firma semplicemente non è stata pubblicata per quella release: non trattare un file assente come uno verificato.</p>
       </div>
 
@@ -838,7 +1020,7 @@ grep mostrix-x86_64-unknown-linux-musl manifest.txt</code></pre>
       <pre><code># Installa le dipendenze (Ubuntu/Debian)
 sudo apt install -y cmake build-essential pkg-config
 
-# Installa Rust (se non già installato)
+# Installa Rust (se non già installato; Mostrix richiede la 1.97 o successiva)
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 
 # Clona e compila
@@ -850,82 +1032,145 @@ cargo build --release
 ./target/release/mostrix</code></pre>
 
       <h4>Primo avvio e configurazione</h4>
-      <p>Al primo avvio, Mostrix <strong>genera automaticamente</strong> un file <code>~/.mostrix/settings.toml</code> con valori predefiniti sensati, inclusa una nuova coppia di chiavi Nostr. Il tuo <code>npub</code> generato verrà mostrato nel terminale.</p>
+      <p>Al primo avvio Mostrix crea <code>~/.mostrix/</code> con un database che contiene un nuovo seed di 12 parole e un <code>settings.toml</code>, poi mostra un popup <strong>Backup New Keys</strong> con le 12 parole. Annotale. Un <code>settings.toml</code> messo accanto al binario ha la precedenza (modalità portatile).</p>
 
       <div class="callout important">
-        <div class="callout-title">⚠️ Importante: Configura la tua pubkey Mostro</div>
-        <p>La configurazione auto-generata usa la <strong>pubkey ufficiale di Mostro</strong> per default. Devi cambiarla con la <strong>pubkey del tuo nodo Mostro</strong>:</p>
-        <pre><code># Modifica la configurazione
-nano ~/.mostrix/settings.toml
-
-# Cambia questa riga con la pubkey del TUO nodo Mostro:
-mostro_pubkey = "LA_TUA_PUBKEY_MOSTRO_HEX"</code></pre>
+        <div class="callout-title">⚠️ Importante: Punta Mostrix al tuo nodo</div>
+        <p>La configurazione generata punta al nodo pubblico predefinito di Mostro. Passa al <strong>tuo nodo</strong>: <strong>Settings → Select Mostro Instance</strong>, poi incolla la npub o l'hex del tuo nodo, oppure modifica <code>mostro_pubkey</code> in <code>~/.mostrix/settings.toml</code> e riavvia.</p>
       </div>
 
-      <p>Per la modalità admin (risoluzione dispute), configura anche:</p>
+      <p>Per la modalità admin (risoluzione dispute), le chiavi rilevanti sono:</p>
       <pre><code># ~/.mostrix/settings.toml
-mostro_pubkey = "LA_TUA_PUBKEY_MOSTRO_HEX"
-nsec_privkey = "nsec1la_tua_chiave_personale"  # Auto-generata al primo avvio
-admin_privkey = "nsec1la_tua_chiave_admin"        # Il nsec del daemon stesso — vedi sotto
+mostro_pubkey = "LA_TUA_PUBKEY_MOSTRO"         # hex o npub
+nsec_privkey  = "nsec1..."                   # la tua identità di trader, derivata dal seed — non modificarla
+admin_privkey = "nsec1..."                   # la chiave di un solver registrato — vedi sotto
 relays = ["wss://relay.mostro.network"]
-currencies_filter = []                          # Vuoto = mostra tutte le valute
-user_mode = "admin"                             # Abilita modalità admin</code></pre>
+currencies_filter = []                       # vuoto = mostra tutte le valute
+user_mode = "admin"                          # oppure Settings → Switch Mode
+# trusted_dm_senders = ["npub1..."]          # la npub di Serbero, per vedere i suoi report (5.10)</code></pre>
 
       <div class="callout important">
         <div class="callout-title">⚠️ Quale chiave va in admin_privkey?</div>
-        <p>Mostro riconosce l'operatore dalla <strong>propria</strong> chiave, quindi <code>admin_privkey</code> deve essere il <code>nsec_privkey</code> del daemon, quello la cui pubkey hai messo in <code>mostro_pubkey</code>. Una chiave personale viene rifiutata.</p>
-        <p>Quella chiave è l'identità del tuo nodo, quindi evita di portarla in giro su un laptop. Registra invece una chiave di solver separata e usa quella per le dispute. Solo la chiave dell'operatore può aggiungere solver:</p>
-        <pre><code>ADMIN_NSEC=nsec1... mostro-cli admaddsolver -n npub1solver...</code></pre>
-        <p>L'opzione <strong>Settings → Add Dispute Solver</strong> di Mostrix fa la stessa cosa.</p>
-      </div>`,
+        <p>Mostro accetta le azioni di disputa dalla propria chiave (il <code>nsec_privkey</code> del daemon) e dalle chiavi dei solver registrati. Qualsiasi altra chiave viene rifiutata. Solo la chiave del daemon può <em>aggiungere</em> solver, quindi usala solo per quello e tienila sul server. Per il lavoro quotidiano sulle dispute, registra una chiave di solver — read-write per liquidare o annullare — e metti quella in <code>admin_privkey</code>. Non riusare mai <code>nsec_privkey</code>.</p>
+        <pre><code>ADMIN_NSEC=nsec1&lt;daemon-key&gt; MOSTRO_PUBKEY=&lt;node-npub&gt; \\
+  RELAYS=wss://relay.mostro.network \\
+  mostro-cli admaddsolver -n npub1solver...</code></pre>
+        <p>L'opzione <strong>Settings → Add Dispute Solver</strong> di Mostrix fa la stessa cosa, con Sinistra/Destra per scegliere Read o Read-Write (default Read-Write).</p>
+      </div>
+
+      <h4>La modalità admin in pratica</h4>
+      <ul>
+        <li><strong>Disputes Pending</strong>: Invio prende una disputa. <kbd>Ctrl+T</kbd> ne rileva una da Serbero.</li>
+        <li><strong>Disputes Management</strong>: Tab scorre le chat BUYER, SELLER e SERBERO. <kbd>Shift+F</kbd> finalizza: paga l'acquirente, rimborsa il venditore e confisca una cauzione quando il nodo ne ha.</li>
+        <li><strong>Observer</strong>: incolla la chiave della chat dell'operazione che una parte ha condiviso per leggere la sua conversazione.</li>
+        <li><strong>Settings → Link Watchdog</strong>: collega il solver a mostro-watchdog (5.3), così riceve un ping Telegram privato quando una parte scrive in una disputa che ha preso.</li>
+        <li><kbd>Ctrl+H</kbd> mostra l'aiuto contestuale. Esci dalla scheda <strong>Exit</strong>.</li>
+      </ul>`,
     },
     'watchdog': {
-      title: `5.3 mostro-watchdog — Notifiche dispute su Telegram`,
+      title: `5.3 mostro-watchdog — Avvisi Telegram per dispute e salute del nodo`,
       nav: `mostro-watchdog`,
-      html: `      <p><code>mostro-watchdog</code> monitora il tuo nodo Mostro per le dispute e invia avvisi istantanei tramite Telegram. Essenziale per tempi di risposta rapidi.</p>
+      html: `      <p><code>mostro-watchdog</code> è un bot Telegram per il tuo team di admin. Osserva il tuo nodo via Nostr e scrive su un gruppo o canale privato:</p>
+      <ul>
+        <li><strong>Dispute:</strong> un messaggio per disputa, inviato quando si apre e modificato man mano che procede (presa in carico, passi di Serbero, rilevamento, risoluzione). Ogni modifica riceve una breve risposta, così i telefoni suonano comunque.</li>
+        <li><strong>Salute del nodo:</strong> un avviso quando Mostro smette di <em>funzionare</em>, non solo di girare: un evento info diventato silenzioso, la modalità manutenzione e, con Mostro v0.20.0 o successivo, LND non sincronizzato o indietro sulla catena, pagamenti agli acquirenti bloccati o falliti, HTLC vicini alla scadenza e canali inattivi. Vengono pubblicati solo i cambiamenti: un avviso, promemoria finché dura e "risolto".</li>
+        <li><strong>Avanzamento di Serbero</strong> su ogni disputa, se esegui Serbero (5.10).</li>
+        <li><strong>Ping privati ai solver</strong> quando una parte scrive loro in una disputa che hanno preso.</li>
+      </ul>
 
-      <p><strong>Opzione A: Installazione automatica (Raccomandata)</strong></p>
-      <pre><code># Scarica ed esegui lo script di installazione
-curl -fsSL https://raw.githubusercontent.com/MostroP2P/mostro-watchdog/main/install.sh | bash</code></pre>
+      <p><strong>Opzione A: script di installazione (raccomandato).</strong> Scarica l'ultima release, la verifica con <code>manifest.txt</code> e installa in <code>/usr/local/bin</code>:</p>
+      <pre><code>curl -fsSL https://raw.githubusercontent.com/MostroP2P/mostro-watchdog/main/install.sh | bash
+# oppure in un'altra directory:
+curl -fsSL https://raw.githubusercontent.com/MostroP2P/mostro-watchdog/main/install.sh | bash -s -- --install-dir ~/.local/bin</code></pre>
 
-      <p><strong>Opzione B: Download manuale del binario</strong></p>
-      <pre><code># Linux x86_64 (Intel/AMD)
+      <p><strong>Opzione B: download manuale del binario</strong></p>
+      <pre><code># Linux x86_64 (Intel/AMD); usa mostro-watchdog-linux-aarch64 su ARM64
 curl -LO https://github.com/MostroP2P/mostro-watchdog/releases/latest/download/mostro-watchdog-linux-x86_64
+curl -LO https://github.com/MostroP2P/mostro-watchdog/releases/latest/download/manifest.txt
+sha256sum -c manifest.txt --ignore-missing
 chmod +x mostro-watchdog-linux-x86_64
-sudo mv mostro-watchdog-linux-x86_64 /usr/local/bin/mostro-watchdog
+sudo mv mostro-watchdog-linux-x86_64 /usr/local/bin/mostro-watchdog</code></pre>
+      <p>Sulla pagina delle release ci sono anche i binari per macOS e Windows.</p>
 
-# Linux ARM64 (Raspberry Pi, server ARM)
-curl -LO https://github.com/MostroP2P/mostro-watchdog/releases/latest/download/mostro-watchdog-linux-aarch64
-chmod +x mostro-watchdog-linux-aarch64
-sudo mv mostro-watchdog-linux-aarch64 /usr/local/bin/mostro-watchdog</code></pre>
-
-      <p><strong>Opzione C: Compilare dal codice sorgente</strong></p>
-      <pre><code>git clone https://github.com/MostroP2P/mostro-watchdog.git
+      <p><strong>Opzione C: compilare dal codice sorgente</strong></p>
+      <pre><code>sudo apt install -y cmake pkg-config libssl-dev
+git clone https://github.com/MostroP2P/mostro-watchdog.git
 cd mostro-watchdog
 cargo build --release
 sudo cp target/release/mostro-watchdog /usr/local/bin/</code></pre>
 
-      <p><strong>Configurazione:</strong></p>
-      <pre><code>cp config.example.toml config.toml
-nano config.toml</code></pre>
-
+      <h4>Configurazione</h4>
+      <p>Il watchdog tiene il suo stato (<code>disputes.db</code>) accanto a <code>config.toml</code>, quindi dagli una directory tutta sua:</p>
+      <pre><code>sudo useradd --system --home-dir /var/lib/mostro-watchdog --shell /usr/sbin/nologin mostro-watchdog
+sudo install -d -o mostro-watchdog -g mostro-watchdog -m 700 /var/lib/mostro-watchdog
+curl -LO https://raw.githubusercontent.com/MostroP2P/mostro-watchdog/main/config.example.toml
+sudo install -o mostro-watchdog -g mostro-watchdog -m 600 config.example.toml /var/lib/mostro-watchdog/config.toml
+sudo nano /var/lib/mostro-watchdog/config.toml</code></pre>
       <pre><code>[mostro]
-pubkey = "LA_TUA_PUBKEY_MOSTRO"
+pubkey = "LA_TUA_PUBKEY_MOSTRO"         # hex o npub
 
 [nostr]
+# Relay di bootstrap: il watchdog legge da loro la lista di relay del tuo nodo (NIP-65),
+# poi segue i relay che il tuo nodo annuncia.
 relays = ["wss://relay.mostro.network", "wss://nos.lol"]
 
 [telegram]
-bot_token = "IL_TUO_BOT_TOKEN"
-chat_id = -1001234567890</code></pre>
+bot_token = "IL_TUO_BOT_TOKEN"          # da @BotFather
+chat_id = -1001234567890              # il tuo gruppo o canale admin
+
+[health]
+info_silence_threshold = 900          # 3 × publish_mostro_info_interval di Mostro (300 per default)
+mostro_health_enabled = true          # richiede Mostro v0.20.0+
+event_alert_threshold = 0             # vedi sotto</code></pre>
+      <p>Per trovare <code>chat_id</code>, aggiungi il bot al gruppo, scrivi un messaggio e apri <code>https://api.telegram.org/bot&lt;TOKEN&gt;/getUpdates</code>.</p>
+      <p>Il vecchio avviso "event silence" scatta ogni volta che per due ore non arriva nessun evento di disputa, il che sulla maggior parte dei nodi è solo un pomeriggio tranquillo. I controlli info e health rilevano in modo affidabile un nodo fermo, quindi <code>0</code> lo disattiva.</p>
+
+      <h4>La chiave Nostr del watchdog</h4>
+      <p>I dettagli sulla salute, gli avvisi di Serbero, i ping ai solver e il heartbeat del watchdog stesso richiedono una chiave propria, passata solo tramite l'ambiente:</p>
+      <pre><code>sudo sh -c 'umask 077; echo "WATCHDOG_NOSTR_PRIVATE_KEY=$(openssl rand -hex 32)" > /etc/mostro-watchdog.env'</code></pre>
+      <p>Fai il backup di quel file. All'avvio il watchdog registra la sua chiave pubblica. Mettila nel <code>settings.toml</code> di Mostro e riavvia Mostro, così la tua liquidità, i fallimenti dei pagamenti e le scadenze HTLC sono cifrati per il solo watchdog:</p>
+      <pre><code>[health]
+watchdog_pubkey = "WATCHDOG_PUBKEY"   # hex o npub</code></pre>
+      <p>Questo aggiunge al tuo evento di salute un tag pubblico <code>p</code> che collega il tuo nodo alla chiave del watchdog. Senza, il watchdog avvisa comunque sullo stato pubblico.</p>
+
+      <h4>Eseguirlo come servizio</h4>
+      <pre><code># /etc/systemd/system/mostro-watchdog.service
+[Unit]
+Description=mostro-watchdog
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+User=mostro-watchdog
+WorkingDirectory=/var/lib/mostro-watchdog
+EnvironmentFile=/etc/mostro-watchdog.env
+ExecStart=/usr/local/bin/mostro-watchdog --config /var/lib/mostro-watchdog/config.toml
+Restart=on-failure
+RestartSec=5s
+
+[Install]
+WantedBy=multi-user.target</code></pre>
+      <pre><code>sudo systemctl daemon-reload
+sudo systemctl enable --now mostro-watchdog
+journalctl -u mostro-watchdog -f</code></pre>
+
+      <h4>Opzionale: Serbero e avvisi ai solver</h4>
+      <p>Aggiungi una sezione vuota per ciascuno che vuoi. Entrambi usano la chiave qui sopra:</p>
+      <pre><code>[serbero]                 # i passi di Serbero sul messaggio di ogni disputa
+[solver_notifications]    # ping privati ai solver</code></pre>
+      <p>Per Serbero, aggiungi anche la chiave pubblica <strong>hex</strong> del watchdog al <code>config.toml</code> di Serbero come osservatore — mai come solver — e riavvia Serbero. Gli osservatori ricevono una riga per passo, mai ciò che hanno scritto le parti. Il watchdog trova Serbero da solo tramite il <code>serbero_pubkey</code> del tuo nodo (5.10).</p>
+      <pre><code>[[observers]]
+pubkey = "WATCHDOG_PUBKEY_HEX"</code></pre>
+      <p>Per i ping ai solver, ogni solver invia <code>/link</code> al bot in una chat privata e inserisce il codice in Mostrix 0.3.6 o successivo, sotto <strong>Settings → Link Watchdog</strong>. Il bot risponde ai comandi solo nelle chat private: <code>/version</code>, <code>/link</code>, <code>/unlink</code>, <code>/status</code>.</p>
 
       <div class="callout tip">
-        <div class="callout-title">💡 Consiglio</div>
-        <p>Esegui <code>mostro-watchdog</code> come servizio systemd accanto al tuo nodo Mostro per il monitoraggio 24/7.</p>
+        <div class="callout-title">💡 Controlla il watchdog</div>
+        <p>Un canale silenzioso non prova che il watchdog sia vivo. Puoi eseguirne un secondo su un'altra macchina, ciascuno con la <strong>propria</strong> <code>WATCHDOG_NOSTR_PRIVATE_KEY</code> e la chiave pubblica dell'altro in <code>[health].peer_watchdogs</code>. Gli avvisi di salute possono anche andare a una chat dedicata con <code>[health].alerts_chat_id</code>. Il <code>config.example.toml</code> del progetto documenta ogni opzione.</p>
       </div>`,
     },
     'monitoring': {
-      title: `5.4 Monitoraggio dell'uptime`,
+      title: `5.4 Monitoraggio e salute del nodo`,
       nav: `Monitoraggio`,
       html: `      <p>Il tuo nodo deve essere in funzione 24/7.</p>
 
@@ -942,17 +1187,61 @@ docker logs -f mostro
 docker compose -f /opt/mostro/docker/compose.yml ps
 docker compose -f /opt/mostro/docker/compose.yml logs -f mostro</code></pre>
 
-      <div class="callout tip">
-        <div class="callout-title">💡 Consiglio pro</div>
-        <p>Configura un monitor di uptime semplice usando <a href="https://uptimerobot.com/" target="_blank" rel="noopener noreferrer">UptimeRobot</a> (livello gratuito) o un cron job che ti avvisi se Mostro va offline.</p>
-      </div>
+      <h4>Essere in funzione non significa funzionare</h4>
+      <p>Nell'ottobre 2026 l'LND di un nodo in produzione ha smesso di seguire la catena per circa 21 ore. Mostro continuava a girare e ad accettare operazioni, ma ogni pagamento a un acquirente falliva. Un controllo del processo, della porta o un robot di uptime sarebbero rimasti verdi per tutto il tempo.</p>
+      <p>Dalla v0.20.0 Mostro lo controlla da sé. Ogni minuto pubblica un <strong>evento di salute</strong> firmato (kind 38389) con uno stato generale (<code>ok</code>, <code>degraded</code> o <code>down</code>), uno stato per ogni controllo (<code>lnd_sync</code>, <code>payouts</code>, <code>relays</code>, <code>database</code>) e l'altezza di blocco di LND. È attivo per default; questo blocco mostra solo i valori predefiniti:</p>
+      <pre><code>[health]
+enabled = true                  # pubblica l'evento di salute (kind 38389)
+interval = 60                   # secondi tra una pubblicazione e l'altra, da 30 a 3600
+watchdog_pubkey = ""            # la chiave del tuo watchdog: le metriche dettagliate sono cifrate per lei (5.3)
+lnd_unsynced_fail_after = 600   # deve essere maggiore di 60
+auto_maintenance_on_lnd_unsynced = true
+lnd_resynced_clear_after = 300</code></pre>
+      <p>Quando LND smette di essere sincronizzato, Mostro protegge da solo i tuoi utenti:</p>
+      <ul>
+        <li>Dopo 60 secondi, i pagamenti in uscita (pagamenti agli acquirenti, commissioni di sviluppo, pagamenti delle cauzioni) <strong>attendono</strong> invece di fallire. Un pagamento in attesa non consuma uno dei tentativi di pagamento dell'acquirente, e parte appena LND si riprende.</li>
+        <li>Dopo <code>lnd_unsynced_fail_after</code> secondi, Mostro entra in modalità manutenzione con il motivo <code>lnd_unsynced</code>: niente nuovi ordini né prese, mentre le operazioni aperte possono ancora concludersi. Esce dalla manutenzione quando LND è sincronizzato da <code>lnd_resynced_clear_after</code> secondi. La manutenzione che hai attivato tu (5.8) non viene mai tolta automaticamente.</li>
+      </ul>
+      <p>Il log racconta la storia: <code>LND reports synced_to_chain = false ...; outgoing payments wait after 60s</code>, poi <code>maintenance mode ON (reason lnd_unsynced)</code>, e più tardi <code>LND is synced to chain again</code> e <code>maintenance mode OFF</code>. Controlla LND con <code>lncli getinfo</code> (<code>synced_to_chain</code>, <code>block_height</code>). Imposta <code>auto_maintenance_on_lnd_unsynced = false</code> per rinunciare alla manutenzione automatica.</p>
+      <p>Mostro sa solo ciò che gli dice il suo LND, e un nodo bloccato su una catena obsoleta non sempre se ne accorge. Per questo i due lettori qui sotto confrontano la sua altezza di blocco con gli explorer pubblici:</p>
+      <ul>
+        <li><strong>Avvisi privati:</strong> mostro-watchdog (5.3) avvisa il tuo Telegram quando qualcosa si rompe e quando rientra.</li>
+        <li><strong>Pagina di stato pubblica:</strong> <a href="https://status.mostro.network" target="_blank" rel="noopener noreferrer">status.mostro.network</a> mostra lo stato in tempo reale e l'uptime a 90 giorni di ogni Mostro elencato. Lo vedono anche i tuoi utenti.</li>
+      </ul>
 
+      <h4>La pagina di stato pubblica</h4>
+      <p>La pagina (<a href="https://github.com/MostroP2P/semaforo" target="_blank" rel="noopener noreferrer">Semáforo</a>) legge gli eventi di salute direttamente dai relay e li verifica nel browser del visitatore, senza backend. Ogni nodo riceve un colore:</p>
+      <table class="guide-table">
+        <thead><tr><th>Colore</th><th>Quando</th></tr></thead>
+        <tbody>
+          <tr><td>🟢 Operativo</td><td>Stato <code>ok</code>, un evento recente, e LND meno di 3 blocchi indietro rispetto agli explorer</td></tr>
+          <tr><td>🟡 Degradato</td><td>Stato <code>degraded</code>, modalità manutenzione, o nessuna altezza di blocco indipendente con cui confrontarsi</td></tr>
+          <tr><td>🔴 Giù</td><td>Stato <code>down</code>, LND 3 o più blocchi indietro, o nessun evento valido di recente ("Not reporting")</td></tr>
+          <tr><td>⚪ Non monitorato</td><td>Elencato, ma non ci si aspetta ancora che pubblichi</td></tr>
+        </tbody>
+      </table>
+      <p>Sotto ogni nodo, 90 barre giornaliere e una cifra di uptime vengono da campioni presi ogni 10 minuti.</p>
+      <p><strong>Farsi elencare.</strong> Vengono mostrati solo nodi selezionati, perché chiunque può firmare un evento sempre verde:</p>
+      <ol>
+        <li>Il tuo nodo è elencato come comunità su questo sito.</li>
+        <li>Esegue Mostro v0.20.0 o successivo con l'evento di salute attivo, e pubblica su almeno uno tra <code>wss://relay.mostro.network</code>, <code>wss://mostro-p2p.tech</code> o <code>wss://relay.shadowbip.com</code>.</li>
+        <li>Apri una issue o una pull request su <a href="https://github.com/MostroP2P/semaforo" target="_blank" rel="noopener noreferrer">MostroP2P/semaforo</a> per aggiungerlo a <code>trusted.json</code> con la sua pubkey hex, nome, regione e rete. Il tuo avatar viene copiato dalla foto del tuo profilo Nostr.</li>
+      </ol>
 
       <h4>Controllare il tuo nodo dall'esterno</h4>
-      <p>Il tuo nodo ripubblica un evento info (kind 38385) che lo descrive: commissioni, valute, versione del protocollo, flag di manutenzione. Leggerlo da un relay è il modo più rapido di confermare che il mondo esterno vede quello che credi.</p>
+      <p>Il tuo nodo ripubblica un evento info (kind 38385) che lo descrive: commissioni, valute, versione del protocollo, flag di manutenzione, impostazioni delle cauzioni, chiavi di Serbero e della reputazione. Leggere questo e l'evento di salute da un relay è il modo più rapido di confermare che il mondo esterno vede quello che credi.</p>
       <pre><code>cargo install nostreq nostcat
+# Evento info
 nostreq --kinds 38385 --limit 1 --authors LA_TUA_MOSTRO_PUBKEY_HEX \\
-  | nostcat --stream wss://relay.mostro.network | jq</code></pre>`,
+  | nostcat --stream wss://relay.mostro.network | jq
+# Evento di salute: stato, controlli, altezza di blocco di LND
+nostreq --kinds 38389 --limit 1 --authors LA_TUA_MOSTRO_PUBKEY_HEX \\
+  | nostcat --stream wss://relay.mostro.network | jq '.tags'</code></pre>
+
+      <div class="callout tip">
+        <div class="callout-title">💡 I controlli sull'host servono ancora</div>
+        <p>Un ping all'host (<a href="https://uptimerobot.com/" target="_blank" rel="noopener noreferrer">UptimeRobot</a> o simili) ti dice ancora quando il VPS stesso è irraggiungibile. Non può dirti se Mostro sta pagando gli acquirenti; l'evento di salute sì.</p>
+      </div>`,
     },
     'updating': {
       title: `5.5 Aggiornare Mostro`,
@@ -961,9 +1250,21 @@ nostreq --kinds 38385 --limit 1 --authors LA_TUA_MOSTRO_PUBKEY_HEX \\
 
       <h4>Prima di aggiornare</h4>
       <ol>
-        <li><strong>Leggi le <a href="https://github.com/MostroP2P/mostro/releases" target="_blank" rel="noopener noreferrer">note di rilascio</a></strong> della versione a cui passi. Il tuo <code>settings.toml</code> non viene mai sovrascritto, quindi una nuova opzione ha effetto solo quando la aggiungi: confronta il tuo file con il nuovo <code>settings.tpl.toml</code>.</li>
+        <li><strong>Leggi le <a href="https://github.com/MostroP2P/mostro/releases" target="_blank" rel="noopener noreferrer">note di rilascio</a></strong> della versione a cui passi. Il tuo <code>settings.toml</code> non viene mai sovrascritto: confrontalo con il nuovo <code>settings.tpl.toml</code>. La maggior parte delle nuove funzioni resta spenta finché non le aggiungi, ma un blocco mancante prende i valori predefiniti, e alcuni sono attivi (l'evento di salute di 5.4, per esempio).</li>
         <li><strong>Fai un backup del database</strong> con i comandi di 5.6. Ti serve per tornare indietro.</li>
       </ol>
+
+      <div class="callout important">
+        <div class="callout-title">⚠️ Se arrivi dalla v0.18.x</div>
+        <p>Controlla questi punti prima di avviare la nuova versione, o potrebbe rifiutarsi di partire:</p>
+        <ul>
+          <li>Elimina qualsiasi riga <code>transport = "gift-wrap"</code> (4.8). Gli utenti con vecchi client protocollo v1 devono aggiornare.</li>
+          <li><code>escrow_deadline_margin_blocks</code> deve essere almeno 18 e inferiore a <code>hold_invoice_cltv_delta</code> (4.9).</li>
+          <li>Sotto <code>[cashu]</code>, <code>mint_url</code> è diventato <code>mint_urls = [...]</code> (4.11).</li>
+          <li>Con le cauzioni anti-abuso attive e <code>hold_invoice_cltv_delta</code> pari o superiore a 288, imposta <code>bond_cltv_delta</code> esplicitamente (4.11).</li>
+          <li>Dalla v0.20.0 l'evento di salute viene pubblicato per default, e Mostro può entrare da solo in manutenzione quando LND non è sincronizzato (5.4).</li>
+        </ul>
+      </div>
 
       <h4>Docker Hub (<code>docker run</code>)</h4>
       <pre><code>export MOSTRO_TAG={{version}}
@@ -1049,7 +1350,7 @@ chown 1000:1000 ~/mostro-config/mostro.db
     'backups': {
       title: `5.6 Backup`,
       nav: `Backup`,
-      html: `      <p>File critici da salvare: <code>settings.toml</code>, il file <code>.env</code> se ci tieni il tuo nsec (vedi 4.1), e <code>mostro.db</code> (storico ordini, reputazione).</p>
+      html: `      <p>File critici da salvare: <code>settings.toml</code>, il file <code>.env</code> se ci tieni il tuo nsec (vedi 4.1) o la chiave di esportazione della reputazione (4.13), e <code>mostro.db</code> (storico ordini, reputazione). Se abiliti lo storico del pagatore (4.11), tieni i backup del database separati dal nsec: lo storico è indicizzato con esso.</p>
 
       <div class="callout important">
         <div class="callout-title">⚠️ Non copiare un database attivo con cp</div>
@@ -1065,20 +1366,22 @@ cp ~/mostro-config/.env /root/mostro-backups/env.$(date +%Y%m%d) 2>/dev/null
 # Backup manuale — Docker Build (Opzione B):
 sqlite3 /opt/mostro/docker/config/mostro.db ".backup '/root/mostro-backups/mostro.db.$(date +%Y%m%d)'"
 cp /opt/mostro/docker/config/settings.toml /root/mostro-backups/settings.toml.$(date +%Y%m%d)
+cp /opt/mostro/docker/config/.env /root/mostro-backups/env.$(date +%Y%m%d) 2>/dev/null
 
 # Backup manuale — Nativo:
 sqlite3 /opt/mostro/mostro.db ".backup '/root/mostro-backups/mostro.db.$(date +%Y%m%d)'"
-cp /opt/mostro/settings.toml /root/mostro-backups/settings.toml.$(date +%Y%m%d)</code></pre>
+cp /opt/mostro/settings.toml /root/mostro-backups/settings.toml.$(date +%Y%m%d)
+cp /opt/mostro/.env /root/mostro-backups/env.$(date +%Y%m%d) 2>/dev/null</code></pre>
 
       <p><strong>Backup giornaliero automatico</strong> (aggiungi al crontab con <code>crontab -e</code>):</p>
       <pre><code># Docker Hub (Opzione A):
-0 3 * * * mkdir -p /root/mostro-backups && sqlite3 /root/mostro-config/mostro.db ".backup '/root/mostro-backups/mostro.db.$(date +\\%Y\\%m\\%d)'" && cp /root/mostro-config/settings.toml /root/mostro-backups/settings.toml.$(date +\\%Y\\%m\\%d)
+0 3 * * * mkdir -p /root/mostro-backups && sqlite3 /root/mostro-config/mostro.db ".backup '/root/mostro-backups/mostro.db.$(date +\\%Y\\%m\\%d)'" && cp /root/mostro-config/settings.toml /root/mostro-backups/settings.toml.$(date +\\%Y\\%m\\%d); cp /root/mostro-config/.env /root/mostro-backups/env.$(date +\\%Y\\%m\\%d) 2>/dev/null
 
 # Docker Build (Opzione B):
-0 3 * * * mkdir -p /root/mostro-backups && sqlite3 /opt/mostro/docker/config/mostro.db ".backup '/root/mostro-backups/mostro.db.$(date +\\%Y\\%m\\%d)'" && cp /opt/mostro/docker/config/settings.toml /root/mostro-backups/settings.toml.$(date +\\%Y\\%m\\%d)
+0 3 * * * mkdir -p /root/mostro-backups && sqlite3 /opt/mostro/docker/config/mostro.db ".backup '/root/mostro-backups/mostro.db.$(date +\\%Y\\%m\\%d)'" && cp /opt/mostro/docker/config/settings.toml /root/mostro-backups/settings.toml.$(date +\\%Y\\%m\\%d); cp /opt/mostro/docker/config/.env /root/mostro-backups/env.$(date +\\%Y\\%m\\%d) 2>/dev/null
 
 # Nativo (Opzione C):
-0 3 * * * mkdir -p /root/mostro-backups && sqlite3 /opt/mostro/mostro.db ".backup '/root/mostro-backups/mostro.db.$(date +\\%Y\\%m\\%d)'" && cp /opt/mostro/settings.toml /root/mostro-backups/settings.toml.$(date +\\%Y\\%m\\%d)</code></pre>
+0 3 * * * mkdir -p /root/mostro-backups && sqlite3 /opt/mostro/mostro.db ".backup '/root/mostro-backups/mostro.db.$(date +\\%Y\\%m\\%d)'" && cp /opt/mostro/settings.toml /root/mostro-backups/settings.toml.$(date +\\%Y\\%m\\%d); cp /opt/mostro/.env /root/mostro-backups/env.$(date +\\%Y\\%m\\%d) 2>/dev/null</code></pre>
 
       <div class="callout important">
         <div class="callout-title">⚠️ Critico</div>
@@ -1106,7 +1409,8 @@ sqlite3 /percorso/di/mostro.db "SELECT SUM(fee*2) AS gross_fees, SUM(dev_fee) AS
       html: `      <p>Le hold invoice, le cauzioni e i pagamenti in volo appartengono al nodo Lightning che li ha creati. Puntare Mostro a un altro nodo mentre qualcosa di tutto questo è aperto lascerebbe quelle operazioni in sospeso, quindi il daemon <strong>si rifiuta di partire</strong> quando vede una nuova identità LND con escrow ancora legato alla precedente:</p>
       <pre><code>REFUSING TO START: Lightning node changed from ... but escrow is still bound to the old node</code></pre>
 
-      <p>La modalità manutenzione è il modo per drenare prima. Mentre è attiva, nuovi ordini e prese vengono rifiutati e le operazioni aperte continuano a funzionare, così l'escrow può liquidarsi. Richiede l'interfaccia RPC abilitata (vedi 4.7).</p>
+      <p>La modalità manutenzione è il modo per drenare prima. Mentre è attiva, nuovi ordini e prese vengono rifiutati e le operazioni aperte continuano a funzionare, così l'escrow può liquidarsi. Richiede l'interfaccia RPC abilitata (vedi 4.7), e la chiamata è accettata solo da loopback: eseguila sull'host del nodo, oppure tramite <code>ssh -N -L 50051:127.0.0.1:50051 user@node</code>.</p>
+      <p>Mostro può anche entrare da solo in manutenzione, con il motivo <code>lnd_unsynced</code>, quando LND perde la sincronizzazione (5.4). Se attivi la manutenzione mentre quella è in corso, diventa tua e il daemon non la toglierà; non puoi usare <code>lnd_unsynced</code> come tuo motivo.</p>
 
       <ol>
         <li>Annuncia la finestra ai tuoi utenti con ampio preavviso.</li>
@@ -1127,20 +1431,25 @@ sqlite3 /percorso/di/mostro.db "SELECT SUM(fee*2) AS gross_fees, SUM(dev_fee) AS
     'operator-cli': {
       title: `5.9 Comandi da Operatore con mostro-cli`,
       nav: `CLI operatore`,
-      html: `      <p>Mostrix è il modo comodo per lavorare le dispute, ma <code>mostro-cli</code> copre lo stesso terreno da shell e ha alcuni comandi che Mostrix non ha. I comandi di disputa sono firmati con una chiave Nostr che passi come <code>ADMIN_NSEC</code>, e deve essere quella del daemon stesso o di un solver registrato.</p>
+      html: `      <p>Mostrix è il modo comodo per lavorare le dispute, e <code>mostro-cli</code> copre le basi da shell, più alcuni comandi da operatore che Mostrix non ha. I comandi di disputa sono firmati con una chiave Nostr che passi come <code>ADMIN_NSEC</code>, e deve essere quella del daemon stesso o di un solver registrato. La CLI non legge alcun file di configurazione: imposta il tuo nodo e i relay nell'ambiente, e metti i flag globali prima del sottocomando.</p>
 
-      <pre><code># Lavoro sulle dispute (via Nostr, richiede ADMIN_NSEC)
+      <pre><code># Lavoro sulle dispute (via Nostr)
+export MOSTRO_PUBKEY=npub1...            # il tuo nodo
+export RELAYS=wss://relay.mostro.network
 export ADMIN_NSEC=nsec1...
 mostro-cli listdisputes
-mostro-cli admtakedispute -d &lt;dispute-id&gt;
-mostro-cli admsenddm -p &lt;npub&gt; -m "messaggio a una parte"
-mostro-cli admsettle -o &lt;order-id&gt;      # rilascia all'acquirente
-mostro-cli admcancel -o &lt;order-id&gt;      # rimborsa il venditore
+mostro-cli admtakedispute -d &lt;dispute-id&gt;     # stampa le pubkey di acquirente e venditore
+mostro-cli getadmindm -s 120
+mostro-cli admsenddm -p &lt;party-pubkey&gt; -m "messaggio a una parte"
+mostro-cli admsettle -o &lt;order-id&gt; [--slashseller] [--slashbuyer]   # rilascia all'acquirente
+mostro-cli admcancel -o &lt;order-id&gt; [--slashseller] [--slashbuyer]   # rimborsa il venditore
 
 # Registra un arbitro, eventualmente in sola lettura
 mostro-cli admaddsolver -n npub1...:read</code></pre>
 
-      <p>Un altro gruppo di comandi passa dal gRPC di amministrazione invece che da Nostr, quindi richiedono <code>MOSTRO_RPC_URL</code> e <code>MOSTRO_RPC_TOKEN</code> anziché <code>ADMIN_NSEC</code>, e l'interfaccia RPC abilitata (vedi 4.7).</p>
+      <p>I flag di confisca contano solo con le cauzioni anti-abuso (4.11). Nota l'ortografia: <code>--slashseller</code>, non <code>--slash-seller</code>. <code>admsenddm</code> invia un messaggio diretto dalla chiave admin; non è la chat per disputa che usano la Mostro App, Mostrix e Bosstro, quindi per parlare con le parti preferisci quei client.</p>
+
+      <p>Un altro gruppo di comandi passa dal gRPC di amministrazione invece che da Nostr, quindi richiedono l'interfaccia RPC abilitata (vedi 4.7) anziché <code>ADMIN_NSEC</code>. <code>MOSTRO_RPC_URL</code> vale per default <code>http://127.0.0.1:50051</code>, e <code>MOSTRO_RPC_TOKEN</code> serve solo se hai impostato <code>auth_token</code>.</p>
 
       <pre><code>export MOSTRO_RPC_URL=http://127.0.0.1:50051
 export MOSTRO_RPC_TOKEN=il-tuo-token-auth
@@ -1149,7 +1458,112 @@ mostro-cli admsetmaintenance -e true -r "motivo"
 mostro-cli admmaintenancestatus
 mostro-cli admcancelpending -o &lt;order-id&gt;</code></pre>
 
-      <p><code>admcancelpending</code> vale la pena conoscerlo anche fuori da una migrazione. Annulla un ordine ancora in attesa o in attesa della cauzione di un taker, avvisa il maker e libera tutte le sue cauzioni in un colpo. Usalo per un ordine chiaramente abbandonato o quotato male, e avvisa prima il maker: è il suo ordine, e questa non è una risoluzione di disputa.</p>`,
+      <p><code>admcancelpending</code> vale la pena conoscerlo anche fuori da una migrazione. Annulla un ordine ancora in attesa o in attesa di una cauzione, avvisa il maker e libera tutte le sue cauzioni in un colpo. Usalo per un ordine chiaramente abbandonato o quotato male, e avvisa prima il maker: è il suo ordine, e questa non è una risoluzione di disputa.</p>
+
+      <p>mostro-cli non ha ancora comandi per l'importazione e l'esportazione della reputazione, lo storico del pagatore o l'evento di salute: usa <code>grpcurl</code> per le RPC di reputazione (4.13) e i comandi in 5.4 per l'evento di salute. Installalo con <code>cargo install mostro-cli</code> (Rust 1.97 o successivo) oppure prendi un binario dalle <a href="https://github.com/MostroP2P/mostro-cli/releases" target="_blank" rel="noopener noreferrer">sue release</a>; esegui <code>mostro-cli &lt;command&gt; --help</code> per ogni flag.</p>`,
+    },
+    'serbero': {
+      title: `5.10 Serbero — Assistente per le dispute`,
+      nav: `Serbero`,
+      html: `      <p><a href="https://github.com/MostroP2P/serbero" target="_blank" rel="noopener noreferrer">Serbero</a> è un assistente opzionale per le dispute del tuo nodo. Lo esegui accanto a Mostro, con una chiave Nostr tutta sua. Fa due lavori:</p>
+      <ul>
+        <li><strong>Notifica (sempre attiva).</strong> Ogni solver che elenchi riceve un messaggio diretto entro pochi secondi da una nuova disputa, con promemoria ogni 15 minuti finché qualcuno non la prende.</li>
+        <li><strong>Mediazione (opt-in, pilota).</strong> Serbero prende la disputa, chiede all'acquirente se ha pagato e al venditore se i soldi sono arrivati, dà loro il tempo di concludere da soli l'operazione, e altrimenti passa il caso a un solver umano con un riepilogo e la trascrizione completa.</li>
+      </ul>
+      <p>Serbero non sposta mai fondi e non decide mai una disputa. Mostro lo registra come solver in <strong>sola lettura</strong>, quindi non può liquidare né annullare, e qualsiasi solver read-write può rilevare una disputa da lui in qualsiasi momento. Se Serbero è fermo, Mostro e i tuoi solver lavorano esattamente come prima. Tieni almeno un solver umano read-write.</p>
+
+      <h4>Installazione</h4>
+      <p>Ogni release ha binari per Linux (x86_64, aarch64) e macOS (Apple silicon), ciascuno con un file SHA-256. I nomi dei file portano la versione:</p>
+      <pre><code>V=$(curl -fsSL https://api.github.com/repos/MostroP2P/serbero/releases/latest | grep -m1 '"tag_name"' | cut -d'"' -f4)
+A=serbero-$V-x86_64-unknown-linux-gnu        # aarch64-unknown-linux-gnu su ARM64
+curl -LO https://github.com/MostroP2P/serbero/releases/download/$V/$A.tar.gz
+curl -LO https://github.com/MostroP2P/serbero/releases/download/$V/$A.tar.gz.sha256
+shasum -a 256 -c $A.tar.gz.sha256
+tar -xzf $A.tar.gz && cd $A        # serbero, config.sample.toml, deploy/</code></pre>
+      <p>Con Rust installato funziona anche <code>cargo install serbero --locked</code>. Un'immagine Docker (<code>ghcr.io/mostrop2p/serbero</code>) e un file compose sono descritti nel README del progetto.</p>
+
+      <h4>Configurazione</h4>
+      <pre><code>cp config.sample.toml config.toml
+nano config.toml</code></pre>
+      <pre><code>[serbero]
+private_key_env = "SERBERO_PRIVATE_KEY"   # indica il nome del segreto; la chiave non va mai in questo file
+db_path = "serbero.db"
+
+[mostro]
+pubkey = "LA_TUA_PUBKEY_MOSTRO_HEX"
+relays = ["wss://relay.mostro.network", "wss://nos.lol"]   # i relay su cui pubblica il tuo nodo
+
+# Una voce per ogni solver umano: la pubkey hex della chiave che usa il suo client
+# (Mostrix: admin_privkey). Non elencare mai la chiave di Serbero.
+[[solvers]]
+pubkey = "SOLVER_PUBKEY_HEX"
+permission = "write"
+
+[notify]
+renotify_after = "15m"
+
+[mediation]
+enabled = false</code></pre>
+
+      <h4>Eseguirlo come servizio</h4>
+      <p>Il progetto include un'unità systemd rinforzata. Scaricala da <code>main</code>: la copia dentro l'archivio v0.2.5 richiede systemd 251 e non parte su Ubuntu 22.04.</p>
+      <pre><code>sudo useradd --system --home-dir /var/lib/serbero --shell /usr/sbin/nologin serbero
+sudo install -m 755 serbero /usr/local/bin/serbero
+sudo install -d -m 755 /etc/serbero
+sudo install -m 644 config.toml /etc/serbero/config.toml
+sudo install -d -m 700 /etc/serbero/credentials
+sudo sh -c 'umask 077; openssl rand -hex 32 > /etc/serbero/credentials/serbero_private_key'
+curl -fsSLO https://raw.githubusercontent.com/MostroP2P/serbero/main/deploy/serbero.service
+sudo install -m 644 serbero.service /etc/systemd/system/serbero.service
+sudo systemctl daemon-reload && sudo systemctl enable --now serbero
+journalctl -u serbero -f        # annota la npub che registra all'avvio</code></pre>
+      <p>Fai il backup offline di <code>/etc/serbero/credentials/serbero_private_key</code>. È l'identità di Serbero: se la perdi devi registrare una nuova npub.</p>
+
+      <h4>Registrarlo sul tuo nodo</h4>
+      <p>Mostro v0.19.1 o successivo registra Serbero per te. Aggiungi la sua npub al blocco <code>[mostro]</code> del tuo <code>settings.toml</code> e riavvia Mostro:</p>
+      <pre><code>[mostro]
+serbero_pubkey = "npub1..."   # la chiave di Serbero, npub o hex</code></pre>
+      <p>All'avvio Mostro registra quella chiave come solver in sola lettura e la annuncia nel suo evento info. Quell'annuncio è il modo in cui la Mostro App etichetta i messaggi di Serbero e in cui mostro-watchdog lo trova. Il log lo conferma: <code>Serbero npub1... configured: registered as a read-only solver</code>.</p>
+      <div class="callout important">
+        <div class="callout-title">⚠️ Non aggiungere Serbero con admaddsolver</div>
+        <p>Una npub nuda aggiunta con <code>admaddsolver</code> diventa read-write (5.1), e Mostro si rifiuta allora di partire con <code>REFUSING TO START: serbero_pubkey ... is a solver with write permission</code>. Rifiuta anche una chiave che appartiene a un utente che non è un solver, e la chiave del tuo nodo. Dai a Serbero una chiave tutta sua e lascia che <code>serbero_pubkey</code> la registri.</p>
+      </div>
+
+      <h4>I tuoi solver leggono Serbero in Mostrix</h4>
+      <p>Mostrix 0.3.5 o successivo mostra i messaggi di Serbero in un pannello <strong>SERBERO</strong> per ogni disputa, ma solo da mittenti di cui il solver si fida. Nel <code>~/.mostrix/settings.toml</code> di ogni solver:</p>
+      <pre><code>trusted_dm_senders = ["npub1..."]   # la npub di Serbero</code></pre>
+      <p>La pubkey dell'<code>admin_privkey</code> del solver deve essere esattamente quella di una voce <code>[[solvers]]</code>, e Mostrix deve leggere almeno uno dei relay di Serbero. Per rilevare un caso, premi <kbd>Ctrl+T</kbd> su un passaggio di consegne; richiede il permesso read-write, e Serbero smette subito di scrivere. Bosstro (5.11) non mostra ancora i riepiloghi di Serbero.</p>
+
+      <h4>Attivare la mediazione (pilota)</h4>
+      <p>La mediazione parte spenta. Quando è attiva, Serbero prende ogni nuova disputa e si presenta a entrambe le parti come assistente automatico, nella loro lingua (inglese, spagnolo o portoghese), con una breve domanda alla volta. Quando entrambe hanno risposto, dà loro 30 minuti per sistemare da sole l'operazione, poi passa il caso ai tuoi solver. Non dice mai a nessuno di rilasciare o annullare.</p>
+      <p>Per leggere le risposte, Serbero interroga un modello giudice (Jev di TypeSafe) sul <strong>tuo</strong> account a pagamento. Il giudice riceve i ruoli dell'operazione, l'importo, la valuta e il metodo di pagamento, e il testo dei messaggi — mai le chiavi pubbliche. Chiedi al provider zero conservazione dei dati, e avvisa i tuoi utenti che i messaggi di disputa sono elaborati da un servizio automatico. Il README spiega la chiave API e la tabella delle soglie; imposta <code>enabled = true</code> sotto <code>[mediation]</code> e riavvia, e il log dice <code>mediation ready</code> oppure perché no.</p>
+      <p>I messaggi delle parti sono eventi kind 14: usa più di un relay, e solo relay che li conservano, altrimenti i messaggi inviati mentre Serbero è offline vanno persi. Per pubblicare l'avanzamento di Serbero sul Telegram del tuo team, registra mostro-watchdog come osservatore (5.3). Fai il backup di <code>serbero.db</code> in modo privato: contiene le conversazioni delle dispute.</p>`,
+    },
+    'bosstro': {
+      title: `5.11 Bosstro — Risolvere le dispute dal telefono`,
+      nav: `Bosstro`,
+      html: `      <p><a href="https://github.com/MostroP2P/bosstro" target="_blank" rel="noopener noreferrer">Bosstro</a> è l'app Android per i solver delle dispute. Porta su un telefono il lato admin di Mostrix: un solver vede le dispute in attesa del tuo nodo, ne prende una, parla con l'acquirente e il venditore (immagini e PDF inclusi), legge la chat privata delle parti quando una di loro ne condivide la chiave e, con permesso read-write, paga l'acquirente o rimborsa il venditore, con l'opzione cauzione quando il tuo nodo ne ha.</p>
+      <p>È uno strumento per i tuoi solver, non per operare, e non detiene mai la chiave del tuo nodo. La registrazione dei solver avviene ancora da Mostrix o da <code>mostro-cli</code> (5.2).</p>
+
+      <h4>Installazione e verifica</h4>
+      <p>Android 7.0 o successivo. Scarica l'APK da <a href="https://github.com/MostroP2P/bosstro/releases" target="_blank" rel="noopener noreferrer">GitHub Releases</a>: <code>arm64-v8a</code> per quasi ogni telefono, <code>armeabi-v7a</code> per uno vecchio a 32 bit. Verificalo con il file di checksum della release:</p>
+      <pre><code>sha256sum -c SHA256SUMS.txt --ignore-missing</code></pre>
+      <p>Il checksum prova solo che il download è completo. Il certificato di firma prova chi l'ha compilato, e Android rifiuta un aggiornamento firmato con qualsiasi altra chiave. Confrontalo con <a href="https://github.com/soupslurpr/AppVerifier" target="_blank" rel="noopener noreferrer">AppVerifier</a>:</p>
+      <pre><code>foundation.mostro.bosstro
+63:92:27:84:C2:E3:2A:F4:B6:03:0F:5E:2A:18:1F:74:9B:F6:95:E5:2F:1C:A8:45:7E:98:CB:05:D2:9E:B3:4B</code></pre>
+
+      <h4>Aggiungere un solver</h4>
+      <ol>
+        <li>Il solver apre Bosstro, tocca <strong>Create new account</strong> (oppure <strong>Log in</strong> con un nsec di solver esistente) e ti invia la npub. Quella chiave non deve servire a nient'altro — mai la chiave di un'app di trading, o i due ruoli risultano collegati in pubblico.</li>
+        <li>La registri tu, in sola lettura per cominciare (5.1):
+          <pre><code>ADMIN_NSEC=nsec1... mostro-cli admaddsolver -n npub1solver...:read</code></pre></li>
+        <li>Il solver sceglie il tuo nodo in Bosstro: Mostro, una comunità dalla lista, oppure la tua pubkey e i tuoi relay. Bosstro capisce dalle risposte del tuo nodo se la chiave è un solver e con quale permesso.</li>
+      </ol>
+
+      <div class="callout important">
+        <div class="callout-title">⚠️ Limiti attuali</div>
+        <p>Bosstro parla solo il protocollo v2 (4.8). La versione 0.1 non mostra i riepiloghi di consegna di Serbero e non ha ancora notifiche push, quindi i solver che lavorano con Serbero hanno ancora bisogno di Mostrix per quelli. Un solver read-write può rilevare una disputa da Serbero in Bosstro.</p>
+      </div>`,
     },
     'costs': {
       title: `6. Analisi dei Costi`,
@@ -1218,7 +1632,16 @@ mostro-cli admcancelpending -o &lt;order-id&gt;</code></pre>
       <p>No. Mostro attualmente supporta solo LND, perché dipende dall'implementazione specifica delle hold invoice di LND. Il supporto per altre implementazioni potrebbe arrivare in futuro.</p>
 
       <h3>Come si connettono gli utenti al mio Mostro?</h3>
-      <p>Gli utenti hanno bisogno di un'app client Mostro (come Mostro Mobile o mostro-cli) e della chiave pubblica del tuo Mostro (npub). Aggiungono la tua npub al loro client, e il client comunica attraverso i relay Nostr. Non serve una connessione diretta.</p>
+      <p>Gli utenti hanno bisogno di un client Mostro — la <a href="https://github.com/MostroP2P/app" target="_blank" rel="noopener noreferrer">Mostro App</a> per Android, iOS, desktop e web, oppure mostro-cli o Mostrix — e della chiave pubblica del tuo Mostro (npub). Nell'app vanno su <em>Impostazioni → Rete → Nodo Mostro → Aggiungi il tuo nodo</em> e incollano la tua npub; i nodi elencati su questo sito vi compaiono già. Il client comunica attraverso i relay Nostr. Non serve una connessione diretta.</p>
+
+      <h3>Il mio nodo può ancora servire i vecchi client (protocollo v1)?</h3>
+      <p>No. Dalla v0.19.0 Mostro parla solo il protocollo v2 (4.8). Gli utenti con un vecchio client devono passare alla Mostro App o a un Mostrix o mostro-cli attuale.</p>
+
+      <h3>I miei utenti possono scambiare USDT, Liquid o Rootstock invece del fiat?</h3>
+      <p>Sì, dalla v0.20.2: USDT, USDC, DOC, BTC on-chain, LBTC e RBTC. Li abiliti uno per uno, e i tuoi solver devono sapere come verificare quei trasferimenti. Vedi 4.12.</p>
+
+      <h3>Gli utenti possono portare la loro reputazione da lnp2pBot o da un altro Mostro?</h3>
+      <p>Sì, se ti fidi della fonte. Attiva l'importazione della reputazione e aggiungi la chiave di lnp2pBot, o quella di un nodo Mostro di cui ti fidi (4.13). Puoi anche lasciare che i tuoi utenti esportino la reputazione guadagnata sul tuo nodo.</p>
 
       <h3>Posso eseguire più istanze di Mostro?</h3>
       <p>Sì, ma ognuna ha bisogno della propria coppia di chiavi Nostr, nodo LND (o almeno canali/liquidità separati), e configurazione.</p>
@@ -1230,7 +1653,7 @@ mostro-cli admcancelpending -o &lt;order-id&gt;</code></pre>
       <p>Pochissima — principalmente piccoli eventi Nostr. Qualche GB al mese è tipico anche con volumi moderati.</p>
 
       <h3>Cosa succede se il mio nodo va offline?</h3>
-      <p>Gli ordini in attesa alla fine scadono. Le operazioni attive con fondi bloccati continuano quando torni online. Se sei offline troppo a lungo, gli utenti potrebbero perdere fiducia. Dalla v0.18.3 esiste anche una scadenza per l'escrow: se il nodo resta giù abbastanza a lungo perché la hold invoice si avvicini al suo orizzonte CLTV, LND la annulla e il venditore viene rimborsato automaticamente.</p>
+      <p>Gli ordini in attesa alla fine scadono. Le operazioni attive con fondi bloccati continuano quando torni online. Se sei offline troppo a lungo, gli utenti potrebbero perdere fiducia. Dalla v0.18.3 esiste anche una scadenza per l'escrow: se il nodo resta giù abbastanza a lungo perché la hold invoice si avvicini al suo orizzonte CLTV, LND la annulla e il venditore viene rimborsato automaticamente. Se è il tuo LND a perdere la sincronizzazione mentre Mostro continua a girare, i pagamenti attendono invece di fallire e, dopo 10 minuti, il nodo entra da solo in manutenzione finché LND non si riprende (5.4).</p>
 
       <h3>Posso cambiare la mia chiave Nostr in seguito?</h3>
       <p>Puoi, ma perderai l'identità e la reputazione del tuo nodo. Gli utenti lo vedranno come un nuovo Mostro. Tratta la tua chiave come la tua identità di marca.</p>
@@ -1270,7 +1693,9 @@ mostro-cli admcancelpending -o &lt;order-id&gt;</code></pre>
         <li><strong>Esegui il tuo nodo Mostro dietro Tor e/o una VPN.</strong> Questo nasconde l'IP del tuo server dai relay Nostr.</li>
         <li><strong>Se Tor/VPN non è possibile</strong> (comune nei paesi in via di sviluppo con internet lento), <strong>pubblica eventi solo su relay che possiedi o di cui ti fidi.</strong></li>
         <li><strong>Fai molta attenzione a quali relay usi.</strong> In futuro, i governi potrebbero creare relay Nostr specificamente per raccogliere indirizzi IP.</li>
-        <li><strong>Considera anche la privacy del tuo nodo Lightning.</strong> Eseguire LND dietro Tor è possibile e raccomandato in ambienti sensibili.</li>
+        <li><strong>Considera anche la privacy del tuo nodo Lightning.</strong> Eseguire LND dietro Tor è possibile e raccomandato in ambienti sensibili. Il tuo evento info pubblica la pubkey di LND e gli indirizzi che annuncia, quindi fai annunciare a LND solo indirizzi Tor.</li>
+        <li><strong>Sappi cosa pubblica il tuo nodo.</strong> L'evento di salute (5.4) è pubblico: stato, altezza di blocco e rete di LND, versione di Mostro. Impostare un <code>watchdog_pubkey</code> aggiunge un tag che collega il tuo nodo a quella chiave. Disattivalo con <code>[health] enabled = false</code> se ti importa più di questo che del monitoraggio.</li>
+        <li><strong>Le variabili proxy non bastano.</strong> Le ricerche di indirizzi Lightning ignorano deliberatamente <code>HTTP_PROXY</code>/<code>HTTPS_PROXY</code>. Per nascondere l'IP del server, instrada l'intera macchina attraverso Tor o una VPN.</li>
       </ol>
 
       <div class="callout tip">
@@ -1302,8 +1727,26 @@ mostro-cli admcancelpending -o &lt;order-id&gt;</code></pre>
       <h4><code>REFUSING TO START: Lightning node changed</code></h4>
       <p>Mostro punta a un'identità LND diversa mentre c'è ancora escrow aperto sulla precedente. Ricollega il nodo vecchio e drenalo prima di cambiare. Vedi 5.8.</p>
 
+      <h4><code>transport = "gift-wrap" (protocol v1) is no longer supported</code></h4>
+      <p>Elimina la riga <code>transport</code> da <code>settings.toml</code>. Vedi 4.8.</p>
+
+      <h4><code>escrow_deadline_margin_blocks (X) must be at least 18 ...</code> oppure <code>... must be below hold_invoice_cltv_delta</code></h4>
+      <p>Imposta il margine tra 18 e <code>hold_invoice_cltv_delta</code>; il 24 del template con 144 va bene. Vedi 4.9.</p>
+
+      <h4><code>unknown field mint_url</code></h4>
+      <p>In <code>[cashu]</code>, rinominala in <code>mint_urls = ["..."]</code>. Vedi 4.11.</p>
+
+      <h4><code>anti_abuse_bond.bond_cltv_delta ... must be above hold_invoice_cltv_delta + 144</code> oppure <code>... must be at most 864</code></h4>
+      <p>Imposta <code>bond_cltv_delta</code> esplicitamente entro quei limiti. Nella v0.20.2, le cauzioni più un <code>hold_invoice_cltv_delta</code> pari o superiore a 288 incappano in questo con il valore predefinito. Vedi 4.11.</p>
+
+      <h4><code>REFUSING TO START: serbero_pubkey ...</code></h4>
+      <p>La chiave di Serbero è già un solver read-write, appartiene a un utente, o è la chiave del tuo nodo. Dai a Serbero una chiave tutta sua. Vedi 5.10.</p>
+
+      <h4>Le impostazioni di reputazione bloccano l'avvio</h4>
+      <p>I nomi degli emittenti devono essere unici e ogni chiave valida ed elencata una sola volta; la chiave di un emittente non deve mai passare a un altro nome una volta che ha importazioni. Con l'esportazione attiva, <code>MOSTRO_REPUTATION_ISSUER_SK</code> deve essere impostata, valida, diversa dalla chiave del tuo nodo e non presente nella tua lista di importazione. Vedi 4.13.</p>
+
       <h4>I client non vedono i miei ordini o non riescono a scrivere al mio nodo</h4>
-      <p>Controlla la riga <code>Transport:</code> nei tuoi log. Un nodo su <code>nip44</code> è invisibile ai client che parlano solo il protocollo v1, e un nodo su <code>gift-wrap</code> è invisibile ai client v2. Vedi 4.8.</p>
+      <p>Il tuo nodo parla solo il protocollo v2. Un utente con un vecchio client che parla solo il protocollo v1 non riceve risposta e deve aggiornare (4.8). Controlla anche che i client e il tuo nodo condividano almeno un relay.</p>
 
       <h4>I pagamenti falliscono con "no route"</h4>
       <p>Controlla <code>payment_cltv_limit</code>. Deve stare almeno 576 blocchi sopra <code>max_final_cltv_expiry_delta</code> e non deve superare <code>--max-cltv-expiry</code> del tuo LND. Vedi 4.9.</p>
@@ -1339,6 +1782,18 @@ max_orders_per_response = 50  # il default è 10, il massimo 255
         <li>Assicurati di avere sufficiente capacità in uscita</li>
         <li>Controlla l'impostazione <code>max_routing_fee</code></li>
       </ul>
+
+      <h4>I pagamenti non partono, ma non c'è nessun errore</h4>
+      <p>Controlla se LND è sincronizzato: <code>lncli getinfo</code>. Finché non lo è, Mostro trattiene i pagamenti di proposito e li reinvia appena LND si riprende (5.4).</p>
+
+      <h4>Gli utenti ricevono rifiuti per "manutenzione" anche se non l'ho mai abilitata</h4>
+      <p><code>mostro-cli admmaintenancestatus</code> mostra il motivo. <code>lnd_unsynced</code> significa che Mostro l'ha attivata perché LND ha perso la sincronizzazione; la toglie da sola 5 minuti dopo che LND è di nuovo sincronizzato (5.4).</p>
+
+      <h4>Le commissioni di sviluppo non vengono mai pagate</h4>
+      <p>Su testnet, signet o regtest è previsto: le commissioni di sviluppo si pagano solo su mainnet (4.2).</p>
+
+      <h4>Gli ordini a prezzo di mercato in una valuta vengono rifiutati</h4>
+      <p>Il tuo nodo non ha un tasso per essa. Controlla gli avvisi <code>price:</code> nel log di avvio: un blocco <code>[price]</code> senza fonti di mercato abilitate, o una stablecoin quotata ma non elencata in <code>fiat_currencies_accepted</code>, sono le cause più comuni. Vedi 4.10 e 4.12.</p>
 
       <h3>Problemi di database</h3>
 
