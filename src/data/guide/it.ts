@@ -342,7 +342,7 @@ chmod 600 ~/mostro-config/lnd/mostro.macaroon</code></pre>
 
       <div class="callout tip">
         <div class="callout-title">💡 Nota</div>
-        <p>Non esiste un messaggio "connesso a LND" né "connesso al relay". Mostro contatta LND durante l'avvio, quindi un daemon che continua a girare ha già la connessione funzionante. Il fallimento invece è rumoroso: registra <code>Ln node error</code> e termina. Dopo l'avvio interroga LND ogni 15 secondi e registra <code>LND did not answer GetInfo</code> se smette di rispondere. Per i relay, il segnale è la riga dell'evento di salute: <code>No relay accepted the health event</code> significa che nessuno lo ha accettato.</p>
+        <p>Non esiste un messaggio "connesso a LND" né "connesso al relay". Mostro contatta LND durante l'avvio, quindi un daemon che supera l'avvio ha raggiunto LND. Il fallimento invece è rumoroso: registra <code>Ln node error</code> e termina. Dopo l'avvio interroga LND ogni 15 secondi e registra <code>LND did not answer GetInfo</code> se smette di rispondere; i pagamenti in uscita restano in attesa finché non torna (5.4). Per i relay, il segnale è la riga dell'evento di salute: <code>No relay accepted the health event</code> significa che nessuno lo ha accettato.</p>
       </div>
 
       <div class="callout tip">
@@ -627,6 +627,7 @@ pow = 0  # 0 = disabilitato; 10-20 = moderato. Inizia con 0.</code></pre>
       <pre><code>[mostro]
 pow = 0                  # operazioni in corso
 pow_first_contact = 16   # nuovi ordini e prese da chiavi sconosciute</code></pre>
+      <p>I client devono minare almeno quel valore. Chi usa mostro-cli deve impostare <code>POW</code> (o <code>-p</code>) al tuo valore, altrimenti i nuovi ordini e le prese vengono scartati senza risposta.</p>
 
       <p>Un deterrente più forte contro chi prende ordini e poi sparisce è la cauzione anti-abuso (vedi 4.11).</p>`,
     },
@@ -852,7 +853,7 @@ only = ["USDT", "USDC", "DOC", "LBTC", "RBTC"]   # oppure except = ["BTC"]; senz
 
       <div class="callout tip">
         <div class="callout-title">💡 Se una stablecoin perde l'aggancio</div>
-        <p>Non esiste ancora una protezione automatica dal depeg. Se USDT o USDC si allontana da un dollaro, toglila da <code>only</code> (lasciala in <code>fiat_currencies_accepted</code> se vuoi ancora ordini a prezzo fisso) e riavvia.</p>
+        <p>Non esiste ancora una protezione automatica dal depeg. Se USDT o USDC si allontana da un dollaro, toglila da <code>only</code>, o aggiungila a <code>except</code> se non usi <code>only</code> (lasciala in <code>fiat_currencies_accepted</code> se vuoi ancora ordini a prezzo fisso) e riavvia.</p>
       </div>`,
     },
     'reputation': {
@@ -891,6 +892,7 @@ keys = ["&lt;that node's reputation_issuer key, npub or hex&gt;"]</code></pre>
       <p>Le attestazioni sono firmate con una chiave dedicata, mai con quella del tuo nodo. Generane una e tienila accanto al nsec, nell'ambiente o in <code>&lt;config-dir&gt;/.env</code>:</p>
       <pre><code># Layout Docker Hub; altrimenti usa la tua directory di configurazione
 echo "MOSTRO_REPUTATION_ISSUER_SK=$(openssl rand -hex 32)" >> ~/mostro-config/.env
+sudo chown 1000:1000 ~/mostro-config/.env
 chmod 600 ~/mostro-config/.env</code></pre>
       <pre><code>[reputation_export]
 enabled = true
@@ -1364,20 +1366,22 @@ cp ~/mostro-config/.env /root/mostro-backups/env.$(date +%Y%m%d) 2>/dev/null
 # Backup manuale — Docker Build (Opzione B):
 sqlite3 /opt/mostro/docker/config/mostro.db ".backup '/root/mostro-backups/mostro.db.$(date +%Y%m%d)'"
 cp /opt/mostro/docker/config/settings.toml /root/mostro-backups/settings.toml.$(date +%Y%m%d)
+cp /opt/mostro/docker/config/.env /root/mostro-backups/env.$(date +%Y%m%d) 2>/dev/null
 
 # Backup manuale — Nativo:
 sqlite3 /opt/mostro/mostro.db ".backup '/root/mostro-backups/mostro.db.$(date +%Y%m%d)'"
-cp /opt/mostro/settings.toml /root/mostro-backups/settings.toml.$(date +%Y%m%d)</code></pre>
+cp /opt/mostro/settings.toml /root/mostro-backups/settings.toml.$(date +%Y%m%d)
+cp /opt/mostro/.env /root/mostro-backups/env.$(date +%Y%m%d) 2>/dev/null</code></pre>
 
       <p><strong>Backup giornaliero automatico</strong> (aggiungi al crontab con <code>crontab -e</code>):</p>
       <pre><code># Docker Hub (Opzione A):
-0 3 * * * mkdir -p /root/mostro-backups && sqlite3 /root/mostro-config/mostro.db ".backup '/root/mostro-backups/mostro.db.$(date +\\%Y\\%m\\%d)'" && cp /root/mostro-config/settings.toml /root/mostro-backups/settings.toml.$(date +\\%Y\\%m\\%d)
+0 3 * * * mkdir -p /root/mostro-backups && sqlite3 /root/mostro-config/mostro.db ".backup '/root/mostro-backups/mostro.db.$(date +\\%Y\\%m\\%d)'" && cp /root/mostro-config/settings.toml /root/mostro-backups/settings.toml.$(date +\\%Y\\%m\\%d); cp /root/mostro-config/.env /root/mostro-backups/env.$(date +\\%Y\\%m\\%d) 2>/dev/null
 
 # Docker Build (Opzione B):
-0 3 * * * mkdir -p /root/mostro-backups && sqlite3 /opt/mostro/docker/config/mostro.db ".backup '/root/mostro-backups/mostro.db.$(date +\\%Y\\%m\\%d)'" && cp /opt/mostro/docker/config/settings.toml /root/mostro-backups/settings.toml.$(date +\\%Y\\%m\\%d)
+0 3 * * * mkdir -p /root/mostro-backups && sqlite3 /opt/mostro/docker/config/mostro.db ".backup '/root/mostro-backups/mostro.db.$(date +\\%Y\\%m\\%d)'" && cp /opt/mostro/docker/config/settings.toml /root/mostro-backups/settings.toml.$(date +\\%Y\\%m\\%d); cp /opt/mostro/docker/config/.env /root/mostro-backups/env.$(date +\\%Y\\%m\\%d) 2>/dev/null
 
 # Nativo (Opzione C):
-0 3 * * * mkdir -p /root/mostro-backups && sqlite3 /opt/mostro/mostro.db ".backup '/root/mostro-backups/mostro.db.$(date +\\%Y\\%m\\%d)'" && cp /opt/mostro/settings.toml /root/mostro-backups/settings.toml.$(date +\\%Y\\%m\\%d)</code></pre>
+0 3 * * * mkdir -p /root/mostro-backups && sqlite3 /opt/mostro/mostro.db ".backup '/root/mostro-backups/mostro.db.$(date +\\%Y\\%m\\%d)'" && cp /opt/mostro/settings.toml /root/mostro-backups/settings.toml.$(date +\\%Y\\%m\\%d); cp /opt/mostro/.env /root/mostro-backups/env.$(date +\\%Y\\%m\\%d) 2>/dev/null</code></pre>
 
       <div class="callout important">
         <div class="callout-title">⚠️ Critico</div>

@@ -342,7 +342,7 @@ chmod 600 ~/mostro-config/lnd/mostro.macaroon</code></pre>
 
       <div class="callout tip">
         <div class="callout-title">💡 Nota</div>
-        <p>Não existe uma mensagem de "conectado ao LND" nem de "conectado ao relay". O Mostro contata o LND durante a inicialização, então um daemon que continua rodando já tem a conexão funcionando. A falha, por outro lado, é ruidosa: registra <code>Ln node error</code> e encerra. Depois da inicialização ele consulta o LND a cada 15 segundos e registra <code>LND did not answer GetInfo</code> se ele parar de responder. Para os relays, a linha do evento de saúde é o seu sinal: <code>No relay accepted the health event</code> significa que nenhum deles o aceitou.</p>
+        <p>Não existe uma mensagem de "conectado ao LND" nem de "conectado ao relay". O Mostro contata o LND durante a inicialização, então um daemon que passa da inicialização já alcançou o LND. A falha, por outro lado, é ruidosa: registra <code>Ln node error</code> e encerra. Depois da inicialização ele consulta o LND a cada 15 segundos e registra <code>LND did not answer GetInfo</code> se ele parar de responder; os pagamentos de saída então esperam até ele voltar (5.4). Para os relays, a linha do evento de saúde é o seu sinal: <code>No relay accepted the health event</code> significa que nenhum deles o aceitou.</p>
       </div>
 
       <div class="callout tip">
@@ -627,6 +627,7 @@ pow = 0  # 0 = desabilitado; 10-20 = moderado. Comece com 0.</code></pre>
       <pre><code>[mostro]
 pow = 0                  # operações em curso
 pow_first_contact = 16   # novas ordens e tomadas de chaves desconhecidas</code></pre>
+      <p>Os clientes precisam minerar pelo menos esse tanto. Quem usa mostro-cli tem de definir <code>POW</code> (ou <code>-p</code>) com o seu valor; caso contrário, suas novas ordens e tomadas são descartadas sem resposta.</p>
 
       <p>Um desestímulo mais forte contra quem toma ordens e some é a caução anti-abuso (veja 4.11).</p>`,
     },
@@ -852,7 +853,7 @@ only = ["USDT", "USDC", "DOC", "LBTC", "RBTC"]   # ou except = ["BTC"]; sem nenh
 
       <div class="callout tip">
         <div class="callout-title">💡 Se uma stablecoin perder a paridade</div>
-        <p>Ainda não existe uma proteção automática contra depeg. Se o USDT ou o USDC se afastar de um dólar, remova-o de <code>only</code> (mantenha-o em <code>fiat_currencies_accepted</code> se ainda quiser ordens de preço fixo) e reinicie.</p>
+        <p>Ainda não existe uma proteção automática contra depeg. Se o USDT ou o USDC se afastar de um dólar, remova-o de <code>only</code>, ou adicione-o a <code>except</code> se não usar <code>only</code> (mantenha-o em <code>fiat_currencies_accepted</code> se ainda quiser ordens de preço fixo) e reinicie.</p>
       </div>`,
     },
     'reputation': {
@@ -891,6 +892,7 @@ keys = ["&lt;that node's reputation_issuer key, npub or hex&gt;"]</code></pre>
       <p>As atestações são assinadas com uma chave dedicada, nunca com a chave do seu nó. Gere uma e guarde-a junto ao nsec, no ambiente ou em <code>&lt;config-dir&gt;/.env</code>:</p>
       <pre><code># Layout do Docker Hub; use o seu próprio diretório de configuração nos demais casos
 echo "MOSTRO_REPUTATION_ISSUER_SK=$(openssl rand -hex 32)" >> ~/mostro-config/.env
+sudo chown 1000:1000 ~/mostro-config/.env
 chmod 600 ~/mostro-config/.env</code></pre>
       <pre><code>[reputation_export]
 enabled = true
@@ -1365,20 +1367,22 @@ cp ~/mostro-config/.env /root/mostro-backups/env.$(date +%Y%m%d) 2>/dev/null
 # Backup manual — Docker Build (Opção B):
 sqlite3 /opt/mostro/docker/config/mostro.db ".backup '/root/mostro-backups/mostro.db.$(date +%Y%m%d)'"
 cp /opt/mostro/docker/config/settings.toml /root/mostro-backups/settings.toml.$(date +%Y%m%d)
+cp /opt/mostro/docker/config/.env /root/mostro-backups/env.$(date +%Y%m%d) 2>/dev/null
 
 # Backup manual — Nativo:
 sqlite3 /opt/mostro/mostro.db ".backup '/root/mostro-backups/mostro.db.$(date +%Y%m%d)'"
-cp /opt/mostro/settings.toml /root/mostro-backups/settings.toml.$(date +%Y%m%d)</code></pre>
+cp /opt/mostro/settings.toml /root/mostro-backups/settings.toml.$(date +%Y%m%d)
+cp /opt/mostro/.env /root/mostro-backups/env.$(date +%Y%m%d) 2>/dev/null</code></pre>
 
       <p><strong>Backup diário automático</strong> (adicione ao crontab com <code>crontab -e</code>):</p>
       <pre><code># Docker Hub (Opção A):
-0 3 * * * mkdir -p /root/mostro-backups && sqlite3 /root/mostro-config/mostro.db ".backup '/root/mostro-backups/mostro.db.$(date +\\%Y\\%m\\%d)'" && cp /root/mostro-config/settings.toml /root/mostro-backups/settings.toml.$(date +\\%Y\\%m\\%d)
+0 3 * * * mkdir -p /root/mostro-backups && sqlite3 /root/mostro-config/mostro.db ".backup '/root/mostro-backups/mostro.db.$(date +\\%Y\\%m\\%d)'" && cp /root/mostro-config/settings.toml /root/mostro-backups/settings.toml.$(date +\\%Y\\%m\\%d); cp /root/mostro-config/.env /root/mostro-backups/env.$(date +\\%Y\\%m\\%d) 2>/dev/null
 
 # Docker Build (Opção B):
-0 3 * * * mkdir -p /root/mostro-backups && sqlite3 /opt/mostro/docker/config/mostro.db ".backup '/root/mostro-backups/mostro.db.$(date +\\%Y\\%m\\%d)'" && cp /opt/mostro/docker/config/settings.toml /root/mostro-backups/settings.toml.$(date +\\%Y\\%m\\%d)
+0 3 * * * mkdir -p /root/mostro-backups && sqlite3 /opt/mostro/docker/config/mostro.db ".backup '/root/mostro-backups/mostro.db.$(date +\\%Y\\%m\\%d)'" && cp /opt/mostro/docker/config/settings.toml /root/mostro-backups/settings.toml.$(date +\\%Y\\%m\\%d); cp /opt/mostro/docker/config/.env /root/mostro-backups/env.$(date +\\%Y\\%m\\%d) 2>/dev/null
 
 # Nativo (Opção C):
-0 3 * * * mkdir -p /root/mostro-backups && sqlite3 /opt/mostro/mostro.db ".backup '/root/mostro-backups/mostro.db.$(date +\\%Y\\%m\\%d)'" && cp /opt/mostro/settings.toml /root/mostro-backups/settings.toml.$(date +\\%Y\\%m\\%d)</code></pre>
+0 3 * * * mkdir -p /root/mostro-backups && sqlite3 /opt/mostro/mostro.db ".backup '/root/mostro-backups/mostro.db.$(date +\\%Y\\%m\\%d)'" && cp /opt/mostro/settings.toml /root/mostro-backups/settings.toml.$(date +\\%Y\\%m\\%d); cp /opt/mostro/.env /root/mostro-backups/env.$(date +\\%Y\\%m\\%d) 2>/dev/null</code></pre>
 
       <div class="callout important">
         <div class="callout-title">⚠️ Crítico</div>

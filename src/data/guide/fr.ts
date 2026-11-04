@@ -342,7 +342,7 @@ chmod 600 ~/mostro-config/lnd/mostro.macaroon</code></pre>
 
       <div class="callout tip">
         <div class="callout-title">💡 Note</div>
-        <p>Il n'existe pas de message « connecté à LND » ni « connecté au relais ». Mostro contacte LND pendant le démarrage : un daemon qui continue de tourner a donc une connexion fonctionnelle. L'échec, lui, est bruyant : il journalise <code>Ln node error</code> et s'arrête. Après le démarrage, il interroge LND toutes les 15 secondes et journalise <code>LND did not answer GetInfo</code> s'il cesse de répondre. Pour les relais, la ligne de l'événement de santé est votre signal : <code>No relay accepted the health event</code> signifie qu'aucun ne l'a accepté.</p>
+        <p>Il n'existe pas de message « connecté à LND » ni « connecté au relais ». Mostro contacte LND pendant le démarrage : un daemon qui passe le démarrage a donc joint LND. L'échec, lui, est bruyant : il journalise <code>Ln node error</code> et s'arrête. Après le démarrage, il interroge LND toutes les 15 secondes et journalise <code>LND did not answer GetInfo</code> s'il cesse de répondre ; les paiements sortants attendent alors son retour (5.4). Pour les relais, la ligne de l'événement de santé est votre signal : <code>No relay accepted the health event</code> signifie qu'aucun ne l'a accepté.</p>
       </div>
 
       <div class="callout tip">
@@ -627,6 +627,7 @@ pow = 0  # 0 = désactivé ; 10-20 = modéré. Commencez avec 0.</code></pre>
       <pre><code>[mostro]
 pow = 0                  # transactions en cours
 pow_first_contact = 16   # nouveaux ordres et prises depuis des clés inconnues</code></pre>
+      <p>Les clients doivent miner au moins autant. Les utilisateurs de mostro-cli doivent régler <code>POW</code> (ou <code>-p</code>) sur votre valeur, sinon leurs nouveaux ordres et prises sont ignorés sans réponse.</p>
 
       <p>Un moyen de dissuasion plus fort contre ceux qui prennent des ordres puis disparaissent est la caution anti-abus (voir 4.11).</p>`,
     },
@@ -852,7 +853,7 @@ only = ["USDT", "USDC", "DOC", "LBTC", "RBTC"]   # ou except = ["BTC"] ; sans l'
 
       <div class="callout tip">
         <div class="callout-title">💡 Si un stablecoin perd son ancrage</div>
-        <p>Il n'existe pas encore de garde-fou automatique contre le dépeg. Si l'USDT ou l'USDC s'éloigne d'un dollar, retirez-le de <code>only</code> (gardez-le dans <code>fiat_currencies_accepted</code> si vous voulez encore des ordres à prix fixe) et redémarrez.</p>
+        <p>Il n'existe pas encore de garde-fou automatique contre le dépeg. Si l'USDT ou l'USDC s'éloigne d'un dollar, retirez-le de <code>only</code>, ou ajoutez-le à <code>except</code> si vous n'utilisez pas <code>only</code> (gardez-le dans <code>fiat_currencies_accepted</code> si vous voulez encore des ordres à prix fixe) et redémarrez.</p>
       </div>`,
     },
     'reputation': {
@@ -891,6 +892,7 @@ keys = ["&lt;that node's reputation_issuer key, npub or hex&gt;"]</code></pre>
       <p>Les attestations sont signées avec une clé dédiée, jamais la clé de votre nœud. Générez-en une et gardez-la à côté du nsec, dans l'environnement ou dans <code>&lt;config-dir&gt;/.env</code> :</p>
       <pre><code># Disposition Docker Hub ; sinon, utilisez votre propre répertoire de configuration
 echo "MOSTRO_REPUTATION_ISSUER_SK=$(openssl rand -hex 32)" >> ~/mostro-config/.env
+sudo chown 1000:1000 ~/mostro-config/.env
 chmod 600 ~/mostro-config/.env</code></pre>
       <pre><code>[reputation_export]
 enabled = true
@@ -1364,20 +1366,22 @@ cp ~/mostro-config/.env /root/mostro-backups/env.$(date +%Y%m%d) 2>/dev/null
 # Sauvegarde manuelle — Docker Build (Option B) :
 sqlite3 /opt/mostro/docker/config/mostro.db ".backup '/root/mostro-backups/mostro.db.$(date +%Y%m%d)'"
 cp /opt/mostro/docker/config/settings.toml /root/mostro-backups/settings.toml.$(date +%Y%m%d)
+cp /opt/mostro/docker/config/.env /root/mostro-backups/env.$(date +%Y%m%d) 2>/dev/null
 
 # Sauvegarde manuelle — Native :
 sqlite3 /opt/mostro/mostro.db ".backup '/root/mostro-backups/mostro.db.$(date +%Y%m%d)'"
-cp /opt/mostro/settings.toml /root/mostro-backups/settings.toml.$(date +%Y%m%d)</code></pre>
+cp /opt/mostro/settings.toml /root/mostro-backups/settings.toml.$(date +%Y%m%d)
+cp /opt/mostro/.env /root/mostro-backups/env.$(date +%Y%m%d) 2>/dev/null</code></pre>
 
       <p><strong>Sauvegarde quotidienne automatique</strong> (à ajouter au crontab avec <code>crontab -e</code>) :</p>
       <pre><code># Docker Hub (Option A) :
-0 3 * * * mkdir -p /root/mostro-backups && sqlite3 /root/mostro-config/mostro.db ".backup '/root/mostro-backups/mostro.db.$(date +\\%Y\\%m\\%d)'" && cp /root/mostro-config/settings.toml /root/mostro-backups/settings.toml.$(date +\\%Y\\%m\\%d)
+0 3 * * * mkdir -p /root/mostro-backups && sqlite3 /root/mostro-config/mostro.db ".backup '/root/mostro-backups/mostro.db.$(date +\\%Y\\%m\\%d)'" && cp /root/mostro-config/settings.toml /root/mostro-backups/settings.toml.$(date +\\%Y\\%m\\%d); cp /root/mostro-config/.env /root/mostro-backups/env.$(date +\\%Y\\%m\\%d) 2>/dev/null
 
 # Docker Build (Option B) :
-0 3 * * * mkdir -p /root/mostro-backups && sqlite3 /opt/mostro/docker/config/mostro.db ".backup '/root/mostro-backups/mostro.db.$(date +\\%Y\\%m\\%d)'" && cp /opt/mostro/docker/config/settings.toml /root/mostro-backups/settings.toml.$(date +\\%Y\\%m\\%d)
+0 3 * * * mkdir -p /root/mostro-backups && sqlite3 /opt/mostro/docker/config/mostro.db ".backup '/root/mostro-backups/mostro.db.$(date +\\%Y\\%m\\%d)'" && cp /opt/mostro/docker/config/settings.toml /root/mostro-backups/settings.toml.$(date +\\%Y\\%m\\%d); cp /opt/mostro/docker/config/.env /root/mostro-backups/env.$(date +\\%Y\\%m\\%d) 2>/dev/null
 
 # Native (Option C) :
-0 3 * * * mkdir -p /root/mostro-backups && sqlite3 /opt/mostro/mostro.db ".backup '/root/mostro-backups/mostro.db.$(date +\\%Y\\%m\\%d)'" && cp /opt/mostro/settings.toml /root/mostro-backups/settings.toml.$(date +\\%Y\\%m\\%d)</code></pre>
+0 3 * * * mkdir -p /root/mostro-backups && sqlite3 /opt/mostro/mostro.db ".backup '/root/mostro-backups/mostro.db.$(date +\\%Y\\%m\\%d)'" && cp /opt/mostro/settings.toml /root/mostro-backups/settings.toml.$(date +\\%Y\\%m\\%d); cp /opt/mostro/.env /root/mostro-backups/env.$(date +\\%Y\\%m\\%d) 2>/dev/null</code></pre>
 
       <div class="callout important">
         <div class="callout-title">⚠️ Critique</div>
