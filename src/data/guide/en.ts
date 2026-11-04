@@ -87,6 +87,8 @@ const en: GuideTranslation = {
 
       <p><strong>Estimated monthly cost:</strong> $10–$24/month.</p>
 
+      <p>These figures are for Mostro alone. If LND runs on the same VPS, add at least 2 GB of RAM, and the disk its Bitcoin backend needs (see 2.2).</p>
+
       <p><strong>Popular VPS providers:</strong></p>
       <ul>
         <li><a href="https://www.hostinger.com/" target="_blank" rel="noopener noreferrer">Hostinger</a> — from ~$7/month (promotional price; renewal may be higher) (KVM 2: 2 vCPU, 8GB RAM, 100GB NVMe, 8TB bandwidth) · Accepts Bitcoin</li>
@@ -114,7 +116,7 @@ const en: GuideTranslation = {
         <thead><tr><th>Option</th><th>Difficulty</th><th>Cost</th><th>Notes</th></tr></thead>
         <tbody>
           <tr><td>Use an existing LND node</td><td><span class="badge badge-easy">Easy</span></td><td>Free (if you have one)</td><td>Best if someone already has one</td></tr>
-          <tr><td>Run LND on the same VPS</td><td><span class="badge badge-hard">Hard</span></td><td>Same VPS + liquidity</td><td>Requires VPS with 4GB+ RAM</td></tr>
+          <tr><td>Run LND on the same VPS</td><td><span class="badge badge-hard">Hard</span></td><td>Bigger VPS + liquidity</td><td>4GB+ RAM, and disk for the Bitcoin backend (see below)</td></tr>
           <tr><td>Node-in-a-box solution</td><td><span class="badge badge-medium">Medium</span></td><td>$200-600 + liquidity</td><td><a href="https://start9.com/" target="_blank" rel="noopener noreferrer">Start9</a>, <a href="https://umbrel.com/" target="_blank" rel="noopener noreferrer">Umbrel</a>, <a href="https://raspiblitz.org/" target="_blank" rel="noopener noreferrer">RaspiBlitz</a></td></tr>
           <tr><td>StartOS with Mostro package</td><td><span class="badge badge-easy">Easiest</span></td><td>$300-600 + liquidity</td><td>Start9 has a one-click Mostro package</td></tr>
           <tr><td>Use Voltage.cloud</td><td><span class="badge badge-easy">Easy</span></td><td>From ~$20/month + liquidity</td><td><a href="https://voltage.cloud/" target="_blank" rel="noopener noreferrer">Voltage</a> — Hosted LND with managed infrastructure</td></tr>
@@ -140,7 +142,54 @@ const en: GuideTranslation = {
       <pre><code>lncli bakemacaroon --root_key_id 7 \\
   --save_to /root/.lnd/data/chain/bitcoin/mainnet/mostro.macaroon \\
   info:read invoices:read invoices:write offchain:read offchain:write</code></pre>
-      <p>This macaroon cannot open or close channels, move on-chain funds, or change your node's configuration. If it ever leaks, revoke it with <code>lncli deletemacaroonid 7</code> — using the same ID you baked it with — and bake a new one.</p>`,
+      <p>This macaroon cannot open or close channels, move on-chain funds, or change your node's configuration. If it ever leaks, revoke it with <code>lncli deletemacaroonid 7</code> — using the same ID you baked it with — and bake a new one.</p>
+
+      <p><strong>If you can't write into LND's data directory</strong> (a container, a node-in-a-box, a hosted node), leave out <code>--save_to</code>: <code>lncli</code> then prints the macaroon in hex, and you turn it into a file wherever Mostro runs. <code>lncli</code> can also bake it from another machine, pointed at the node with its admin credentials:</p>
+      <pre><code>lncli --rpcserver=NODE_ADDRESS:10009 --tlscertpath=tls.cert --macaroonpath=admin.macaroon \\
+  bakemacaroon --root_key_id 7 info:read invoices:read invoices:write offchain:read offchain:write
+# copy the hex it prints, then:
+echo "PASTE_THE_HEX_HERE" | xxd -r -p > mostro.macaroon   # apt install -y xxd if missing</code></pre>
+      <p>Unlike Mostro, <code>lncli</code> checks that <code>NODE_ADDRESS</code> appears in the node's certificate. LND puts the machine's own addresses in it when it creates it, but not, for example, a VPN address added later. If the connection fails with a certificate error, run <code>lncli</code> on the node itself instead, or add the address with <code>tlsextraip</code> (or <code>tlsextradomain</code>) in <code>lnd.conf</code>, delete <code>tls.cert</code> and <code>tls.key</code>, and restart LND so it creates a new certificate; then copy the new <code>tls.cert</code> to Mostro too.</p>
+
+      <h4>How Mostro connects to LND</h4>
+      <p>Mostro talks to LND's gRPC port (10009 by default) and authenticates with <code>tls.cert</code> and the macaroon. Three things are worth knowing before you choose where LND runs:</p>
+      <ul>
+        <li><strong>LND only listens on <code>localhost</code> by default.</strong> A Mostro on the same machine reaches it at <code>https://127.0.0.1:10009</code>; anything else (a Docker container, another server) needs the extra steps below.</li>
+        <li><strong>Mostro pins the certificate.</strong> It accepts exactly the certificate in <code>tls.cert</code> and ignores the host name, so you don't need <code>tlsextraip</code> or <code>tlsextradomain</code>. But if LND regenerates its certificate (it expires after about 14 months), copy the new <code>tls.cert</code> to Mostro and restart it, or it stops at startup with <code>Ln node error</code>.</li>
+        <li><strong>No Tor for this link.</strong> Mostro cannot reach LND through Tor or a SOCKS proxy. A remote LND must be reachable over the network: use a VPN.</li>
+      </ul>
+
+      <h4>LND on the same VPS</h4>
+      <p>Install LND following the official guide (<a href="https://docs.lightning.engineering/lightning-network-tools/lnd/run-lnd" target="_blank" rel="noopener noreferrer">docs.lightning.engineering</a>), using its release binaries. LND needs a view of the Bitcoin chain, and that choice decides the size of your VPS:</p>
+      <table class="guide-table">
+        <thead><tr><th>Backend</th><th>Disk</th><th>Trade-off</th></tr></thead>
+        <tbody>
+          <tr><td><code>bitcoind</code>, full node</td><td>More than 700 GB</td><td>The most robust. Initial sync takes days.</td></tr>
+          <tr><td><code>bitcoind</code>, pruned</td><td>Tens of GB</td><td>Supported by LND and robust; the initial sync still takes days.</td></tr>
+          <tr><td><code>neutrino</code></td><td>A few GB</td><td>No Bitcoin node and a fast start, but it depends on the peers it syncs from. A neutrino node that stalled for about 21 hours is why Mostro now watches LND's sync (5.4). If you use it, point it at Bitcoin nodes you trust with <code>neutrino.connect</code> and set up the health alerts.</td></tr>
+        </tbody>
+      </table>
+      <p>Then make LND reachable from Mostro. With the native install (Option C) nothing changes: use <code>https://127.0.0.1:10009</code>. With Docker (Options A and B) the container is a separate host, so pick one:</p>
+      <ul>
+        <li><strong>Host networking (simplest).</strong> Run the container with <code>--network host</code> instead of <code>--add-host=host.docker.internal:host-gateway</code> (in compose, <code>network_mode: host</code> instead of <code>extra_hosts</code>) and set <code>lnd_grpc_host = 'https://127.0.0.1:10009'</code>. LND keeps listening on <code>localhost</code> only.</li>
+        <li><strong>Keep the bridge network</strong> and <code>host.docker.internal</code>, as in Option A. Then LND has to listen beyond <code>localhost</code> — add <code>rpclisten=0.0.0.0:10009</code> to <code>lnd.conf</code> — and your firewall must keep port 10009 closed to the internet, for example <code>ufw allow from 172.16.0.0/12 to any port 10009 proto tcp</code> followed by <code>ufw deny 10009/tcp</code>. If UFW is not active yet, allow SSH first (<code>ufw allow OpenSSH</code>) and then run <code>ufw enable</code>: inactive, it enforces none of these rules.</li>
+      </ul>
+
+      <h4>LND on another server or at home</h4>
+      <p>Connect the two machines with a VPN such as <a href="https://www.wireguard.com/" target="_blank" rel="noopener noreferrer">WireGuard</a> or <a href="https://tailscale.com/" target="_blank" rel="noopener noreferrer">Tailscale</a>, make LND listen on its VPN address (<code>rpclisten=VPN_IP:10009</code>, plus <code>rpclisten=localhost:10009</code> so <code>lncli</code> on the node keeps working: any <code>rpclisten</code> line replaces the default), and set <code>lnd_grpc_host = 'https://VPN_IP:10009'</code>. Copy <code>tls.cert</code> and the macaroon to the Mostro server. Opening port 10009 to the internet also works, but then the macaroon is the only thing between the world and your node: avoid it. A node at home must stay online 24/7: a power cut or a dropped connection leaves your users' trades waiting.</p>
+
+      <h4>Node-in-a-box (Start9, Umbrel, RaspiBlitz)</h4>
+      <p>These systems install and update LND for you, usually on a small computer at home. On <strong>StartOS</strong> the simplest path is the Mostro package itself, which connects to the LND service on the same box. Using the box's LND from a Mostro on a VPS is harder: these systems manage LND's configuration themselves, so you may not be able to add an <code>rpclisten</code> line, and they often expose gRPC only on the local network or over Tor, which Mostro cannot use. Check what your system allows before you plan on it. Each system shows LND's connection details in its own interface (on StartOS, under the LND service's properties); <code>lncli</code> usually runs inside the LND container — on Umbrel, for example, <code>sudo docker exec -it lightning_lnd_1 lncli ...</code> (check the name with <code>sudo docker ps</code>). Bake the macaroon in hex as shown above.</p>
+
+      <h4>Voltage (hosted LND)</h4>
+      <p>Voltage runs LND for you. Download <code>tls.cert</code> and the admin macaroon from the node's dashboard, use them only to bake Mostro's restricted macaroon from your own machine (see above), and point <code>lnd_grpc_host</code> at the gRPC address the dashboard shows, port 10009. You still provide and manage the liquidity.</p>
+
+      <h4>LND settings that affect Mostro</h4>
+      <ul>
+        <li><code>invoices.holdexpirydelta</code> (default 12): if you raise it, raise <code>escrow_deadline_margin_blocks</code> so it stays at least 6 blocks above (4.9).</li>
+        <li><code>max-cltv-expiry</code> (default 2016): Mostro's <code>payment_cltv_limit</code> must not exceed it (4.9).</li>
+        <li>Keep LND's wallet seed and channel backup safe: see 5.6.</li>
+      </ul>`,
     },
     'liquidity': {
       title: `2.3 Lightning Liquidity`,
@@ -167,7 +216,7 @@ const en: GuideTranslation = {
       <p><strong>Getting liquidity:</strong></p>
       <ul>
         <li>Open channels to well-connected nodes (use <a href="https://lightningnetwork.plus/" target="_blank" rel="noopener noreferrer">Lightning Network+</a> or <a href="https://amboss.space/" target="_blank" rel="noopener noreferrer">Amboss</a> to find good peers)</li>
-        <li>You need <strong>outbound</strong> capacity (to pay buyers) and <strong>inbound</strong> capacity (to receive from sellers)</li>
+        <li>You need <strong>outbound</strong> capacity (to pay buyers) and <strong>inbound</strong> capacity (to receive from sellers). Each trade first receives the seller's sats and then pays the buyer, so keep at least your <code>max_order_amount</code> (4.3) of capacity in each direction</li>
         <li>Getting inbound liquidity is usually harder — consider <a href="https://lightning.engineering/loop/" target="_blank" rel="noopener noreferrer">Lightning Loop</a>, <a href="https://amboss.space/magma" target="_blank" rel="noopener noreferrer">Magma</a>, or channel swap services</li>
       </ul>`,
     },
@@ -315,7 +364,7 @@ chmod 600 ~/mostro-config/settings.toml
 chmod 600 ~/mostro-config/lnd/mostro.macaroon</code></pre>
 
       <h4>Step 10: Run the container</h4>
-      <p><strong>If LND is on the same VPS:</strong></p>
+      <p><strong>If LND is on the same VPS</strong> (LND must accept the container's connection, or use host networking instead: see 2.2):</p>
       <pre><code>docker run -d --name mostro \\
   --restart unless-stopped \\
   --add-host=host.docker.internal:host-gateway \\
@@ -1386,7 +1435,15 @@ cp /opt/mostro/.env /root/mostro-backups/env.$(date +%Y%m%d) 2>/dev/null</code><
       <div class="callout important">
         <div class="callout-title">⚠️ Critical</div>
         <p>Your <code>nsec_privkey</code> in <code>settings.toml</code> IS your node's identity. If you lose it, you lose your reputation and all users must reconnect to a new identity. <strong>Keep an offline copy.</strong></p>
-      </div>`,
+      </div>
+
+      <h4>If you run your own LND</h4>
+      <p>Mostro's backups do not cover your Lightning node. The funds in your channels depend on two LND backups:</p>
+      <ul>
+        <li><strong>The wallet seed</strong> (24 words, plus the passphrase if you set one), shown once when the wallet is created. Write it down offline.</li>
+        <li><strong>The static channel backup</strong>, <code>channel.backup</code> (for example <code>~/.lnd/data/chain/bitcoin/mainnet/channel.backup</code>). LND rewrites it every time a channel opens or closes, so copy it off the machine regularly, for example in the same cron job as Mostro's backups. With the seed and this file you can close your channels and recover the funds on a new node.</li>
+      </ul>
+      <p>Never back up or restore <code>channel.db</code> as a way to recover channels: an outdated copy makes your node broadcast old states, and the peers can take all the funds of those channels. Node-in-a-box systems and Voltage have their own backup features; turn them on. LND's documentation covers recovery in detail (<a href="https://docs.lightning.engineering/lightning-network-tools/lnd/recovery-planning-for-failure" target="_blank" rel="noopener noreferrer">recovery planning</a>).</p>`,
     },
     'activity': {
       title: `5.7 Reviewing Trade Activity`,
@@ -1626,7 +1683,7 @@ serbero_pubkey = "npub1..."   # Serbero's key, npub or hex</code></pre>
       <p>No, but you need to be comfortable with basic command line operations (typing commands, editing text files). The Docker path (Option A) is designed to be accessible.</p>
 
       <h3>Can I run Mostro on a Raspberry Pi?</h3>
-      <p>Technically yes (using Start9 or similar), but not recommended for production due to CPU and RAM limitations. A VPS is more reliable.</p>
+      <p>Many people run LND on a Raspberry Pi 4 or 5 with an SSD, through Start9, Umbrel or RaspiBlitz, and the StartOS Mostro package can run next to it. For a node your community depends on, a VPS is more reliable than a home connection and power supply. A common middle ground is LND at home and Mostro on a VPS, linked over a VPN (see 2.2).</p>
 
       <h3>Can I use Core Lightning (CLN) instead of LND?</h3>
       <p>No. Mostro currently only supports LND because it depends on LND's specific hold invoice implementation. Support for other implementations may come in the future.</p>
