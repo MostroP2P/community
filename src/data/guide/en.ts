@@ -816,7 +816,7 @@ maker_bond_payment_timeout_seconds = 900
 
       <ul>
         <li><strong>Stablecoins</strong> are pegged 1:1 to the dollar, so a USDT order at market price is priced exactly like a USD order, premium included. The USD rate comes from your normal price sources (4.10); no extra API is called.</li>
-        <li><strong>BTC, LBTC and RBTC</strong> are quoted 1:1 in sats, so they need no price API at all. An order for 100,000 means 100,000 sats of the asset (0.001 RBTC). At market price the premium is the price of the swap: a sell order of 100,000 sats of RBTC with a 1% premium locks 99,000 Lightning sats.</li>
+        <li><strong>BTC, LBTC and RBTC</strong> are quoted 1:1 in sats, so they need no price API at all. An order for 100,000 means 100,000 sats of the asset (0.001 RBTC). At market price the premium is the price of the swap: a sell order (the maker sells Lightning sats) for 100,000 sats of RBTC with a 1% premium locks 99,000 Lightning sats, and the seller receives 100,000 sats of RBTC.</li>
         <li>No other code is supported: DAI, EURC and the rest are refused at startup if you list them under <code>only</code>.</li>
       </ul>
 

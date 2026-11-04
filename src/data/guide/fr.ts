@@ -816,7 +816,7 @@ maker_bond_payment_timeout_seconds = 900
 
       <ul>
         <li>Les <strong>stablecoins</strong> sont indexés 1:1 sur le dollar : un ordre USDT au prix du marché est donc valorisé exactement comme un ordre USD, prime comprise. Le taux USD vient de vos sources de prix habituelles (4.10) ; aucune API supplémentaire n'est appelée.</li>
-        <li><strong>BTC, LBTC et RBTC</strong> sont cotés 1:1 en sats, ils n'ont donc besoin d'aucune API de prix. Un ordre de 100 000 signifie 100 000 sats de l'actif (0,001 RBTC). Au prix du marché, la prime est le prix du swap : un ordre de vente de 100 000 sats de RBTC avec une prime de 1% verrouille 99 000 sats Lightning.</li>
+        <li><strong>BTC, LBTC et RBTC</strong> sont cotés 1:1 en sats, ils n'ont donc besoin d'aucune API de prix. Un ordre de 100 000 signifie 100 000 sats de l'actif (0,001 RBTC). Au prix du marché, la prime est le prix du swap : un ordre de vente (le créateur vend des sats Lightning) de 100 000 sats de RBTC avec une prime de 1% verrouille 99 000 sats Lightning, et le vendeur reçoit 100 000 sats de RBTC.</li>
         <li>Aucun autre code n'est pris en charge : DAI, EURC et les autres sont refusés au démarrage si vous les listez dans <code>only</code>.</li>
       </ul>
 

@@ -816,7 +816,7 @@ maker_bond_payment_timeout_seconds = 900
 
       <ul>
         <li><strong>Le stablecoin</strong> sono agganciate 1:1 al dollaro, quindi un ordine USDT a prezzo di mercato è quotato esattamente come un ordine USD, premio incluso. Il tasso USD viene dalle tue normali fonti di prezzo (4.10); non viene chiamata nessuna API aggiuntiva.</li>
-        <li><strong>BTC, LBTC e RBTC</strong> sono quotati 1:1 in sat, quindi non servono affatto API di prezzo. Un ordine da 100.000 significa 100.000 sat dell'asset (0,001 RBTC). A prezzo di mercato il premio è il prezzo dello swap: un ordine di vendita di 100.000 sat di RBTC con un premio dell'1% blocca 99.000 sat Lightning.</li>
+        <li><strong>BTC, LBTC e RBTC</strong> sono quotati 1:1 in sat, quindi non servono affatto API di prezzo. Un ordine da 100.000 significa 100.000 sat dell'asset (0,001 RBTC). A prezzo di mercato il premio è il prezzo dello swap: un ordine di vendita (il creatore vende sat Lightning) per 100.000 sat di RBTC con un premio dell'1% blocca 99.000 sat Lightning, e il venditore riceve 100.000 sat di RBTC.</li>
         <li>Nessun altro codice è supportato: DAI, EURC e gli altri vengono rifiutati all'avvio se li elenchi sotto <code>only</code>.</li>
       </ul>
 

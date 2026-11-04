@@ -816,7 +816,7 @@ maker_bond_payment_timeout_seconds = 900
 
       <ul>
         <li><strong>Las stablecoins</strong> están ancladas 1:1 al dólar, así que una orden USDT a precio de mercado se cotiza exactamente como una orden USD, prima incluida. La tasa USD viene de tus fuentes de precio normales (4.10); no se llama a ninguna API adicional.</li>
-        <li><strong>BTC, LBTC y RBTC</strong> se cotizan 1:1 en sats, así que no necesitan ninguna API de precios. Una orden por 100,000 significa 100,000 sats del activo (0.001 RBTC). A precio de mercado la prima es el precio del intercambio: una orden de venta de 100,000 sats de RBTC con una prima de 1% bloquea 99,000 sats Lightning.</li>
+        <li><strong>BTC, LBTC y RBTC</strong> se cotizan 1:1 en sats, así que no necesitan ninguna API de precios. Una orden por 100,000 significa 100,000 sats del activo (0.001 RBTC). A precio de mercado la prima es el precio del intercambio: una orden de venta (el creador vende sats Lightning) por 100,000 sats de RBTC con una prima de 1% bloquea 99,000 sats Lightning, y el vendedor recibe 100,000 sats de RBTC.</li>
         <li>No se admite ningún otro código: DAI, EURC y el resto se rechazan al arrancar si los listas en <code>only</code>.</li>
       </ul>
 

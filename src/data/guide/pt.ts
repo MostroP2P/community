@@ -816,7 +816,7 @@ maker_bond_payment_timeout_seconds = 900
 
       <ul>
         <li><strong>As stablecoins</strong> são atreladas 1:1 ao dólar, então uma ordem de USDT a preço de mercado é cotada exatamente como uma ordem em USD, prêmio incluído. A taxa do USD vem das suas fontes de preço normais (4.10); nenhuma API extra é chamada.</li>
-        <li><strong>BTC, LBTC e RBTC</strong> são cotados 1:1 em sats, então não precisam de nenhuma API de preço. Uma ordem de 100.000 significa 100.000 sats do ativo (0,001 RBTC). A preço de mercado o prêmio é o preço da troca: uma ordem de venda de 100.000 sats de RBTC com 1% de prêmio trava 99.000 sats Lightning.</li>
+        <li><strong>BTC, LBTC e RBTC</strong> são cotados 1:1 em sats, então não precisam de nenhuma API de preço. Uma ordem de 100.000 significa 100.000 sats do ativo (0,001 RBTC). A preço de mercado o prêmio é o preço da troca: uma ordem de venda (o criador vende sats Lightning) de 100.000 sats de RBTC com 1% de prêmio trava 99.000 sats Lightning, e o vendedor recebe 100.000 sats de RBTC.</li>
         <li>Nenhum outro código é suportado: DAI, EURC e os demais são recusados na inicialização se você os listar em <code>only</code>.</li>
       </ul>
 
