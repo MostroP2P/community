@@ -87,6 +87,8 @@ const fr: GuideTranslation = {
 
       <p><strong>Coût mensuel estimé :</strong> 10–24 $/mois.</p>
 
+      <p>Ces chiffres valent pour Mostro seul. Si LND tourne sur le même VPS, ajoutez au moins 2 Go de RAM, ainsi que le disque dont a besoin son backend Bitcoin (voir 2.2).</p>
+
       <p><strong>Fournisseurs VPS populaires :</strong></p>
       <ul>
         <li><a href="https://www.hostinger.com/" target="_blank" rel="noopener noreferrer">Hostinger</a> — à partir d'environ 7 $/mois (prix promotionnel ; le renouvellement peut être plus élevé) (KVM 2 : 2 vCPU, 8 Go RAM, 100 Go NVMe, 8 To de bande passante) · Accepte le Bitcoin</li>
@@ -114,7 +116,7 @@ const fr: GuideTranslation = {
         <thead><tr><th>Option</th><th>Difficulté</th><th>Coût</th><th>Notes</th></tr></thead>
         <tbody>
           <tr><td>Utiliser un nœud LND existant</td><td><span class="badge badge-easy">Facile</span></td><td>Gratuit (si vous en avez un)</td><td>Idéal si quelqu'un en a déjà un</td></tr>
-          <tr><td>Faire tourner LND sur le même VPS</td><td><span class="badge badge-hard">Difficile</span></td><td>Même VPS + liquidité</td><td>Nécessite un VPS avec 4 Go+ de RAM</td></tr>
+          <tr><td>Faire tourner LND sur le même VPS</td><td><span class="badge badge-hard">Difficile</span></td><td>VPS plus gros + liquidité</td><td>4 Go+ de RAM, et du disque pour le backend Bitcoin (voir ci-dessous)</td></tr>
           <tr><td>Solution nœud-en-boîte</td><td><span class="badge badge-medium">Moyen</span></td><td>200–600 $ + liquidité</td><td><a href="https://start9.com/" target="_blank" rel="noopener noreferrer">Start9</a>, <a href="https://umbrel.com/" target="_blank" rel="noopener noreferrer">Umbrel</a>, <a href="https://raspiblitz.org/" target="_blank" rel="noopener noreferrer">RaspiBlitz</a></td></tr>
           <tr><td>StartOS avec le paquet Mostro</td><td><span class="badge badge-easy">Plus facile</span></td><td>300–600 $ + liquidité</td><td>Start9 dispose d'un paquet Mostro en un clic</td></tr>
           <tr><td>Utiliser Voltage.cloud</td><td><span class="badge badge-easy">Facile</span></td><td>À partir d'environ 20 $/mois + liquidité</td><td><a href="https://voltage.cloud/" target="_blank" rel="noopener noreferrer">Voltage</a> — LND hébergé avec infrastructure gérée</td></tr>
@@ -140,7 +142,53 @@ const fr: GuideTranslation = {
       <pre><code>lncli bakemacaroon --root_key_id 7 \\
   --save_to /root/.lnd/data/chain/bitcoin/mainnet/mostro.macaroon \\
   info:read invoices:read invoices:write offchain:read offchain:write</code></pre>
-      <p>Ce macaroon ne peut ni ouvrir ou fermer des canaux, ni déplacer des fonds on-chain, ni modifier la configuration de votre nœud. En cas de fuite, révoquez-le avec <code>lncli deletemacaroonid 7</code>, en utilisant le même ID que celui de sa création, et créez-en un nouveau.</p>`,
+      <p>Ce macaroon ne peut ni ouvrir ou fermer des canaux, ni déplacer des fonds on-chain, ni modifier la configuration de votre nœud. En cas de fuite, révoquez-le avec <code>lncli deletemacaroonid 7</code>, en utilisant le même ID que celui de sa création, et créez-en un nouveau.</p>
+
+      <p><strong>Si vous ne pouvez pas écrire dans le répertoire de données de LND</strong> (un conteneur, un nœud-en-boîte, un nœud hébergé), omettez <code>--save_to</code> : <code>lncli</code> affiche alors le macaroon en hexadécimal, et vous le convertissez en fichier là où Mostro tourne. <code>lncli</code> peut aussi le créer depuis une autre machine, en pointant vers le nœud avec ses identifiants admin :</p>
+      <pre><code>lncli --rpcserver=NODE_ADDRESS:10009 --tlscertpath=tls.cert --macaroonpath=admin.macaroon \\
+  bakemacaroon --root_key_id 7 info:read invoices:read invoices:write offchain:read offchain:write
+# copiez l'hexadécimal affiché, puis :
+echo "PASTE_THE_HEX_HERE" | xxd -r -p > mostro.macaroon   # apt install -y xxd si absent</code></pre>
+
+      <h4>Comment Mostro se connecte à LND</h4>
+      <p>Mostro parle au port gRPC de LND (10009 par défaut) et s'authentifie avec <code>tls.cert</code> et le macaroon. Trois choses à savoir avant de choisir où faire tourner LND :</p>
+      <ul>
+        <li><strong>Par défaut, LND n'écoute que sur <code>localhost</code>.</strong> Un Mostro sur la même machine l'atteint à <code>https://127.0.0.1:10009</code> ; tout le reste (un conteneur Docker, un autre serveur) demande les étapes supplémentaires ci-dessous.</li>
+        <li><strong>Mostro épingle le certificat.</strong> Il accepte exactement le certificat de <code>tls.cert</code> et ignore le nom d'hôte, donc vous n'avez pas besoin de <code>tlsextraip</code> ni de <code>tlsextradomain</code>. Mais si LND régénère son certificat (il expire après environ 14 mois), copiez le nouveau <code>tls.cert</code> vers Mostro et redémarrez-le, sinon il s'arrête au démarrage avec <code>Ln node error</code>.</li>
+        <li><strong>Pas de Tor pour ce lien.</strong> Mostro ne peut pas joindre LND via Tor ni via un proxy SOCKS. Un LND distant doit être joignable par le réseau : utilisez un VPN.</li>
+      </ul>
+
+      <h4>LND sur le même VPS</h4>
+      <p>Installez LND en suivant le guide officiel (<a href="https://docs.lightning.engineering/lightning-network-tools/lnd/run-lnd" target="_blank" rel="noopener noreferrer">docs.lightning.engineering</a>), avec ses binaires de release. LND a besoin d'une vue de la chaîne Bitcoin, et ce choix détermine la taille de votre VPS :</p>
+      <table class="guide-table">
+        <thead><tr><th>Backend</th><th>Disque</th><th>Compromis</th></tr></thead>
+        <tbody>
+          <tr><td><code>bitcoind</code>, nœud complet</td><td>Plus de 700 Go</td><td>Le plus robuste. La synchronisation initiale prend des jours.</td></tr>
+          <tr><td><code>bitcoind</code>, élagué</td><td>Des dizaines de Go</td><td>Supporté par LND et robuste ; la synchronisation initiale prend toujours des jours.</td></tr>
+          <tr><td><code>neutrino</code></td><td>Quelques Go</td><td>Pas de nœud Bitcoin et un démarrage rapide, mais dépend des pairs auprès desquels il se synchronise. Un nœud neutrino bloqué pendant environ 21 heures est la raison pour laquelle Mostro surveille désormais la synchronisation de LND (5.4). Si vous l'utilisez, pointez-le vers des nœuds Bitcoin de confiance avec <code>neutrino.connect</code> et configurez les alertes de santé.</td></tr>
+        </tbody>
+      </table>
+      <p>Rendez ensuite LND joignable depuis Mostro. Avec l'installation native (Option C), rien ne change : utilisez <code>https://127.0.0.1:10009</code>. Avec Docker (Options A et B), le conteneur est un hôte distinct, choisissez donc l'une des deux voies :</p>
+      <ul>
+        <li><strong>Réseau hôte (le plus simple).</strong> Lancez le conteneur avec <code>--network host</code> au lieu de <code>--add-host=host.docker.internal:host-gateway</code> (dans compose, <code>network_mode: host</code> au lieu de <code>extra_hosts</code>) et définissez <code>lnd_grpc_host = 'https://127.0.0.1:10009'</code>. LND continue de n'écouter que sur <code>localhost</code>.</li>
+        <li><strong>Gardez le réseau bridge</strong> et <code>host.docker.internal</code>, comme dans l'Option A. LND doit alors écouter au-delà de <code>localhost</code> (ajoutez <code>rpclisten=0.0.0.0:10009</code> à <code>lnd.conf</code>) et votre pare-feu doit garder le port 10009 fermé à Internet, par exemple <code>ufw allow from 172.16.0.0/12 to any port 10009 proto tcp</code> suivi de <code>ufw deny 10009/tcp</code>.</li>
+      </ul>
+
+      <h4>LND sur un autre serveur ou à la maison</h4>
+      <p>Reliez les deux machines avec un VPN comme <a href="https://www.wireguard.com/" target="_blank" rel="noopener noreferrer">WireGuard</a> ou <a href="https://tailscale.com/" target="_blank" rel="noopener noreferrer">Tailscale</a>, faites écouter LND sur son adresse VPN (<code>rpclisten=VPN_IP:10009</code>) et définissez <code>lnd_grpc_host = 'https://VPN_IP:10009'</code>. Copiez <code>tls.cert</code> et le macaroon sur le serveur Mostro. Ouvrir le port 10009 à Internet fonctionne aussi, mais le macaroon est alors la seule barrière entre le monde et votre nœud : évitez-le. Un nœud à la maison doit rester en ligne 24h/24, 7j/7 : une coupure de courant ou une connexion qui tombe laisse les transactions de vos utilisateurs en attente.</p>
+
+      <h4>Nœud-en-boîte (Start9, Umbrel, RaspiBlitz)</h4>
+      <p>Ces systèmes installent et mettent à jour LND pour vous, généralement sur un petit ordinateur à la maison. Sur <strong>StartOS</strong>, le plus simple est le paquet Mostro lui-même, qui se connecte au service LND de la même boîte. Pour utiliser le LND de la boîte depuis un Mostro sur un VPS, utilisez la configuration VPN ci-dessus. Chaque système affiche les détails de connexion de LND dans sa propre interface (sur StartOS, dans les propriétés du service LND) ; <code>lncli</code> s'exécute généralement dans le conteneur LND — sur Umbrel, par exemple, <code>sudo docker exec -it lightning_lnd_1 lncli ...</code> (vérifiez le nom avec <code>sudo docker ps</code>). Créez le macaroon en hexadécimal comme montré plus haut.</p>
+
+      <h4>Voltage (LND hébergé)</h4>
+      <p>Voltage fait tourner LND pour vous. Téléchargez <code>tls.cert</code> et le macaroon admin depuis le tableau de bord du nœud, utilisez-les uniquement pour créer le macaroon restreint de Mostro depuis votre propre machine (voir plus haut), et faites pointer <code>lnd_grpc_host</code> vers l'adresse gRPC affichée par le tableau de bord, port 10009. Vous fournissez et gérez toujours la liquidité.</p>
+
+      <h4>Réglages de LND qui affectent Mostro</h4>
+      <ul>
+        <li><code>invoices.holdexpirydelta</code> (par défaut 12) : si vous l'augmentez, augmentez <code>escrow_deadline_margin_blocks</code> pour qu'il reste d'au moins 6 blocs au-dessus (4.9).</li>
+        <li><code>max-cltv-expiry</code> (par défaut 2016) : le <code>payment_cltv_limit</code> de Mostro ne doit pas le dépasser (4.9).</li>
+        <li>Gardez en sécurité la seed du portefeuille de LND et la sauvegarde des canaux : voir 5.6.</li>
+      </ul>`,
     },
     'liquidity': {
       title: `2.3 Liquidité Lightning`,
@@ -167,7 +215,7 @@ const fr: GuideTranslation = {
       <p><strong>Obtenir de la liquidité :</strong></p>
       <ul>
         <li>Ouvrez des canaux vers des nœuds bien connectés (utilisez <a href="https://lightningnetwork.plus/" target="_blank" rel="noopener noreferrer">Lightning Network+</a> ou <a href="https://amboss.space/" target="_blank" rel="noopener noreferrer">Amboss</a> pour trouver de bons pairs)</li>
-        <li>Vous avez besoin de capacité <strong>sortante</strong> (pour payer les acheteurs) et de capacité <strong>entrante</strong> (pour recevoir des vendeurs)</li>
+        <li>Vous avez besoin de capacité <strong>sortante</strong> (pour payer les acheteurs) et de capacité <strong>entrante</strong> (pour recevoir des vendeurs). Chaque transaction reçoit d'abord les sats du vendeur, puis paie l'acheteur : gardez donc au moins votre <code>max_order_amount</code> (4.3) de capacité dans chaque direction</li>
         <li>Obtenir de la liquidité entrante est généralement plus difficile — envisagez <a href="https://lightning.engineering/loop/" target="_blank" rel="noopener noreferrer">Lightning Loop</a>, <a href="https://amboss.space/magma" target="_blank" rel="noopener noreferrer">Magma</a>, ou des services d'échange de canaux</li>
       </ul>`,
     },
@@ -315,7 +363,7 @@ chmod 600 ~/mostro-config/settings.toml
 chmod 600 ~/mostro-config/lnd/mostro.macaroon</code></pre>
 
       <h4>Étape 10 : Lancer le conteneur</h4>
-      <p><strong>Si LND est sur le même VPS :</strong></p>
+      <p><strong>Si LND est sur le même VPS</strong> (LND doit accepter la connexion du conteneur, ou utilisez plutôt le réseau hôte : voir 2.2) :</p>
       <pre><code>docker run -d --name mostro \\
   --restart unless-stopped \\
   --add-host=host.docker.internal:host-gateway \\
@@ -1386,7 +1434,15 @@ cp /opt/mostro/.env /root/mostro-backups/env.$(date +%Y%m%d) 2>/dev/null</code><
       <div class="callout important">
         <div class="callout-title">⚠️ Critique</div>
         <p>Votre <code>nsec_privkey</code> dans <code>settings.toml</code> EST l'identité de votre nœud. Si vous la perdez, vous perdez votre réputation et tous les utilisateurs doivent se reconnecter à une nouvelle identité. <strong>Conservez une copie hors ligne.</strong></p>
-      </div>`,
+      </div>
+
+      <h4>Si vous faites tourner votre propre LND</h4>
+      <p>Les sauvegardes de Mostro ne couvrent pas votre nœud Lightning. Les fonds de vos canaux dépendent de deux sauvegardes de LND :</p>
+      <ul>
+        <li><strong>La seed du portefeuille</strong> (24 mots, plus la passphrase si vous en avez défini une), affichée une seule fois à la création du portefeuille. Notez-la hors ligne.</li>
+        <li><strong>La sauvegarde statique des canaux</strong>, <code>channel.backup</code> (par exemple <code>~/.lnd/data/chain/bitcoin/mainnet/channel.backup</code>). LND la réécrit à chaque ouverture ou fermeture de canal, copiez-la donc régulièrement hors de la machine, par exemple dans la même tâche cron que les sauvegardes de Mostro. Avec la seed et ce fichier, vous pouvez fermer vos canaux et récupérer les fonds sur un nouveau nœud.</li>
+      </ul>
+      <p>Ne sauvegardez ni ne restaurez jamais <code>channel.db</code> pour récupérer des canaux : une copie obsolète fait diffuser à votre nœud d'anciens états, et les pairs peuvent prendre tous les fonds de ces canaux. Les systèmes nœud-en-boîte et Voltage ont leurs propres fonctions de sauvegarde ; activez-les. La documentation de LND couvre la récupération en détail (<a href="https://docs.lightning.engineering/lightning-network-tools/lnd/recovery-planning-for-failure" target="_blank" rel="noopener noreferrer">planification de la récupération</a>).</p>`,
     },
     'activity': {
       title: `5.7 Vérifier l'activité des transactions`,
@@ -1626,7 +1682,7 @@ serbero_pubkey = "npub1..."   # la clé de Serbero, npub ou hex</code></pre>
       <p>Non, mais vous devez être à l'aise avec les opérations basiques en ligne de commande (taper des commandes, éditer des fichiers texte). La voie Docker (Option A) est conçue pour être accessible.</p>
 
       <h3>Puis-je faire tourner Mostro sur un Raspberry Pi ?</h3>
-      <p>Techniquement oui (via Start9 ou similaire), mais ce n'est pas recommandé pour la production en raison des limitations de CPU et de RAM. Un VPS est plus fiable.</p>
+      <p>Beaucoup de gens font tourner LND sur un Raspberry Pi 4 ou 5 avec un SSD, via Start9, Umbrel ou RaspiBlitz, et le paquet Mostro de StartOS peut tourner à côté. Pour un nœud dont dépend votre communauté, un VPS est plus fiable qu'une connexion et une alimentation domestiques. Un compromis courant : LND à la maison et Mostro sur un VPS, reliés par un VPN (voir 2.2).</p>
 
       <h3>Puis-je utiliser Core Lightning (CLN) au lieu de LND ?</h3>
       <p>Non. Mostro ne supporte actuellement que LND, car il dépend de l'implémentation spécifique des hold invoices de LND. Le support d'autres implémentations pourrait arriver à l'avenir.</p>
