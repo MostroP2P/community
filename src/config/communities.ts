@@ -99,6 +99,13 @@ export const COMMUNITIES: CommunityConfig[] = [
       { type: 'email', url: 'mailto:mostromexico@lulus.com.mx' },
     ],
   },
+  {
+    pubkey: 'npub1qqq9yxau9p90e0ryvacupld9kx5rngxne4ak7nlzak5mu90vh34sl20e3u',
+    region: 'Italia',
+    social: [
+      { type: 'telegram', url: 'https://t.me/flotillaSats' },
+    ],
+  },
 ];
 
 /** Default Mostro relay for fetching community metadata */
